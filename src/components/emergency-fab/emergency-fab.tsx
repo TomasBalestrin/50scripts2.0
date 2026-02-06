@@ -183,7 +183,7 @@ export function EmergencyFAB() {
                         style={{ borderColor: option.color, borderTopColor: 'transparent' }}
                       />
                     ) : (
-                      <Icon size={20} style={{ color: option.color }} />
+                      <Icon size={20} />
                     )}
                   </button>
                 </motion.div>

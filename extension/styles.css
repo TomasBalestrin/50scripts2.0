@@ -1,0 +1,352 @@
+/* ==========================================================================
+   50 Scripts 2.0 - Content Script Styles (injected into WhatsApp Web)
+   All classes prefixed with "scripts50-" to avoid conflicts.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Inject button
+   --------------------------------------------------------------------------- */
+
+.scripts50-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #E94560;
+  color: white;
+  cursor: pointer;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+  margin: 0 4px;
+  box-shadow: 0 2px 6px rgba(233, 69, 96, 0.3);
+}
+
+.scripts50-btn:hover {
+  background: #D63D56;
+  transform: scale(1.1);
+  box-shadow: 0 3px 10px rgba(233, 69, 96, 0.4);
+}
+
+.scripts50-btn:active {
+  transform: scale(0.95);
+}
+
+.scripts50-btn svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+/* Tooltip */
+.scripts50-btn::after {
+  content: '50 Scripts';
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  padding: 4px 8px;
+  background: #1A1A2E;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 150ms ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.scripts50-btn:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* ---------------------------------------------------------------------------
+   Toast notification
+   --------------------------------------------------------------------------- */
+
+.scripts50-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  padding: 10px 20px;
+  background: #1A1A2E;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 10000;
+  opacity: 0;
+  transition: all 300ms ease;
+  pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  border: 1px solid rgba(233, 69, 96, 0.3);
+}
+
+.scripts50-toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---------------------------------------------------------------------------
+   Inline search panel
+   --------------------------------------------------------------------------- */
+
+.scripts50-panel {
+  position: fixed;
+  bottom: 70px;
+  right: 16px;
+  width: 340px;
+  max-height: 420px;
+  background: #0F0F1A;
+  border: 1px solid #2D2D4A;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  opacity: 0;
+  transform: translateY(10px) scale(0.97);
+  pointer-events: none;
+  transition: all 200ms ease;
+}
+
+.scripts50-panel--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* Panel header */
+.scripts50-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #2D2D4A;
+}
+
+.scripts50-panel__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.scripts50-panel__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #A0A0B8;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.scripts50-panel__close:hover {
+  background: #252542;
+  color: #FFFFFF;
+}
+
+/* Panel search */
+.scripts50-panel__search {
+  padding: 10px 14px;
+  border-bottom: 1px solid #2D2D4A;
+}
+
+.scripts50-panel__input {
+  width: 100%;
+  padding: 8px 12px;
+  background: #1A1A2E;
+  border: 1px solid #2D2D4A;
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 150ms ease;
+  font-family: inherit;
+}
+
+.scripts50-panel__input::placeholder {
+  color: #6B6B80;
+}
+
+.scripts50-panel__input:focus {
+  border-color: #E94560;
+}
+
+/* Panel results */
+.scripts50-panel__results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 14px;
+  max-height: 300px;
+  scrollbar-width: thin;
+  scrollbar-color: #252542 transparent;
+}
+
+.scripts50-panel__results::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scripts50-panel__results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scripts50-panel__results::-webkit-scrollbar-thumb {
+  background: #252542;
+  border-radius: 2px;
+}
+
+.scripts50-panel__empty,
+.scripts50-panel__loading,
+.scripts50-panel__error {
+  padding: 24px 8px;
+  text-align: center;
+  color: #6B6B80;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.scripts50-panel__error {
+  color: #F44336;
+}
+
+.scripts50-panel__loading {
+  color: #A0A0B8;
+}
+
+/* ---------------------------------------------------------------------------
+   Script cards (inline panel)
+   --------------------------------------------------------------------------- */
+
+.scripts50-card {
+  background: #1A1A2E;
+  border: 1px solid #2D2D4A;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 6px;
+  transition: border-color 150ms ease;
+}
+
+.scripts50-card:hover {
+  border-color: #3D3D5A;
+}
+
+.scripts50-card--locked {
+  opacity: 0.55;
+}
+
+.scripts50-card__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.scripts50-card__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #FFFFFF;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scripts50-card__preview {
+  font-size: 11px;
+  color: #A0A0B8;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.scripts50-card__actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.scripts50-card__btn {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+  font-family: inherit;
+}
+
+.scripts50-card__btn--insert {
+  background: #E94560;
+  color: white;
+}
+
+.scripts50-card__btn--insert:hover {
+  background: #D63D56;
+}
+
+.scripts50-card__btn--copy {
+  background: transparent;
+  color: #A0A0B8;
+  border: 1px solid #2D2D4A;
+}
+
+.scripts50-card__btn--copy:hover {
+  background: #252542;
+  color: #FFFFFF;
+}
+
+.scripts50-card__locked-msg {
+  font-size: 10px;
+  color: #FF9800;
+  font-style: italic;
+}
+
+/* ---------------------------------------------------------------------------
+   Badges (inline panel)
+   --------------------------------------------------------------------------- */
+
+.scripts50-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.scripts50-badge--professional {
+  background: rgba(233, 69, 96, 0.15);
+  color: #E94560;
+}
+
+.scripts50-badge--expert {
+  background: rgba(255, 152, 0, 0.15);
+  color: #FF9800;
+}
