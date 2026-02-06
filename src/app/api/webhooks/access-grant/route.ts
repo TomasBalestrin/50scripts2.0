@@ -1,0 +1,138 @@
+import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
+import { createAdminClient } from '@/lib/supabase/server';
+import { webhookAccessGrantSchema } from '@/lib/validations/schemas';
+
+function verifyWebhookSecret(request: NextRequest): boolean {
+  const secret = request.headers.get('X-Webhook-Secret');
+  if (!secret || !process.env.WEBHOOK_SECRET) return false;
+
+  const expected = Buffer.from(process.env.WEBHOOK_SECRET, 'utf-8');
+  const received = Buffer.from(secret, 'utf-8');
+
+  if (expected.length !== received.length) return false;
+
+  return crypto.timingSafeEqual(expected, received);
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // 1. Validate webhook secret
+    if (!verifyWebhookSecret(request)) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // 2. Parse and validate request body
+    const body = await request.json();
+    const parsed = webhookAccessGrantSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid request body', details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { email, name, source, referral_code } = parsed.data;
+
+    // 3. Create Supabase admin client
+    const supabase = await createAdminClient();
+
+    // 4. Create auth user
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password: process.env.DEFAULT_USER_PASSWORD || 'Script@123',
+      email_confirm: true,
+    });
+
+    if (authError) {
+      // Handle duplicate email
+      if (authError.message?.toLowerCase().includes('already') ||
+          authError.message?.toLowerCase().includes('duplicate')) {
+        await supabase.from('webhook_logs').insert({
+          event_type: 'access_grant',
+          payload: { email, name, source, referral_code },
+          status: 'duplicate',
+          error_message: authError.message,
+        });
+
+        return NextResponse.json(
+          { error: 'User with this email already exists' },
+          { status: 409 }
+        );
+      }
+
+      throw authError;
+    }
+
+    const userId = authData.user.id;
+
+    // 5. Resolve referrer if referral_code is provided
+    let referredBy: string | null = null;
+
+    if (referral_code) {
+      const { data: referrer } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('referral_code', referral_code)
+        .single();
+
+      if (referrer) {
+        referredBy = referrer.id;
+      }
+    }
+
+    // 6. Generate unique referral code for new user
+    const newReferralCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+
+    // 7. Create profile
+    const { error: profileError } = await supabase.from('profiles').insert({
+      id: userId,
+      email,
+      full_name: name || '',
+      plan: 'starter',
+      referral_code: newReferralCode,
+      referred_by: referredBy,
+    });
+
+    if (profileError) {
+      throw profileError;
+    }
+
+    // 8. Log to webhook_logs
+    await supabase.from('webhook_logs').insert({
+      event_type: 'access_grant',
+      payload: { email, name, source, referral_code },
+      status: 'success',
+      user_id: userId,
+    });
+
+    return NextResponse.json(
+      { success: true, user_id: userId },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('[webhook/access-grant] Error:', error);
+
+    // Attempt to log the error
+    try {
+      const supabase = await createAdminClient();
+      await supabase.from('webhook_logs').insert({
+        event_type: 'access_grant',
+        payload: null,
+        status: 'error',
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    } catch {
+      // Logging failed silently
+    }
+
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
