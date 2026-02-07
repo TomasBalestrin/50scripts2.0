@@ -34,15 +34,10 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "recharts": "^3.7.0",
-    "resend": "^4.1.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "stripe": "^17.5.0",
     "zod": "^4.3.6",
-    "zustand": "^5.0.11",
-    "@sentry/nextjs": "^8.50.0",
-    "@vercel/analytics": "^1.4.1",
-    "@vercel/speed-insights": "^1.1.0"
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
