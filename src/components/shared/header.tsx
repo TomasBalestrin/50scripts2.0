@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { createBrowserClient } from "@supabase/ssr";
 import { Bell, Settings, User, Shield, LogOut } from "lucide-react";
 import {
   DropdownMenu,
@@ -126,7 +127,14 @@ export function Header({ userName, userAvatar, plan, role }: HeaderProps) {
             <DropdownMenuSeparator className="bg-[#252542]" />
             <DropdownMenuItem
               className="cursor-pointer text-[#E94560] focus:bg-[#252542] focus:text-[#E94560]"
-              onClick={() => router.push("/auth/logout")}
+              onClick={async () => {
+                const supabase = createBrowserClient(
+                  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                );
+                await supabase.auth.signOut();
+                router.push("/login");
+              }}
             >
               <LogOut className="mr-2 h-4 w-4" />
               Sair
