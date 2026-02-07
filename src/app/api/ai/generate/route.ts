@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { hasAccess } from '@/lib/plans/gate';
 import { aiGenerateSchema } from '@/lib/validations/schemas';
-import Anthropic from '@anthropic-ai/sdk';
+import { chatCompletion } from '@/lib/ai/openai';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -90,20 +90,10 @@ ${topScriptsContext}
 Gere o script pronto para uso, com variáveis {{NOME_LEAD}} e {{MEU_NOME}} onde apropriado.`;
 
   try {
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-    const message = await anthropic.messages.create({
-      model: promptTemplate?.model || 'claude-sonnet-4-5-20250929',
-      max_tokens: promptTemplate?.max_tokens || 1000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
+    const result = await chatCompletion(systemPrompt, userPrompt, {
+      model: 'gpt-4o-mini',
+      maxTokens: promptTemplate?.max_tokens || 1000,
     });
-
-    const generatedContent = message.content[0].type === 'text'
-      ? message.content[0].text
-      : '';
-
-    const tokensUsed = (message.usage?.input_tokens || 0) + (message.usage?.output_tokens || 0);
 
     // Log generation
     await supabase.from('ai_generation_log').insert({
@@ -111,9 +101,9 @@ Gere o script pronto para uso, com variáveis {{NOME_LEAD}} e {{MEU_NOME}} onde 
       prompt_template_id: promptTemplate?.id,
       type: 'generation',
       input_context: { category_id, context, tone: userTone, niche: profile.niche },
-      generated_content: generatedContent,
-      model_used: promptTemplate?.model || 'claude-sonnet-4-5-20250929',
-      tokens_used: tokensUsed,
+      generated_content: result.content,
+      model_used: result.model,
+      tokens_used: result.tokensUsed,
     });
 
     // Deduct credit (if not unlimited)
@@ -125,13 +115,16 @@ Gere o script pronto para uso, com variáveis {{NOME_LEAD}} e {{MEU_NOME}} onde 
     }
 
     return NextResponse.json({
-      content: generatedContent,
+      content: result.content,
       credits_remaining: profile.ai_credits_monthly === -1
         ? -1
         : profile.ai_credits_remaining - 1,
     });
-  } catch (error) {
-    console.error('AI generation error:', error);
-    return NextResponse.json({ error: 'Erro ao gerar script' }, { status: 500 });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('AI generation error:', err.message);
+    return NextResponse.json({
+      error: `Erro ao gerar script: ${err.message || 'erro desconhecido'}`,
+    }, { status: 500 });
   }
 }
