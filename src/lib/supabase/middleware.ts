@@ -48,7 +48,10 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Check if password changed - redirect to change-password if not
-  if (user && pathname !== '/change-password' && pathname !== '/login') {
+  // Only redirect page routes, not API calls
+  const isApiRoute = pathname.startsWith('/api/');
+
+  if (user && !isApiRoute && pathname !== '/change-password' && pathname !== '/login') {
     const { data: profile } = await supabase
       .from('profiles')
       .select('password_changed, onboarding_completed, role, plan')
