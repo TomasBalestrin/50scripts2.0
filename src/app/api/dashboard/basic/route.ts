@@ -16,7 +16,14 @@ export async function GET() {
 
     const userId = user.id;
 
-    // 2. Get total scripts used by this user
+    // 2. Get user profile
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('full_name, plan')
+      .eq('id', userId)
+      .single();
+
+    // 3. Get total scripts used by this user
     const { count: totalScriptsUsed } = await supabase
       .from('script_usage')
       .select('*', { count: 'exact', head: true })
@@ -96,6 +103,24 @@ export async function GET() {
     );
 
     return NextResponse.json({
+      profile: {
+        full_name: userProfile?.full_name || '',
+        plan: userProfile?.plan || 'starter',
+      },
+      stats: {
+        scripts_used: totalScriptsUsed ?? 0,
+        total_scripts: 50,
+        sales_count: 0,
+        total_sales_value: 0,
+      },
+      trails: (trailProgress ?? []).map((t) => ({
+        name: t.category.name,
+        icon: t.category.icon,
+        slug: t.category.slug,
+        color: t.category.color,
+        used: t.used,
+        total: t.total,
+      })),
       total_scripts_used: totalScriptsUsed ?? 0,
       most_used_scripts: mostUsedScripts,
       trail_progress: trailProgress,

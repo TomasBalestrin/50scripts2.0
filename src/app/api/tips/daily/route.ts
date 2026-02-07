@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+const FALLBACK_TIP = {
+  content: 'Mensagens personalizadas convertem 3x mais que mensagens genéricas. Use o nome do lead!',
+  category: 'vendas',
+};
+
 export async function GET() {
   try {
     const supabase = await createClient();
@@ -11,37 +16,25 @@ export async function GET() {
       .select('*')
       .eq('is_active', true);
 
-    if (error) {
-      console.error('[tips/daily] Error fetching tips:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch daily tip' },
-        { status: 500 }
-      );
-    }
-
-    if (!tips || tips.length === 0) {
-      return NextResponse.json(
-        { error: 'No tips available' },
-        { status: 404 }
-      );
+    if (error || !tips || tips.length === 0) {
+      // Return fallback tip instead of failing
+      return NextResponse.json(FALLBACK_TIP);
     }
 
     // 2. Pick a random tip
     const randomIndex = Math.floor(Math.random() * tips.length);
     const tip = tips[randomIndex];
 
-    // 3. Increment display_count
-    await supabase
+    // 3. Increment display_count (fire and forget)
+    supabase
       .from('microlearning_tips')
       .update({ display_count: (tip.display_count ?? 0) + 1 })
-      .eq('id', tip.id);
+      .eq('id', tip.id)
+      .then(() => {});
 
-    return NextResponse.json({ tip });
-  } catch (error) {
-    console.error('[tips/daily] Unexpected error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    // Return tip object directly (dashboard expects { content, category })
+    return NextResponse.json(tip);
+  } catch {
+    return NextResponse.json(FALLBACK_TIP);
   }
 }

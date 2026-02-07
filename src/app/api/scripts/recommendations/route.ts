@@ -18,7 +18,6 @@ function getTimeOfDay(): string {
   if (hour >= 14 && hour < 18) return 'afternoon';
   if (hour >= 18 && hour < 22) return 'evening';
 
-  // Default to approach for off-hours
   return 'morning';
 }
 
@@ -29,10 +28,7 @@ export async function GET() {
     // 1. Auth required
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ scripts: [] });
     }
 
     // 2. Get user profile
@@ -49,57 +45,65 @@ export async function GET() {
     const categorySlug = TIME_CATEGORY_MAP[timeOfDay];
 
     // 4. Get the category
-    const { data: category, error: catError } = await supabase
+    const { data: category } = await supabase
       .from('script_categories')
       .select('id, name, slug, icon, color')
       .eq('slug', categorySlug)
       .eq('is_active', true)
       .single();
 
-    if (catError || !category) {
-      return NextResponse.json(
-        { error: 'Recommended category not found' },
-        { status: 404 }
-      );
+    if (!category) {
+      // Fallback: try to get any active category
+      const { data: anyCategory } = await supabase
+        .from('script_categories')
+        .select('id, name, slug, icon, color')
+        .eq('is_active', true)
+        .limit(1)
+        .single();
+
+      if (!anyCategory) {
+        return NextResponse.json({ scripts: [] });
+      }
+
+      // Use the fallback category
+      const { data: scripts } = await supabase
+        .from('scripts')
+        .select('*, category:script_categories(*)')
+        .eq('category_id', anyCategory.id)
+        .eq('is_active', true)
+        .order('global_effectiveness', { ascending: false })
+        .limit(5);
+
+      return NextResponse.json({
+        time_of_day: timeOfDay,
+        suggested_category: anyCategory,
+        scripts: (scripts ?? []).map((s) => ({
+          ...s,
+          is_locked: !hasAccess(userPlan, s.min_plan as Plan),
+        })),
+      });
     }
 
-    // 5. Get top 5 scripts from suggested category by global_effectiveness
-    const { data: scripts, error: scriptsError } = await supabase
+    // 5. Get top 5 scripts from suggested category
+    const { data: scripts } = await supabase
       .from('scripts')
-      .select(`
-        *,
-        category:script_categories(*)
-      `)
+      .select('*, category:script_categories(*)')
       .eq('category_id', category.id)
       .eq('is_active', true)
       .order('global_effectiveness', { ascending: false })
       .limit(5);
 
-    if (scriptsError) {
-      console.error('[scripts/recommendations] Error:', scriptsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch recommendations' },
-        { status: 500 }
-      );
-    }
-
-    // 6. Mark locked scripts
-    const recommendations = (scripts ?? []).map((script) => ({
-      ...script,
-      is_locked: !hasAccess(userPlan, script.min_plan as Plan),
-    }));
-
     return NextResponse.json({
       time_of_day: timeOfDay,
       suggested_category: category,
       niche: profile?.niche ?? null,
-      scripts: recommendations,
+      scripts: (scripts ?? []).map((s) => ({
+        ...s,
+        is_locked: !hasAccess(userPlan, s.min_plan as Plan),
+      })),
     });
   } catch (error) {
-    console.error('[scripts/recommendations] Unexpected error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('[scripts/recommendations] Error:', error);
+    return NextResponse.json({ scripts: [] });
   }
 }
