@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { hasAccess } from '@/lib/plans/gate';
 import { aiConversationSchema } from '@/lib/validations/schemas';
-import Anthropic from '@anthropic-ai/sdk';
+import { chatCompletion } from '@/lib/ai/openai';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -99,20 +99,10 @@ Scripts que mais funcionam para mim:
 ${topScriptsText}`;
 
   try {
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-    const message = await anthropic.messages.create({
-      model: promptTemplate?.model || 'claude-sonnet-4-5-20250929',
-      max_tokens: promptTemplate?.max_tokens || 1500,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
+    const result = await chatCompletion(systemPrompt, userPrompt, {
+      model: 'gpt-4o-mini',
+      maxTokens: promptTemplate?.max_tokens || 1500,
     });
-
-    const generatedContent = message.content[0].type === 'text'
-      ? message.content[0].text
-      : '';
-
-    const tokensUsed = (message.usage?.input_tokens || 0) + (message.usage?.output_tokens || 0);
 
     // Log
     await supabase.from('ai_generation_log').insert({
@@ -120,14 +110,17 @@ ${topScriptsText}`;
       prompt_template_id: promptTemplate?.id,
       type: 'conversation',
       input_context: { conversation: conversation.slice(0, 500), lead_id },
-      generated_content: generatedContent,
-      model_used: promptTemplate?.model || 'claude-sonnet-4-5-20250929',
-      tokens_used: tokensUsed,
+      generated_content: result.content,
+      model_used: result.model,
+      tokens_used: result.tokensUsed,
     });
 
-    return NextResponse.json({ analysis: generatedContent });
-  } catch (error) {
-    console.error('AI conversation error:', error);
-    return NextResponse.json({ error: 'Erro ao analisar conversa' }, { status: 500 });
+    return NextResponse.json({ analysis: result.content });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('AI conversation error:', err.message);
+    return NextResponse.json({
+      error: `Erro ao analisar conversa: ${err.message || 'erro desconhecido'}`,
+    }, { status: 500 });
   }
 }
