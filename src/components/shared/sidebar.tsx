@@ -12,13 +12,20 @@ import {
   FolderHeart,
   Lock,
   User,
+  Brain,
+  Bot,
+  Trophy,
+  Gift,
+  History,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hasAccess } from "@/lib/plans/gate";
-import type { Plan } from "@/types/database";
+import type { Plan, Role } from "@/types/database";
 
 interface SidebarProps {
   plan: Plan;
+  role?: Role;
   userName?: string;
   userAvatar?: string | null;
 }
@@ -28,12 +35,13 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   requiredPlan?: Plan;
+  section?: string;
 }
 
 const navItems: NavItem[] = [
   {
     label: "Dashboard",
-    href: "/dashboard",
+    href: "/",
     icon: LayoutDashboard,
   },
   {
@@ -43,7 +51,7 @@ const navItems: NavItem[] = [
   },
   {
     label: "Buscar",
-    href: "/buscar",
+    href: "/busca",
     icon: Search,
   },
   {
@@ -53,27 +61,62 @@ const navItems: NavItem[] = [
     requiredPlan: "pro",
   },
   {
+    label: "Gamificação",
+    href: "/badges",
+    icon: Trophy,
+    requiredPlan: "pro",
+    section: "Pro",
+  },
+  {
+    label: "Histórico",
+    href: "/historico",
+    icon: History,
+    requiredPlan: "pro",
+  },
+  {
     label: "Pipeline",
     href: "/pipeline",
     icon: Kanban,
     requiredPlan: "premium",
+    section: "Premium",
   },
   {
     label: "IA Generator",
-    href: "/ia-generator",
+    href: "/ai-generator",
     icon: Sparkles,
     requiredPlan: "premium",
   },
   {
-    label: "Colecoes",
+    label: "Coleções",
     href: "/colecoes",
     icon: FolderHeart,
     requiredPlan: "premium",
   },
+  {
+    label: "Indicações",
+    href: "/referrals",
+    icon: Gift,
+    requiredPlan: "premium",
+  },
+  {
+    label: "IA Copilot",
+    href: "/ai-copilot",
+    icon: Bot,
+    requiredPlan: "copilot",
+    section: "Copilot",
+  },
+  {
+    label: "Agenda Smart",
+    href: "/agenda/smart",
+    icon: Brain,
+    requiredPlan: "copilot",
+  },
 ];
 
-export function Sidebar({ plan, userName, userAvatar }: SidebarProps) {
+export function Sidebar({ plan, role, userName, userAvatar }: SidebarProps) {
   const pathname = usePathname();
+
+  let lastSection: string | undefined;
 
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-[#252542]/50 bg-[#1A1A2E] lg:flex">
@@ -87,42 +130,86 @@ export function Sidebar({ plan, userName, userAvatar }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4 scrollbar-thin">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4 scrollbar-thin">
         {navItems.map((item) => {
           const isActive =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
+            (item.href === "/" && pathname === "/") ||
+            (item.href !== "/" && (pathname === item.href || pathname.startsWith(`${item.href}/`)));
           const isLocked =
             item.requiredPlan && !hasAccess(plan, item.requiredPlan);
 
+          // Section divider
+          let sectionHeader = null;
+          if (item.section && item.section !== lastSection) {
+            lastSection = item.section;
+            sectionHeader = (
+              <div className="pt-3 pb-1 px-3">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-600">
+                  {item.section}
+                </span>
+              </div>
+            );
+          }
+
           return (
-            <Link
-              key={item.href}
-              href={isLocked ? "#" : item.href}
-              onClick={(e) => {
-                if (isLocked) e.preventDefault();
-              }}
-              className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                isActive
-                  ? "border-l-2 border-[#0F3460] bg-[#252542] text-white"
-                  : "border-l-2 border-transparent text-[#94A3B8] hover:bg-[#252542]/50 hover:text-white",
-                isLocked && "cursor-not-allowed opacity-50"
-              )}
-            >
-              <item.icon
+            <div key={item.href}>
+              {sectionHeader}
+              <Link
+                href={isLocked ? "#" : item.href}
+                onClick={(e) => {
+                  if (isLocked) e.preventDefault();
+                }}
                 className={cn(
-                  "h-5 w-5 flex-shrink-0",
-                  isActive ? "text-[#E94560]" : "text-[#94A3B8] group-hover:text-white"
+                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                  isActive
+                    ? "border-l-2 border-[#0F3460] bg-[#252542] text-white"
+                    : "border-l-2 border-transparent text-[#94A3B8] hover:bg-[#252542]/50 hover:text-white",
+                  isLocked && "cursor-not-allowed opacity-50"
                 )}
-              />
-              <span className="flex-1">{item.label}</span>
-              {isLocked && (
-                <Lock className="h-3.5 w-3.5 flex-shrink-0 text-[#94A3B8]" />
-              )}
-            </Link>
+              >
+                <item.icon
+                  className={cn(
+                    "h-5 w-5 flex-shrink-0",
+                    isActive ? "text-[#E94560]" : "text-[#94A3B8] group-hover:text-white"
+                  )}
+                />
+                <span className="flex-1">{item.label}</span>
+                {isLocked && (
+                  <Lock className="h-3.5 w-3.5 flex-shrink-0 text-[#94A3B8]" />
+                )}
+              </Link>
+            </div>
           );
         })}
       </nav>
+
+      {/* Admin Link */}
+      {role === "admin" && (
+        <>
+          <div className="mx-4 border-t border-[#252542]" />
+          <div className="p-3">
+            <Link
+              href="/admin"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                pathname.startsWith("/admin")
+                  ? "border-l-2 border-[#0F3460] bg-[#252542] text-white"
+                  : "border-l-2 border-transparent text-[#94A3B8] hover:bg-[#252542]/50 hover:text-white"
+              )}
+            >
+              <ShieldCheck
+                className={cn(
+                  "h-5 w-5 flex-shrink-0",
+                  pathname.startsWith("/admin")
+                    ? "text-[#E94560]"
+                    : "text-[#94A3B8]"
+                )}
+              />
+              <span>Admin</span>
+            </Link>
+          </div>
+        </>
+      )}
 
       {/* Divider */}
       <div className="mx-4 border-t border-[#252542]" />

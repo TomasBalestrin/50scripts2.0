@@ -1,7 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  type DropResult,
+} from '@hello-pangea/dnd';
 import { Lead, LeadStage } from '@/types/database';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +20,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Kanban, Plus, Phone, DollarSign, Clock, AlertCircle } from 'lucide-react';
+import {
+  Kanban,
+  Plus,
+  Phone,
+  DollarSign,
+  Clock,
+  AlertCircle,
+  GripVertical,
+} from 'lucide-react';
 
 const STAGES: { key: LeadStage; label: string; color: string }[] = [
   { key: 'novo', label: 'Novo', color: '#3B82F6' },
@@ -73,25 +87,65 @@ export default function PipelinePage() {
     }
   };
 
-  const handleMoveStage = async (leadId: string, newStage: LeadStage) => {
-    setLeads((prev) =>
-      prev.map((l) => (l.id === leadId ? { ...l, stage: newStage } : l))
-    );
-    await fetch(`/api/leads/${leadId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ stage: newStage }),
-    });
-  };
+  const handleMoveStage = useCallback(
+    async (leadId: string, newStage: LeadStage) => {
+      // Optimistic update
+      setLeads((prev) =>
+        prev.map((l) => (l.id === leadId ? { ...l, stage: newStage } : l))
+      );
+      try {
+        const res = await fetch(`/api/leads/${leadId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stage: newStage }),
+        });
+        if (!res.ok) {
+          // Revert on failure
+          fetchLeads();
+        }
+      } catch {
+        fetchLeads();
+      }
+    },
+    []
+  );
 
-  const getLeadsByStage = (stage: LeadStage) =>
-    leads.filter((l) => l.stage === stage);
+  const getLeadsByStage = useCallback(
+    (stage: LeadStage) => leads.filter((l) => l.stage === stage),
+    [leads]
+  );
+
+  const getStageValue = useCallback(
+    (stage: LeadStage) =>
+      leads
+        .filter((l) => l.stage === stage)
+        .reduce((acc, l) => acc + (l.expected_value || 0), 0),
+    [leads]
+  );
 
   const getDaysSince = (date: string | null) => {
     if (!date) return null;
     const diff = Date.now() - new Date(date).getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   };
+
+  const onDragEnd = useCallback(
+    (result: DropResult) => {
+      const { destination, draggableId } = result;
+
+      // Dropped outside a droppable
+      if (!destination) return;
+
+      const newStage = destination.droppableId as LeadStage;
+      const lead = leads.find((l) => l.id === draggableId);
+
+      // No change
+      if (!lead || lead.stage === newStage) return;
+
+      handleMoveStage(draggableId, newStage);
+    },
+    [leads, handleMoveStage]
+  );
 
   if (loading) {
     return (
@@ -186,70 +240,136 @@ export default function PipelinePage() {
         </Card>
       </div>
 
-      {/* Kanban Board */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 overflow-x-auto">
-        {STAGES.map((stage) => {
-          const stageLeads = getLeadsByStage(stage.key);
-          return (
-            <div key={stage.key} className="min-w-[200px]">
-              <div className="flex items-center gap-2 mb-3">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: stage.color }}
-                />
-                <span className="text-sm font-semibold text-white">{stage.label}</span>
-                <Badge className="bg-[#252542] text-gray-400 text-xs ml-auto">
-                  {stageLeads.length}
-                </Badge>
-              </div>
+      {/* Kanban Board with Drag and Drop */}
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 overflow-x-auto">
+          {STAGES.map((stage) => {
+            const stageLeads = getLeadsByStage(stage.key);
+            const stageValue = getStageValue(stage.key);
 
-              <div className="space-y-2">
-                {stageLeads.map((lead) => {
-                  const daysSince = getDaysSince(lead.last_contact_at);
-                  const isOverdue = lead.next_followup_at && new Date(lead.next_followup_at) < new Date();
+            return (
+              <div key={stage.key} className="min-w-[200px]">
+                {/* Column Header */}
+                <div className="flex items-center gap-2 mb-2">
+                  <div
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: stage.color }}
+                  />
+                  <span className="text-sm font-semibold text-white truncate">
+                    {stage.label}
+                  </span>
+                  <Badge className="bg-[#252542] text-gray-400 text-xs ml-auto shrink-0">
+                    {stageLeads.length}
+                  </Badge>
+                </div>
 
-                  return (
-                    <Card
-                      key={lead.id}
-                      className="bg-[#1A1A2E] border-[#252542] hover:border-[#363660] cursor-pointer transition-colors"
-                      onClick={() => router.push(`/pipeline/${lead.id}`)}
+                {/* Stage Value Summary */}
+                {stageValue > 0 && (
+                  <div className="mb-2 px-1">
+                    <p className="text-xs text-gray-500">
+                      R$ {stageValue.toLocaleString('pt-BR')}
+                    </p>
+                  </div>
+                )}
+
+                {/* Droppable Column */}
+                <Droppable droppableId={stage.key}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={`space-y-2 min-h-[100px] rounded-lg p-1 transition-colors ${
+                        snapshot.isDraggingOver
+                          ? 'bg-[#252542]/60 ring-1 ring-[#E94560]/30'
+                          : 'bg-transparent'
+                      }`}
                     >
-                      <CardContent className="p-3">
-                        <p className="font-medium text-white text-sm truncate">{lead.name}</p>
-                        {lead.phone && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <Phone className="w-3 h-3 text-gray-500" />
-                            <span className="text-xs text-gray-400">{lead.phone}</span>
-                          </div>
-                        )}
-                        {lead.expected_value && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <DollarSign className="w-3 h-3 text-green-500" />
-                            <span className="text-xs text-green-400">
-                              R$ {lead.expected_value.toLocaleString('pt-BR')}
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2 mt-2">
-                          {daysSince !== null && (
-                            <span className="text-xs text-gray-500 flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {daysSince}d
-                            </span>
-                          )}
-                          {isOverdue && (
-                            <AlertCircle className="w-3 h-3 text-red-500" />
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                      {stageLeads.map((lead, index) => {
+                        const daysSince = getDaysSince(lead.last_contact_at);
+                        const isOverdue =
+                          lead.next_followup_at &&
+                          new Date(lead.next_followup_at) < new Date();
+
+                        return (
+                          <Draggable
+                            key={lead.id}
+                            draggableId={lead.id}
+                            index={index}
+                          >
+                            {(dragProvided, dragSnapshot) => (
+                              <div
+                                ref={dragProvided.innerRef}
+                                {...dragProvided.draggableProps}
+                                className={`transition-shadow ${
+                                  dragSnapshot.isDragging ? 'shadow-xl shadow-[#E94560]/20' : ''
+                                }`}
+                              >
+                                <Card
+                                  className={`bg-[#1A1A2E] border-[#252542] hover:border-[#363660] cursor-pointer transition-colors ${
+                                    dragSnapshot.isDragging
+                                      ? 'border-[#E94560]/50 rotate-[2deg]'
+                                      : ''
+                                  }`}
+                                  onClick={() => router.push(`/pipeline/${lead.id}`)}
+                                >
+                                  <CardContent className="p-3">
+                                    <div className="flex items-start gap-1">
+                                      <div
+                                        {...dragProvided.dragHandleProps}
+                                        className="mt-0.5 cursor-grab active:cursor-grabbing shrink-0"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <GripVertical className="w-3 h-3 text-gray-600 hover:text-gray-400" />
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <p className="font-medium text-white text-sm truncate">
+                                          {lead.name}
+                                        </p>
+                                        {lead.phone && (
+                                          <div className="flex items-center gap-1 mt-1">
+                                            <Phone className="w-3 h-3 text-gray-500 shrink-0" />
+                                            <span className="text-xs text-gray-400 truncate">
+                                              {lead.phone}
+                                            </span>
+                                          </div>
+                                        )}
+                                        {lead.expected_value != null && lead.expected_value > 0 && (
+                                          <div className="flex items-center gap-1 mt-1">
+                                            <DollarSign className="w-3 h-3 text-green-500 shrink-0" />
+                                            <span className="text-xs text-green-400">
+                                              R$ {lead.expected_value.toLocaleString('pt-BR')}
+                                            </span>
+                                          </div>
+                                        )}
+                                        <div className="flex items-center gap-2 mt-2">
+                                          {daysSince !== null && (
+                                            <span className="text-xs text-gray-500 flex items-center gap-1">
+                                              <Clock className="w-3 h-3" />
+                                              {daysSince}d
+                                            </span>
+                                          )}
+                                          {isOverdue && (
+                                            <AlertCircle className="w-3 h-3 text-red-500" />
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            )}
+                          </Draggable>
+                        );
+                      })}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      </DragDropContext>
     </div>
   );
 }
