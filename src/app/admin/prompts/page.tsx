@@ -29,13 +29,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { createClient } from '@/lib/supabase/client';
+import { MonacoEditor } from '@/components/admin/monaco-editor';
 import type { AIPrompt, AIPromptType } from '@/types/database';
 
 const PROMPT_TYPE_LABELS: Record<AIPromptType, string> = {
-  generation: 'Geração',
+  generation: 'Geracao',
   conversation: 'Conversa',
-  analysis: 'Análise',
-  objection: 'Objeção',
+  analysis: 'Analise',
+  objection: 'Objecao',
 };
 
 const PROMPT_TYPE_COLORS: Record<AIPromptType, string> = {
@@ -178,7 +179,7 @@ export default function AdminPromptsPage() {
   function runTest() {
     if (!testPrompt || !testInput.trim()) return;
     // Mock test - shows what would be sent
-    const result = `--- System Prompt ---\n${testPrompt.system_prompt}\n\n--- User Prompt (template preenchido) ---\n${testPrompt.user_prompt_template.replace(/\{\{input\}\}/g, testInput).replace(/\{\{context\}\}/g, testInput)}\n\n--- Configurações ---\nModel: ${testPrompt.model}\nTemperature: ${testPrompt.temperature}\nMax Tokens: ${testPrompt.max_tokens}\n\n[Simulação - Em produção, o prompt seria enviado à API da IA]`;
+    const result = `--- System Prompt ---\n${testPrompt.system_prompt}\n\n--- User Prompt (template preenchido) ---\n${testPrompt.user_prompt_template.replace(/\{\{input\}\}/g, testInput).replace(/\{\{context\}\}/g, testInput)}\n\n--- Configuracoes ---\nModel: ${testPrompt.model}\nTemperature: ${testPrompt.temperature}\nMax Tokens: ${testPrompt.max_tokens}\n\n[Simulacao - Em producao, o prompt seria enviado a API da IA]`;
     setTestResult(result);
   }
 
@@ -212,8 +213,8 @@ export default function AdminPromptsPage() {
                     <th className="px-4 py-3">Modelo</th>
                     <th className="px-4 py-3">Temperatura</th>
                     <th className="px-4 py-3">Ativo</th>
-                    <th className="px-4 py-3">Versão</th>
-                    <th className="px-4 py-3 text-right">Ações</th>
+                    <th className="px-4 py-3">Versao</th>
+                    <th className="px-4 py-3 text-right">Acoes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -322,43 +323,41 @@ export default function AdminPromptsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="border-[#252542] bg-[#1A1A2E] text-white">
-                    <SelectItem value="generation">Geração</SelectItem>
+                    <SelectItem value="generation">Geracao</SelectItem>
                     <SelectItem value="conversation">Conversa</SelectItem>
-                    <SelectItem value="analysis">Análise</SelectItem>
-                    <SelectItem value="objection">Objeção</SelectItem>
+                    <SelectItem value="analysis">Analise</SelectItem>
+                    <SelectItem value="objection">Objecao</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div>
-              <Label className="text-gray-400">System Prompt</Label>
-              <Textarea
+              <Label className="text-gray-400 mb-1 block">System Prompt</Label>
+              <MonacoEditor
                 value={form.system_prompt}
-                onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    system_prompt: e.target.value,
-                  }))
+                onChange={(val) =>
+                  setForm((f) => ({ ...f, system_prompt: val }))
                 }
-                rows={8}
-                className="mt-1 border-[#252542] bg-[#252542] font-mono text-sm text-white"
+                language="markdown"
+                height="250px"
+                placeholder="Insira o system prompt aqui..."
               />
             </div>
 
             <div>
-              <Label className="text-gray-400">User Prompt Template</Label>
-              <Textarea
+              <Label className="text-gray-400 mb-1 block">User Prompt Template</Label>
+              <MonacoEditor
                 value={form.user_prompt_template}
-                onChange={(e) =>
+                onChange={(val) =>
                   setForm((f) => ({
                     ...f,
-                    user_prompt_template: e.target.value,
+                    user_prompt_template: val,
                   }))
                 }
-                rows={6}
-                className="mt-1 border-[#252542] bg-[#252542] font-mono text-sm text-white"
-                placeholder="Use {{input}} e {{context}} como variáveis"
+                language="markdown"
+                height="200px"
+                placeholder="Use {{input}} e {{context}} como variaveis"
               />
             </div>
 

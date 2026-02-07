@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Search,
   Plus,
@@ -10,6 +10,11 @@ import {
   Power,
   ChevronLeft,
   ChevronRight,
+  Upload,
+  Play,
+  Pause,
+  X,
+  Volume2,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -83,6 +88,13 @@ export default function AdminScriptsPage() {
   const [form, setForm] = useState<ScriptForm>(emptyForm);
   const [saving, setSaving] = useState(false);
 
+  // Audio state
+  const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
+  const [uploadingAudio, setUploadingAudio] = useState(false);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Delete confirm
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -135,6 +147,7 @@ export default function AdminScriptsPage() {
   function openCreateDialog() {
     setEditingId(null);
     setForm(emptyForm);
+    setCurrentAudioUrl(null);
     setDialogOpen(true);
   }
 
@@ -152,6 +165,7 @@ export default function AdminScriptsPage() {
       tags: (script.tags || []).join(', '),
       is_active: script.is_active,
     });
+    setCurrentAudioUrl(script.audio_url || null);
     setDialogOpen(true);
   }
 
@@ -215,6 +229,77 @@ export default function AdminScriptsPage() {
     await fetchScripts();
   }
 
+  // Audio upload handler
+  async function handleAudioUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !editingId) return;
+
+    setUploadingAudio(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('script_id', editingId);
+
+      const res = await fetch('/api/admin/scripts/upload-audio', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentAudioUrl(data.audio_url);
+      } else {
+        const err = await res.json();
+        console.error('Upload error:', err.error);
+      }
+    } catch (err) {
+      console.error('Upload failed:', err);
+    } finally {
+      setUploadingAudio(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }
+
+  // Remove audio handler
+  async function handleRemoveAudio() {
+    if (!editingId) return;
+    setUploadingAudio(true);
+    try {
+      const res = await fetch('/api/admin/scripts/upload-audio', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script_id: editingId }),
+      });
+
+      if (res.ok) {
+        setCurrentAudioUrl(null);
+        if (audioRef.current) {
+          audioRef.current.pause();
+          setAudioPlaying(false);
+        }
+      }
+    } catch (err) {
+      console.error('Remove audio failed:', err);
+    } finally {
+      setUploadingAudio(false);
+    }
+  }
+
+  // Toggle audio playback
+  function toggleAudioPlayback() {
+    if (!audioRef.current) return;
+    if (audioPlaying) {
+      audioRef.current.pause();
+      setAudioPlaying(false);
+    } else {
+      audioRef.current.play();
+      setAudioPlaying(true);
+    }
+  }
+
   function getCategoryName(script: Script): string {
     if (script.category && typeof script.category === 'object') {
       return (script.category as unknown as { name: string }).name;
@@ -241,7 +326,7 @@ export default function AdminScriptsPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
             <Input
-              placeholder="Buscar scripts por título..."
+              placeholder="Buscar scripts por titulo..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -265,13 +350,14 @@ export default function AdminScriptsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[#252542] text-left text-gray-400">
-                    <th className="px-4 py-3">Título</th>
+                    <th className="px-4 py-3">Titulo</th>
                     <th className="px-4 py-3">Categoria</th>
-                    <th className="px-4 py-3">Plano Mín.</th>
+                    <th className="px-4 py-3">Plano Min.</th>
+                    <th className="px-4 py-3">Audio</th>
                     <th className="px-4 py-3">Ativo</th>
                     <th className="px-4 py-3 text-right">Usos</th>
                     <th className="px-4 py-3 text-right">Efetividade</th>
-                    <th className="px-4 py-3 text-right">Ações</th>
+                    <th className="px-4 py-3 text-right">Acoes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -293,6 +379,13 @@ export default function AdminScriptsPage() {
                           {script.min_plan.charAt(0).toUpperCase() +
                             script.min_plan.slice(1)}
                         </Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        {script.audio_url ? (
+                          <Volume2 className="h-4 w-4 text-green-400" />
+                        ) : (
+                          <span className="text-gray-600">-</span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -344,7 +437,7 @@ export default function AdminScriptsPage() {
                   {scripts.length === 0 && (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={8}
                         className="py-12 text-center text-gray-500"
                       >
                         Nenhum script encontrado.
@@ -401,7 +494,7 @@ export default function AdminScriptsPage() {
 
           <div className="mt-4 space-y-4">
             <div>
-              <Label className="text-gray-400">Título</Label>
+              <Label className="text-gray-400">Titulo</Label>
               <Input
                 value={form.title}
                 onChange={(e) =>
@@ -413,7 +506,7 @@ export default function AdminScriptsPage() {
 
             <div>
               <Label className="text-gray-400">
-                Conteúdo (Casual)
+                Conteudo (Casual)
               </Label>
               <Textarea
                 value={form.content}
@@ -426,7 +519,7 @@ export default function AdminScriptsPage() {
             </div>
 
             <div>
-              <Label className="text-gray-400">Conteúdo (Formal)</Label>
+              <Label className="text-gray-400">Conteudo (Formal)</Label>
               <Textarea
                 value={form.content_formal}
                 onChange={(e) =>
@@ -441,7 +534,7 @@ export default function AdminScriptsPage() {
             </div>
 
             <div>
-              <Label className="text-gray-400">Conteúdo (Direto)</Label>
+              <Label className="text-gray-400">Conteudo (Direto)</Label>
               <Textarea
                 value={form.content_direct}
                 onChange={(e) =>
@@ -456,7 +549,7 @@ export default function AdminScriptsPage() {
             </div>
 
             <div>
-              <Label className="text-gray-400">Descrição de Contexto</Label>
+              <Label className="text-gray-400">Descricao de Contexto</Label>
               <Textarea
                 value={form.context_description}
                 onChange={(e) =>
@@ -493,7 +586,7 @@ export default function AdminScriptsPage() {
               </div>
 
               <div>
-                <Label className="text-gray-400">Plano Mínimo</Label>
+                <Label className="text-gray-400">Plano Minimo</Label>
                 <Select
                   value={form.min_plan}
                   onValueChange={(val) =>
@@ -518,7 +611,7 @@ export default function AdminScriptsPage() {
 
             <div>
               <Label className="text-gray-400">
-                Palavras-chave de Objeção (separadas por vírgula)
+                Palavras-chave de Objecao (separadas por virgula)
               </Label>
               <Input
                 value={form.objection_keywords}
@@ -528,24 +621,119 @@ export default function AdminScriptsPage() {
                     objection_keywords: e.target.value,
                   }))
                 }
-                placeholder="caro, sem dinheiro, não preciso"
+                placeholder="caro, sem dinheiro, nao preciso"
                 className="mt-1 border-[#252542] bg-[#252542] text-white placeholder:text-gray-500"
               />
             </div>
 
             <div>
               <Label className="text-gray-400">
-                Tags (separadas por vírgula)
+                Tags (separadas por virgula)
               </Label>
               <Input
                 value={form.tags}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, tags: e.target.value }))
                 }
-                placeholder="vendas, whatsapp, objeção"
+                placeholder="vendas, whatsapp, objecao"
                 className="mt-1 border-[#252542] bg-[#252542] text-white placeholder:text-gray-500"
               />
             </div>
+
+            {/* Audio Upload Section */}
+            {editingId && (
+              <div>
+                <Label className="text-gray-400 flex items-center gap-2">
+                  <Volume2 className="h-4 w-4" />
+                  Audio do Script
+                </Label>
+                <div className="mt-2 space-y-3">
+                  {currentAudioUrl ? (
+                    <div className="flex items-center gap-3 rounded-lg border border-[#252542] bg-[#252542] p-3">
+                      <audio
+                        ref={audioRef}
+                        src={currentAudioUrl}
+                        onEnded={() => setAudioPlaying(false)}
+                        onPause={() => setAudioPlaying(false)}
+                        onPlay={() => setAudioPlaying(true)}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={toggleAudioPlayback}
+                        className="h-10 w-10 rounded-full bg-[#E94560]/20 text-[#E94560] hover:bg-[#E94560]/30 hover:text-[#E94560] flex-shrink-0"
+                      >
+                        {audioPlaying ? (
+                          <Pause className="h-5 w-5" />
+                        ) : (
+                          <Play className="h-5 w-5" />
+                        )}
+                      </Button>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-300 truncate">
+                          {currentAudioUrl.split('/').pop()}
+                        </p>
+                        <p className="text-xs text-gray-500">Audio anexado</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleRemoveAudio}
+                        disabled={uploadingAudio}
+                        className="h-8 w-8 text-gray-400 hover:text-red-400 flex-shrink-0"
+                        title="Remover audio"
+                      >
+                        {uploadingAudio ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <X className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500">
+                      Nenhum audio anexado.
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/webm"
+                      onChange={handleAudioUpload}
+                      className="hidden"
+                      id="audio-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingAudio}
+                      className="border-[#252542] text-gray-300 hover:bg-[#252542]"
+                    >
+                      {uploadingAudio ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Enviando...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="mr-2 h-4 w-4" />
+                          {currentAudioUrl ? 'Substituir Audio' : 'Enviar Audio'}
+                        </>
+                      )}
+                    </Button>
+                    <span className="text-xs text-gray-600">
+                      MP3, WAV, OGG, M4A, WebM (max 10MB)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center gap-3">
               <Switch
@@ -584,10 +772,10 @@ export default function AdminScriptsPage() {
       <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <DialogContent className="border-[#252542] bg-[#1A1A2E] text-white">
           <DialogHeader>
-            <DialogTitle className="text-white">Confirmar Exclusão</DialogTitle>
+            <DialogTitle className="text-white">Confirmar Exclusao</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-gray-400">
-            Tem certeza que deseja excluir este script? Esta ação não pode ser
+            Tem certeza que deseja excluir este script? Esta acao nao pode ser
             desfeita.
           </p>
           <div className="mt-4 flex justify-end gap-3">

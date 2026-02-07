@@ -12,6 +12,7 @@ import {
   Lightbulb,
   Webhook,
   Settings,
+  FlaskConical,
   LogOut,
   Menu,
   X,
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/admin/prompts', label: 'Prompts IA', icon: Bot },
   { href: '/admin/tips', label: 'Dicas', icon: Lightbulb },
   { href: '/admin/webhooks', label: 'Webhooks', icon: Webhook },
+  { href: '/admin/experiments', label: 'Experimentos', icon: FlaskConical },
   { href: '/admin/config', label: 'Configurações', icon: Settings },
 ];
 

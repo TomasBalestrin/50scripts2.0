@@ -40,6 +40,7 @@
     "tests",
     "playwright.config.ts",
     "vitest.config.ts",
-    "extension"
+    "extension",
+    "sentry.*.config.ts"
   ]
 }

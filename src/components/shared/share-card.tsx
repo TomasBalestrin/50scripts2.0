@@ -4,12 +4,14 @@ import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2, Share2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { QRCode } from '@/components/shared/qr-code';
 
 interface ShareCardProps {
   userName: string;
   saleValue: number;
   scriptTitle: string;
   referralCode?: string;
+  referralLink?: string;
   onExport?: () => void;
 }
 
@@ -18,6 +20,7 @@ export function ShareCard({
   saleValue,
   scriptTitle,
   referralCode,
+  referralLink,
   onExport,
 }: ShareCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -61,7 +64,7 @@ export function ShareCard({
         className="relative flex flex-col items-center justify-between overflow-hidden rounded-2xl"
         style={{
           width: 350,
-          height: 600,
+          minHeight: 600,
           background: 'linear-gradient(180deg, #1A1A2E 0%, #0F0F1A 100%)',
         }}
       >
@@ -130,25 +133,38 @@ export function ShareCard({
           </div>
         </div>
 
-        {/* Bottom referral code */}
+        {/* Bottom referral code + QR Code */}
         <div className="relative z-10 w-full px-6 pb-8">
           {referralCode && (
-            <div
-              className="rounded-xl border px-4 py-3 text-center"
-              style={{
-                borderColor: '#E94560',
-                backgroundColor: 'rgba(233, 69, 96, 0.08)',
-              }}
-            >
-              <p className="mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">
-                Use meu codigo
-              </p>
-              <p
-                className="text-lg font-bold tracking-widest"
-                style={{ color: '#E94560' }}
+            <div className="space-y-3">
+              <div
+                className="rounded-xl border px-4 py-3 text-center"
+                style={{
+                  borderColor: '#E94560',
+                  backgroundColor: 'rgba(233, 69, 96, 0.08)',
+                }}
               >
-                {referralCode}
-              </p>
+                <p className="mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">
+                  Use meu codigo
+                </p>
+                <p
+                  className="text-lg font-bold tracking-widest"
+                  style={{ color: '#E94560' }}
+                >
+                  {referralCode}
+                </p>
+              </div>
+
+              {/* QR Code for referral link */}
+              {referralLink && (
+                <div className="flex justify-center">
+                  <QRCode
+                    value={referralLink}
+                    size={100}
+                    className="rounded-lg"
+                  />
+                </div>
+              )}
             </div>
           )}
           {!referralCode && (

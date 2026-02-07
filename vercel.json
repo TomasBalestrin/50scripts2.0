@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/daily-challenges",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/streak-reset",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-digest",
+      "schedule": "0 9 * * 1"
+    }
+  ]
+}
