@@ -90,6 +90,10 @@ ${topScriptsContext}
 Gere o script pronto para uso, com variáveis {{NOME_LEAD}} e {{MEU_NOME}} onde apropriado.`;
 
   try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json({ error: 'ANTHROPIC_API_KEY não configurada no servidor' }, { status: 500 });
+    }
+
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const message = await anthropic.messages.create({
@@ -130,8 +134,11 @@ Gere o script pronto para uso, com variáveis {{NOME_LEAD}} e {{MEU_NOME}} onde 
         ? -1
         : profile.ai_credits_remaining - 1,
     });
-  } catch (error) {
-    console.error('AI generation error:', error);
-    return NextResponse.json({ error: 'Erro ao gerar script' }, { status: 500 });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('AI generation error:', err.message || error);
+    return NextResponse.json({
+      error: `Erro ao gerar script: ${err.message || 'erro desconhecido'}`,
+    }, { status: 500 });
   }
 }
