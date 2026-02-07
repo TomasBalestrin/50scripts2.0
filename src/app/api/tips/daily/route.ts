@@ -33,7 +33,9 @@ export async function GET() {
       .then(() => {});
 
     // Return tip object directly (dashboard expects { content, category })
-    return NextResponse.json(tip);
+    const response = NextResponse.json(tip);
+    response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
+    return response;
   } catch {
     return NextResponse.json(FALLBACK_TIP);
   }
