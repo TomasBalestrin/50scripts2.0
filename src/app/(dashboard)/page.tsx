@@ -213,32 +213,26 @@ export default function DashboardPage() {
   const userPlan = profile?.plan || dashboardData?.profile?.plan || 'starter';
   const isPro = PLAN_HIERARCHY[userPlan as keyof typeof PLAN_HIERARCHY] >= PLAN_HIERARCHY.pro;
 
-  // Fetch basic data for all users
+  // Fetch ALL basic data in a single API call (replaces 3 separate calls)
   useEffect(() => {
     async function fetchBasicData() {
       try {
-        const [dashRes, tipRes, recRes] = await Promise.allSettled([
-          fetch('/api/dashboard/basic'),
-          fetch('/api/tips/daily'),
-          fetch('/api/scripts/recommendations'),
-        ]);
-
-        if (dashRes.status === 'fulfilled' && dashRes.value.ok) {
-          const data = await dashRes.value.json();
-          setDashboardData(data);
-        }
-
-        if (tipRes.status === 'fulfilled' && tipRes.value.ok) {
-          const data = await tipRes.value.json();
-          setTip(data);
-        }
-
-        if (recRes.status === 'fulfilled' && recRes.value.ok) {
-          const data = await recRes.value.json();
-          setRecommendations(Array.isArray(data) ? data : data.scripts ?? []);
+        const res = await fetch('/api/dashboard/all');
+        if (res.ok) {
+          const data = await res.json();
+          setDashboardData({
+            profile: data.profile,
+            stats: data.stats,
+            trails: data.trails,
+          });
+          if (data.tip) {
+            setTip(data.tip);
+          }
+          const scripts = data.recommendations?.scripts ?? [];
+          setRecommendations(Array.isArray(scripts) ? scripts : []);
         }
       } catch (err) {
-        console.error('Error fetching basic dashboard data:', err);
+        console.error('Error fetching dashboard data:', err);
       } finally {
         setLoading(false);
       }

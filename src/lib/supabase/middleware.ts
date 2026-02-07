@@ -47,40 +47,60 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Check if password changed - redirect to change-password if not
-  // Only redirect page routes, not API calls
+  // Only check profile for page routes, not API calls
   const isApiRoute = pathname.startsWith('/api/');
 
   if (user && !isApiRoute && pathname !== '/change-password' && pathname !== '/login') {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('password_changed, onboarding_completed, role, plan')
-      .eq('id', user.id)
-      .single();
+    const isAdminRoute = pathname.startsWith('/admin');
 
-    if (profile) {
-      if (!profile.password_changed && pathname !== '/change-password') {
-        const url = request.nextUrl.clone();
-        url.pathname = '/change-password';
-        return NextResponse.redirect(url);
-      }
+    // OPTIMIZATION: Once password_changed + onboarding_completed are both true,
+    // we store user.id in a cookie to skip the profiles query on future navigations.
+    // This saves ~50-100ms per page load for the common case.
+    const setupCookie = request.cookies.get('_setup_done')?.value;
+    const setupDone = setupCookie === user.id;
 
-      if (
-        profile.password_changed &&
-        !profile.onboarding_completed &&
-        pathname !== '/onboarding' &&
-        pathname !== '/change-password'
-      ) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/onboarding';
-        return NextResponse.redirect(url);
-      }
+    // Skip profile query when setup is done AND not an admin route
+    if (!setupDone || isAdminRoute) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('password_changed, onboarding_completed, role, plan')
+        .eq('id', user.id)
+        .single();
 
-      // Admin route protection
-      if (pathname.startsWith('/admin') && profile.role !== 'admin') {
-        const url = request.nextUrl.clone();
-        url.pathname = '/';
-        return NextResponse.redirect(url);
+      if (profile) {
+        if (!profile.password_changed && pathname !== '/change-password') {
+          const url = request.nextUrl.clone();
+          url.pathname = '/change-password';
+          return NextResponse.redirect(url);
+        }
+
+        if (
+          profile.password_changed &&
+          !profile.onboarding_completed &&
+          pathname !== '/onboarding' &&
+          pathname !== '/change-password'
+        ) {
+          const url = request.nextUrl.clone();
+          url.pathname = '/onboarding';
+          return NextResponse.redirect(url);
+        }
+
+        // Admin route protection
+        if (isAdminRoute && profile.role !== 'admin') {
+          const url = request.nextUrl.clone();
+          url.pathname = '/';
+          return NextResponse.redirect(url);
+        }
+
+        // Cache setup completion to skip future profile queries
+        if (profile.password_changed && profile.onboarding_completed && !setupDone) {
+          supabaseResponse.cookies.set('_setup_done', user.id, {
+            maxAge: 86400 * 7, // 7 days
+            httpOnly: true,
+            sameSite: 'lax' as const,
+            path: '/',
+          });
+        }
       }
     }
   }
