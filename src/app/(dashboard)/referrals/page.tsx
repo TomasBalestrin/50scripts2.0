@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Gift, Copy, Check, Users, Trophy, Sparkles, ExternalLink } from 'lucide-react';
+import { QRCode } from '@/components/shared/qr-code';
 
 interface ReferralData {
   referral_code: string;
@@ -20,22 +21,27 @@ interface ReferralData {
 }
 
 const REWARD_TIERS = [
-  { count: 1, label: '3 créditos IA', icon: Sparkles, color: '#3B82F6' },
-  { count: 3, label: '1 mês Pro grátis', icon: Trophy, color: '#8B5CF6' },
-  { count: 10, label: '1 mês Premium grátis', icon: Gift, color: '#F59E0B' },
+  { count: 1, label: '3 creditos IA', icon: Sparkles, color: '#3B82F6' },
+  { count: 3, label: '1 mes Pro gratis', icon: Trophy, color: '#8B5CF6' },
+  { count: 10, label: '1 mes Premium gratis', icon: Gift, color: '#F59E0B' },
 ];
 
 export default function ReferralsPage() {
   const [data, setData] = useState<ReferralData | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [referralLink, setReferralLink] = useState('');
 
   useEffect(() => {
     async function load() {
       try {
         const res = await fetch('/api/referrals');
         if (res.ok) {
-          setData(await res.json());
+          const json = await res.json();
+          setData(json);
+          if (json.referral_code) {
+            setReferralLink(`${window.location.origin}?ref=${json.referral_code}`);
+          }
         }
       } catch {
         // ignore
@@ -76,49 +82,68 @@ export default function ReferralsPage() {
     <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold text-white flex items-center gap-2">
         <Gift className="w-6 h-6 text-[#E94560]" />
-        Programa de Indicação
+        Programa de Indicacao
       </h1>
 
-      {/* Referral Link */}
+      {/* Referral Link + QR Code */}
       <Card className="bg-gradient-to-br from-[#1A1A2E] to-[#0F3460]/30 border-[#252542]">
         <CardContent className="pt-6">
-          <p className="text-sm text-gray-400 mb-3">Seu link de indicação</p>
-          <div className="flex items-center gap-2 mb-4">
-            <code className="flex-1 bg-[#0F0F1A] p-3 rounded-lg text-[#E94560] font-mono text-sm truncate">
-              {`${typeof window !== 'undefined' ? window.location.origin : ''}?ref=${data.referral_code}`}
-            </code>
-            <Button
-              onClick={handleCopyLink}
-              className="bg-[#E94560] hover:bg-[#d63d56] text-white flex-shrink-0"
-            >
-              {copied ? (
-                <><Check className="w-4 h-4 mr-1" /> Copiado!</>
-              ) : (
-                <><Copy className="w-4 h-4 mr-1" /> Copiar</>
-              )}
-            </Button>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyCode}
-              className="border-[#363660] text-gray-300 hover:bg-[#252542]"
-            >
-              Código: {data.referral_code}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-[#363660] text-gray-300 hover:bg-[#252542]"
-              onClick={() => {
-                const text = `Conheça o 50 Scripts 2.0! Use meu código ${data.referral_code} para começar: ${window.location.origin}?ref=${data.referral_code}`;
-                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-              }}
-            >
-              <ExternalLink className="w-3 h-3 mr-1" />
-              Compartilhar WhatsApp
-            </Button>
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Link section */}
+            <div className="flex-1">
+              <p className="text-sm text-gray-400 mb-3">Seu link de indicacao</p>
+              <div className="flex items-center gap-2 mb-4">
+                <code className="flex-1 bg-[#0F0F1A] p-3 rounded-lg text-[#E94560] font-mono text-sm truncate">
+                  {referralLink || `${typeof window !== 'undefined' ? window.location.origin : ''}?ref=${data.referral_code}`}
+                </code>
+                <Button
+                  onClick={handleCopyLink}
+                  className="bg-[#E94560] hover:bg-[#d63d56] text-white flex-shrink-0"
+                >
+                  {copied ? (
+                    <><Check className="w-4 h-4 mr-1" /> Copiado!</>
+                  ) : (
+                    <><Copy className="w-4 h-4 mr-1" /> Copiar</>
+                  )}
+                </Button>
+              </div>
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyCode}
+                  className="border-[#363660] text-gray-300 hover:bg-[#252542]"
+                >
+                  Codigo: {data.referral_code}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-[#363660] text-gray-300 hover:bg-[#252542]"
+                  onClick={() => {
+                    const text = `Conheca o 50 Scripts 2.0! Use meu codigo ${data.referral_code} para comecar: ${window.location.origin}?ref=${data.referral_code}`;
+                    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                  }}
+                >
+                  <ExternalLink className="w-3 h-3 mr-1" />
+                  Compartilhar WhatsApp
+                </Button>
+              </div>
+            </div>
+
+            {/* QR Code section */}
+            {referralLink && (
+              <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                <QRCode
+                  value={referralLink}
+                  size={140}
+                  className="rounded-lg shadow-lg"
+                />
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+                  Escaneie para indicar
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -129,7 +154,7 @@ export default function ReferralsPage() {
           <CardContent className="pt-4 text-center">
             <Users className="w-5 h-5 mx-auto mb-1 text-blue-500" />
             <p className="text-2xl font-bold text-white">{data.stats.total}</p>
-            <p className="text-xs text-gray-400">Indicações</p>
+            <p className="text-xs text-gray-400">Indicacoes</p>
           </CardContent>
         </Card>
         <Card className="bg-[#1A1A2E] border-[#252542]">
@@ -181,7 +206,7 @@ export default function ReferralsPage() {
                       {tier.label}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {tier.count} {tier.count === 1 ? 'indicação' : 'indicações'}
+                      {tier.count} {tier.count === 1 ? 'indicacao' : 'indicacoes'}
                     </p>
                   </div>
                   {unlocked && (
@@ -201,7 +226,7 @@ export default function ReferralsPage() {
       {data.referrals.length > 0 && (
         <Card className="bg-[#1A1A2E] border-[#252542]">
           <CardHeader>
-            <CardTitle className="text-white text-lg">Suas Indicações</CardTitle>
+            <CardTitle className="text-white text-lg">Suas Indicacoes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -212,7 +237,7 @@ export default function ReferralsPage() {
                 >
                   <div>
                     <p className="text-sm text-white">
-                      {ref.referred?.full_name || ref.referred?.email || 'Usuário'}
+                      {ref.referred?.full_name || ref.referred?.email || 'Usuario'}
                     </p>
                     <p className="text-xs text-gray-400">
                       {new Date(ref.created_at).toLocaleDateString('pt-BR')}

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
 
 export const metadata: Metadata = {
   title: "50 Scripts 2.0",
@@ -28,6 +29,7 @@ export default function RootLayout({
     <html lang="pt-BR" className="dark">
       <body className="font-sans bg-[#0F0F1A] text-white antialiased">
         {children}
+        <AnalyticsProvider />
       </body>
     </html>
   );

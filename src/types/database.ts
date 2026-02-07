@@ -93,6 +93,12 @@ export interface ScriptUsage {
   feedback_note: string | null;
 }
 
+export interface ConversationSnippet {
+  timestamp: string;
+  snippet_text: string;
+  speaker: 'user' | 'lead';
+}
+
 export interface Lead {
   id: string;
   user_id: string;
@@ -100,7 +106,7 @@ export interface Lead {
   phone: string | null;
   stage: LeadStage;
   expected_value: number | null;
-  conversation_history: Array<{ date: string; text: string }>;
+  conversation_history: ConversationSnippet[];
   notes: string | null;
   last_contact_at: string | null;
   next_followup_at: string | null;

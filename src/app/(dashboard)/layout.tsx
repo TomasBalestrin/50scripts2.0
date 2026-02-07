@@ -30,7 +30,7 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen bg-[#0F0F1A]">
       {/* Desktop sidebar */}
-      <Sidebar plan={plan} userName={userName} userAvatar={null} />
+      <Sidebar plan={plan} role={role} userName={userName} userAvatar={null} />
 
       {/* Main content area */}
       <div className="flex flex-col lg:pl-64">
