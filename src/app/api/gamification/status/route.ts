@@ -9,30 +9,35 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('xp_points, level, current_streak, longest_streak')
-    .eq('id', user.id)
-    .single();
+  // Run ALL 4 queries in parallel (was sequential before)
+  const [profileRes, badgesRes, usageRes, salesRes] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('xp_points, level, current_streak, longest_streak')
+      .eq('id', user.id)
+      .single(),
+    supabase
+      .from('user_badges')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('earned_at', { ascending: false }),
+    supabase
+      .from('script_usage')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id),
+    supabase
+      .from('script_usage')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('resulted_in_sale', true),
+  ]);
 
-  const { data: badges } = await supabase
-    .from('user_badges')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('earned_at', { ascending: false });
+  const profile = profileRes.data;
+  const badges = badgesRes.data;
+  const totalUsage = usageRes.count;
+  const totalSales = salesRes.count;
 
-  const { count: totalUsage } = await supabase
-    .from('script_usage')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id);
-
-  const { count: totalSales } = await supabase
-    .from('script_usage')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .eq('resulted_in_sale', true);
-
-  return NextResponse.json({
+  const response = NextResponse.json({
     xp_points: profile?.xp_points || 0,
     level: profile?.level || 'iniciante',
     current_streak: profile?.current_streak || 0,
@@ -43,4 +48,7 @@ export async function GET() {
       total_sales: totalSales || 0,
     },
   });
+
+  response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+  return response;
 }

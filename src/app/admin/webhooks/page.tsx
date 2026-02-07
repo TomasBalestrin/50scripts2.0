@@ -91,7 +91,7 @@ export default function AdminWebhooksPage() {
         .from('webhook_logs')
         .select('source')
         .limit(100);
-      const unique = [...new Set((data ?? []).map((d) => d.source))];
+      const unique = [...new Set((data ?? []).map((d: { source: string }) => d.source))] as string[];
       setSources(unique);
     }
     fetchSources();
