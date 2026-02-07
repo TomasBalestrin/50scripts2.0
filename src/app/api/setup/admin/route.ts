@@ -93,14 +93,22 @@ export async function POST(request: NextRequest) {
       email_confirm: true,
     });
 
-    if (authError || !authData.user) {
-      return NextResponse.json(
-        { error: 'Failed to create auth user', details: authError?.message },
-        { status: 500 }
-      );
-    }
+    let userId: string;
 
-    const userId = authData.user.id;
+    if (authError || !authData.user) {
+      // Auth user may already exist without a profile – look them up
+      const { data: existingUsers } = await supabase.auth.admin.listUsers();
+      const found = existingUsers?.users?.find((u) => u.email === email);
+      if (!found) {
+        return NextResponse.json(
+          { error: 'Failed to create auth user', details: authError?.message },
+          { status: 500 }
+        );
+      }
+      userId = found.id;
+    } else {
+      userId = authData.user.id;
+    }
     const referralCode = crypto.randomBytes(4).toString('hex').toUpperCase();
 
     // Create profile as admin with copilot plan (highest tier)
