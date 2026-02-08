@@ -112,7 +112,8 @@ export default function AdminExperimentsPage() {
       }
 
       // 4. Build experiment rows
-      const rows: ExperimentRow[] = flags.map((flag) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rows: ExperimentRow[] = flags.map((flag: any) => {
         const counts = countMap.get(flag.id) || { control: 0, treatment: 0 };
         return {
           flag,
@@ -125,7 +126,8 @@ export default function AdminExperimentsPage() {
 
       // Initialize editing percentages
       const percentages: Record<string, number> = {};
-      flags.forEach((f) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      flags.forEach((f: any) => {
         percentages[f.id] = f.rollout_percentage;
       });
       setEditingPercentage(percentages);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { Profile } from '@/types/database';
@@ -18,22 +18,28 @@ export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const initialized = useRef(false);
 
+  // Stable reference - createClient() returns singleton
   const supabase = createClient();
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, full_name, email, plan, role, niche, password_changed, onboarding_completed')
       .eq('id', userId)
       .single();
 
     if (!error && data) {
       setProfile(data as Profile);
     }
-  }, [supabase]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    // Prevent double-initialization in StrictMode
+    if (initialized.current) return;
+    initialized.current = true;
+
     const getUser = async () => {
       try {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -53,7 +59,7 @@ export function useAuth(): UseAuthReturn {
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event: string, session: { user: User | null } | null) => {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
@@ -70,7 +76,7 @@ export function useAuth(): UseAuthReturn {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase, fetchProfile]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const signIn = useCallback(async (email: string, password: string): Promise<{ error: string | null }> => {
     try {
@@ -87,13 +93,13 @@ export function useAuth(): UseAuthReturn {
     } catch {
       return { error: 'Erro inesperado ao fazer login' };
     }
-  }, [supabase]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
-  }, [supabase]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const changePassword = useCallback(async (newPassword: string): Promise<{ error: string | null }> => {
     try {
@@ -109,7 +115,7 @@ export function useAuth(): UseAuthReturn {
     } catch {
       return { error: 'Erro inesperado ao alterar senha' };
     }
-  }, [supabase]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     user,

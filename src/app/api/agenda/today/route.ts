@@ -28,36 +28,44 @@ export async function GET() {
 
   // Generate agenda if none exists
   if (!agenda || agenda.length === 0) {
-    const items = [];
+    // Load ALL categories and top scripts in 2 parallel queries (replaces 8 sequential queries)
+    const categorySlugs = TIME_BLOCKS.map(b => b.category);
 
-    for (const block of TIME_BLOCKS) {
-      // Get top script from suggested category
-      const { data: category } = await supabase
+    const [categoriesRes, scriptsRes] = await Promise.all([
+      supabase
         .from('script_categories')
-        .select('id')
-        .eq('slug', block.category)
-        .single();
+        .select('id, slug')
+        .in('slug', categorySlugs),
+      supabase
+        .from('scripts')
+        .select('id, category_id, global_effectiveness')
+        .eq('is_active', true)
+        .order('global_effectiveness', { ascending: false }),
+    ]);
 
-      let scriptId = null;
-      if (category) {
-        const { data: scripts } = await supabase
-          .from('scripts')
-          .select('id')
-          .eq('category_id', category.id)
-          .eq('is_active', true)
-          .order('global_effectiveness', { ascending: false })
-          .limit(1);
-        scriptId = scripts?.[0]?.id || null;
+    const categories = categoriesRes.data ?? [];
+    const scripts = scriptsRes.data ?? [];
+
+    // Build lookup maps in memory
+    const categoryBySlug = new Map(categories.map(c => [c.slug, c.id]));
+    const topScriptByCategory = new Map<string, string>();
+    for (const s of scripts) {
+      if (!topScriptByCategory.has(s.category_id)) {
+        topScriptByCategory.set(s.category_id, s.id);
       }
+    }
 
-      items.push({
+    const items = TIME_BLOCKS.map(block => {
+      const catId = categoryBySlug.get(block.category);
+      const scriptId = catId ? topScriptByCategory.get(catId) ?? null : null;
+      return {
         user_id: user.id,
         agenda_date: today,
         time_block: block.block,
         action_type: block.action,
         suggested_script_id: scriptId,
-      });
-    }
+      };
+    });
 
     await supabase.from('sales_agenda').insert(items);
 
@@ -72,11 +80,14 @@ export async function GET() {
     agenda = newAgenda;
   }
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     date: today,
     blocks: TIME_BLOCKS.map((block) => ({
       ...block,
       item: agenda?.find((a) => a.time_block === block.block) || null,
     })),
   });
+
+  response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+  return response;
 }

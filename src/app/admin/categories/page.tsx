@@ -69,7 +69,7 @@ export default function AdminCategoriesPage() {
 
       // Get script counts for each category
       const categoriesWithCount = await Promise.all(
-        (data ?? []).map(async (cat) => {
+        (data ?? []).map(async (cat: Record<string, unknown>) => {
           const { count } = await supabase
             .from('scripts')
             .select('*', { count: 'exact', head: true })

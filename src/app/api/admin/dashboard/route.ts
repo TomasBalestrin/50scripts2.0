@@ -13,16 +13,34 @@ export async function GET() {
     const { error, supabase } = await getAdminUser();
     if (error) return error;
 
-    // ---- Total users by plan ----
-    const { data: allProfiles } = await supabase
-      .from('profiles')
-      .select('plan, is_active, created_at, last_login_at');
+    // Run ALL independent queries in parallel (was sequential before)
+    const [profilesRes, topScriptsRes, aiLogsRes, webhooksRes] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('plan, is_active, created_at, last_login_at'),
+      supabase
+        .from('scripts')
+        .select(`
+          id, title, category_id, global_usage_count, global_effectiveness,
+          script_categories ( name )
+        `)
+        .order('global_usage_count', { ascending: false })
+        .limit(10),
+      supabase
+        .from('ai_generation_logs')
+        .select('tokens_used'),
+      supabase
+        .from('webhook_logs')
+        .select('id, source, event_type, email_extracted, error_message, processed_at')
+        .order('processed_at', { ascending: false })
+        .limit(10),
+    ]);
 
+    const allProfiles = profilesRes.data ?? [];
+
+    // ---- Compute everything from profiles in memory (zero extra DB calls) ----
     const totalUsersByPlan: Record<string, number> = {
-      starter: 0,
-      pro: 0,
-      premium: 0,
-      copilot: 0,
+      starter: 0, pro: 0, premium: 0, copilot: 0,
     };
     let activeCount = 0;
     const now = new Date();
@@ -39,7 +57,7 @@ export async function GET() {
       monthlyGrowth[key] = 0;
     }
 
-    for (const p of allProfiles ?? []) {
+    for (const p of allProfiles) {
       const plan = p.plan as string;
       if (plan in totalUsersByPlan) {
         totalUsersByPlan[plan]++;
@@ -61,7 +79,7 @@ export async function GET() {
       }
     }
 
-    const totalUsers = (allProfiles ?? []).length;
+    const totalUsers = allProfiles.length;
 
     // ---- MRR ----
     const mrr =
@@ -84,7 +102,7 @@ export async function GET() {
       const key = d.toISOString().split('T')[0];
       growthMap[key] = 0;
     }
-    for (const p of allProfiles ?? []) {
+    for (const p of allProfiles) {
       if (p.created_at) {
         const key = p.created_at.split('T')[0];
         if (key in growthMap) {
@@ -103,47 +121,32 @@ export async function GET() {
       value: count,
     }));
 
-    // ---- MRR trend (last 6 months) ----
+    // ---- MRR trend (last 6 months) - computed from existing data, NO extra queries ----
     const mrrTrend: { date: string; mrr: number }[] = [];
     for (let i = 5; i >= 0; i--) {
       const d = new Date();
       d.setMonth(d.getMonth() - i);
-      const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
       const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+      const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
-      const { data: monthProfiles } = await supabase
-        .from('profiles')
-        .select('plan')
-        .lte('created_at', monthEnd.toISOString());
-
+      // Count users by plan that existed by this month's end
       let monthMrr = 0;
-      for (const p of monthProfiles ?? []) {
-        const plan = p.plan as string;
-        if (plan in PLAN_PRICES) {
-          monthMrr += PLAN_PRICES[plan];
+      for (const p of allProfiles) {
+        if (p.created_at && new Date(p.created_at) <= monthEnd) {
+          const plan = p.plan as string;
+          if (plan in PLAN_PRICES) {
+            monthMrr += PLAN_PRICES[plan];
+          }
         }
       }
       mrrTrend.push({
-        date: `${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, '0')}`,
+        date: monthKey,
         mrr: Math.round(monthMrr * 100) / 100,
       });
     }
 
-    // ---- Top scripts ----
-    const { data: topScriptsRaw } = await supabase
-      .from('scripts')
-      .select(`
-        id,
-        title,
-        category_id,
-        global_usage_count,
-        global_effectiveness,
-        script_categories ( name )
-      `)
-      .order('global_usage_count', { ascending: false })
-      .limit(10);
-
-    const topScripts = (topScriptsRaw ?? []).map((s) => {
+    // ---- Top scripts (from parallel query) ----
+    const topScripts = (topScriptsRes.data ?? []).map((s) => {
       const cats = s.script_categories as unknown;
       const category =
         Array.isArray(cats) && cats.length > 0
@@ -160,13 +163,10 @@ export async function GET() {
       };
     });
 
-    // ---- AI consumption ----
-    const { data: aiLogs } = await supabase
-      .from('ai_generation_logs')
-      .select('tokens_used');
-
-    const totalGenerations = aiLogs?.length ?? 0;
-    const totalTokens = (aiLogs ?? []).reduce(
+    // ---- AI consumption (from parallel query) ----
+    const aiLogs = aiLogsRes.data ?? [];
+    const totalGenerations = aiLogs.length;
+    const totalTokens = aiLogs.reduce(
       (sum, l) => sum + (l.tokens_used ?? 0),
       0
     );
@@ -179,14 +179,10 @@ export async function GET() {
       estimated_cost: estimatedCost,
     };
 
-    // ---- Recent webhooks ----
-    const { data: recentWebhooks } = await supabase
-      .from('webhook_logs')
-      .select('id, source, event_type, email_extracted, error_message, processed_at')
-      .order('processed_at', { ascending: false })
-      .limit(10);
+    // ---- Recent webhooks (from parallel query) ----
+    const recentWebhooks = webhooksRes.data ?? [];
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       total_users: totalUsers,
       total_users_by_plan: totalUsersByPlan,
       active_count: activeCount,
@@ -200,7 +196,7 @@ export async function GET() {
       mrr_trend: mrrTrend,
       top_scripts: topScripts,
       ai_consumption: aiConsumption,
-      recent_webhooks: (recentWebhooks ?? []).map((w) => ({
+      recent_webhooks: recentWebhooks.map((w) => ({
         id: w.id,
         source: w.source,
         event_type: w.event_type,
@@ -210,6 +206,9 @@ export async function GET() {
         processed_at: w.processed_at,
       })),
     });
+
+    response.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=60');
+    return response;
   } catch (err) {
     console.error('[admin/dashboard] Unexpected error:', err);
     return NextResponse.json(
