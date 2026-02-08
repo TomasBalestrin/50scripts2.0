@@ -82,7 +82,7 @@ export function NotificationSettings() {
 
   if (loading) {
     return (
-      <Card className="bg-[#1A1A2E] border-[#252542]">
+      <Card className="bg-[#0F1D32] border-[#1A3050]">
         <CardContent className="pt-6 flex justify-center">
           <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
         </CardContent>
@@ -91,16 +91,16 @@ export function NotificationSettings() {
   }
 
   return (
-    <Card className="bg-[#1A1A2E] border-[#252542]">
+    <Card className="bg-[#0F1D32] border-[#1A3050]">
       <CardHeader>
         <CardTitle className="text-white text-lg flex items-center gap-2">
-          <Bell className="w-5 h-5 text-[#E94560]" />
+          <Bell className="w-5 h-5 text-[#C9A84C]" />
           Notificações Push
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Master toggle */}
-        <div className="flex items-center justify-between p-3 bg-[#252542] rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-[#1A3050] rounded-lg">
           <div className="flex items-center gap-3">
             {subscribed ? (
               <Bell className="w-5 h-5 text-green-500" />
@@ -126,7 +126,7 @@ export function NotificationSettings() {
             className={
               subscribed
                 ? 'border-[#363660] text-gray-400 hover:bg-[#363660]'
-                : 'bg-[#E94560] hover:bg-[#d63d56] text-white'
+                : 'bg-[#C9A84C] hover:bg-[#d63d56] text-white'
             }
           >
             {toggling ? (

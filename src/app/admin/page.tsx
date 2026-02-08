@@ -92,7 +92,7 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#E94560]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#C9A84C]" />
       </div>
     );
   }
@@ -140,7 +140,7 @@ export default function AdminDashboardPage() {
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* User Growth */}
-        <Card className="border-[#252542] bg-[#1A1A2E]">
+        <Card className="border-[#1A3050] bg-[#0F1D32]">
           <CardHeader>
             <CardTitle className="text-base text-white">Crescimento de Usuários (30 dias)</CardTitle>
           </CardHeader>
@@ -148,7 +148,7 @@ export default function AdminDashboardPage() {
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data.user_growth}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#252542" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3050" />
                   <XAxis
                     dataKey="date"
                     stroke="#6B7280"
@@ -158,8 +158,8 @@ export default function AdminDashboardPage() {
                   <YAxis stroke="#6B7280" tick={{ fill: '#9CA3AF', fontSize: 11 }} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#1A1A2E',
-                      border: '1px solid #252542',
+                      backgroundColor: '#0F1D32',
+                      border: '1px solid #1A3050',
                       borderRadius: 8,
                       color: '#fff',
                     }}
@@ -167,7 +167,7 @@ export default function AdminDashboardPage() {
                   <Line
                     type="monotone"
                     dataKey="count"
-                    stroke="#E94560"
+                    stroke="#C9A84C"
                     strokeWidth={2}
                     dot={false}
                     name="Novos usuários"
@@ -179,7 +179,7 @@ export default function AdminDashboardPage() {
         </Card>
 
         {/* Users by Plan */}
-        <Card className="border-[#252542] bg-[#1A1A2E]">
+        <Card className="border-[#1A3050] bg-[#0F1D32]">
           <CardHeader>
             <CardTitle className="text-base text-white">Usuários por Plano</CardTitle>
           </CardHeader>
@@ -208,8 +208,8 @@ export default function AdminDashboardPage() {
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#1A1A2E',
-                      border: '1px solid #252542',
+                      backgroundColor: '#0F1D32',
+                      border: '1px solid #1A3050',
                       borderRadius: 8,
                       color: '#fff',
                     }}
@@ -226,7 +226,7 @@ export default function AdminDashboardPage() {
         </Card>
 
         {/* MRR Trend */}
-        <Card className="border-[#252542] bg-[#1A1A2E] lg:col-span-2">
+        <Card className="border-[#1A3050] bg-[#0F1D32] lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base text-white">Tendência MRR (6 meses)</CardTitle>
           </CardHeader>
@@ -234,7 +234,7 @@ export default function AdminDashboardPage() {
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data.mrr_trend}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#252542" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1A3050" />
                   <XAxis
                     dataKey="date"
                     stroke="#6B7280"
@@ -243,8 +243,8 @@ export default function AdminDashboardPage() {
                   <YAxis stroke="#6B7280" tick={{ fill: '#9CA3AF', fontSize: 11 }} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#1A1A2E',
-                      border: '1px solid #252542',
+                      backgroundColor: '#0F1D32',
+                      border: '1px solid #1A3050',
                       borderRadius: 8,
                       color: '#fff',
                     }}
@@ -255,14 +255,14 @@ export default function AdminDashboardPage() {
                   />
                   <defs>
                     <linearGradient id="mrrGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#E94560" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#E94560" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#C9A84C" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#C9A84C" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <Area
                     type="monotone"
                     dataKey="mrr"
-                    stroke="#E94560"
+                    stroke="#C9A84C"
                     strokeWidth={2}
                     fill="url(#mrrGradient)"
                     name="MRR"
@@ -275,7 +275,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Top Scripts Table */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardHeader>
           <CardTitle className="text-base text-white">Top 10 Scripts por Uso</CardTitle>
         </CardHeader>
@@ -283,7 +283,7 @@ export default function AdminDashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#252542] text-left text-gray-400">
+                <tr className="border-b border-[#1A3050] text-left text-gray-400">
                   <th className="pb-3 pr-4">#</th>
                   <th className="pb-3 pr-4">Título</th>
                   <th className="pb-3 pr-4">Categoria</th>
@@ -295,7 +295,7 @@ export default function AdminDashboardPage() {
                 {data.top_scripts.map((script, i) => (
                   <tr
                     key={script.id}
-                    className="border-b border-[#252542]/50 text-white"
+                    className="border-b border-[#1A3050]/50 text-white"
                   >
                     <td className="py-2.5 pr-4 text-gray-500">{i + 1}</td>
                     <td className="py-2.5 pr-4 font-medium">{script.title}</td>
@@ -326,28 +326,28 @@ export default function AdminDashboardPage() {
       {/* Bottom row: AI Consumption + Recent Webhooks */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* AI Consumption */}
-        <Card className="border-[#252542] bg-[#1A1A2E]">
+        <Card className="border-[#1A3050] bg-[#0F1D32]">
           <CardHeader>
             <CardTitle className="text-base text-white">Consumo de IA</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-4">
-              <div className="rounded-lg bg-[#252542] p-4 text-center">
-                <Bot className="mx-auto mb-2 h-6 w-6 text-[#E94560]" />
+              <div className="rounded-lg bg-[#1A3050] p-4 text-center">
+                <Bot className="mx-auto mb-2 h-6 w-6 text-[#C9A84C]" />
                 <p className="text-2xl font-bold text-white">
                   {data.ai_consumption.total_generations}
                 </p>
                 <p className="text-xs text-gray-400">Gerações</p>
               </div>
-              <div className="rounded-lg bg-[#252542] p-4 text-center">
-                <Zap className="mx-auto mb-2 h-6 w-6 text-[#E94560]" />
+              <div className="rounded-lg bg-[#1A3050] p-4 text-center">
+                <Zap className="mx-auto mb-2 h-6 w-6 text-[#C9A84C]" />
                 <p className="text-2xl font-bold text-white">
                   {data.ai_consumption.total_tokens.toLocaleString('pt-BR')}
                 </p>
                 <p className="text-xs text-gray-400">Tokens</p>
               </div>
-              <div className="rounded-lg bg-[#252542] p-4 text-center">
-                <Coins className="mx-auto mb-2 h-6 w-6 text-[#E94560]" />
+              <div className="rounded-lg bg-[#1A3050] p-4 text-center">
+                <Coins className="mx-auto mb-2 h-6 w-6 text-[#C9A84C]" />
                 <p className="text-2xl font-bold text-white">
                   ${data.ai_consumption.estimated_cost.toFixed(2)}
                 </p>
@@ -358,7 +358,7 @@ export default function AdminDashboardPage() {
         </Card>
 
         {/* Recent Webhooks */}
-        <Card className="border-[#252542] bg-[#1A1A2E]">
+        <Card className="border-[#1A3050] bg-[#0F1D32]">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base text-white">
               Webhooks Recentes
@@ -370,7 +370,7 @@ export default function AdminDashboardPage() {
               {data.recent_webhooks.map((wh) => (
                 <div
                   key={wh.id}
-                  className="flex items-center justify-between rounded-lg bg-[#252542] px-3 py-2"
+                  className="flex items-center justify-between rounded-lg bg-[#1A3050] px-3 py-2"
                 >
                   <div className="flex items-center gap-3">
                     <Badge
@@ -424,7 +424,7 @@ function MetricCard({
   icon: React.ReactNode;
 }) {
   return (
-    <Card className="border-[#252542] bg-[#1A1A2E]">
+    <Card className="border-[#1A3050] bg-[#0F1D32]">
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
@@ -434,7 +434,7 @@ function MetricCard({
             <p className="text-2xl font-bold text-white">{value}</p>
             <p className="text-xs text-gray-500">{subtitle}</p>
           </div>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#E94560]/10 text-[#E94560]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#C9A84C]/10 text-[#C9A84C]">
             {icon}
           </div>
         </div>

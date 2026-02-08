@@ -114,7 +114,7 @@ export function StreakCounter({ current, longest }: StreakCounterProps) {
       </p>
 
       {/* Longest streak */}
-      <p className="text-[10px] text-[#94A3B8]">
+      <p className="text-[10px] text-[#8BA5BD]">
         Recorde: {longest} {longest === 1 ? 'dia' : 'dias'}
       </p>
     </div>

@@ -70,7 +70,7 @@ export default function ReferralsPage() {
     return (
       <div className="p-4 md:p-6 space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-40 bg-[#1A1A2E] rounded-xl animate-pulse" />
+          <div key={i} className="h-40 bg-[#0F1D32] rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -81,24 +81,24 @@ export default function ReferralsPage() {
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-        <Gift className="w-6 h-6 text-[#E94560]" />
+        <Gift className="w-6 h-6 text-[#C9A84C]" />
         Programa de Indicacao
       </h1>
 
       {/* Referral Link + QR Code */}
-      <Card className="bg-gradient-to-br from-[#1A1A2E] to-[#0F3460]/30 border-[#252542]">
+      <Card className="bg-gradient-to-br from-[#0F1D32] to-[#4A90D9]/30 border-[#1A3050]">
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Link section */}
             <div className="flex-1">
               <p className="text-sm text-gray-400 mb-3">Seu link de indicacao</p>
               <div className="flex items-center gap-2 mb-4">
-                <code className="flex-1 bg-[#0F0F1A] p-3 rounded-lg text-[#E94560] font-mono text-sm truncate">
+                <code className="flex-1 bg-[#0A1628] p-3 rounded-lg text-[#C9A84C] font-mono text-sm truncate">
                   {referralLink || `${typeof window !== 'undefined' ? window.location.origin : ''}?ref=${data.referral_code}`}
                 </code>
                 <Button
                   onClick={handleCopyLink}
-                  className="bg-[#E94560] hover:bg-[#d63d56] text-white flex-shrink-0"
+                  className="bg-[#C9A84C] hover:bg-[#d63d56] text-white flex-shrink-0"
                 >
                   {copied ? (
                     <><Check className="w-4 h-4 mr-1" /> Copiado!</>
@@ -112,14 +112,14 @@ export default function ReferralsPage() {
                   variant="outline"
                   size="sm"
                   onClick={handleCopyCode}
-                  className="border-[#363660] text-gray-300 hover:bg-[#252542]"
+                  className="border-[#363660] text-gray-300 hover:bg-[#1A3050]"
                 >
                   Codigo: {data.referral_code}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-[#363660] text-gray-300 hover:bg-[#252542]"
+                  className="border-[#363660] text-gray-300 hover:bg-[#1A3050]"
                   onClick={() => {
                     const text = `Conheca o 50 Scripts 2.0! Use meu codigo ${data.referral_code} para comecar: ${window.location.origin}?ref=${data.referral_code}`;
                     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
@@ -150,21 +150,21 @@ export default function ReferralsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="bg-[#1A1A2E] border-[#252542]">
+        <Card className="bg-[#0F1D32] border-[#1A3050]">
           <CardContent className="pt-4 text-center">
             <Users className="w-5 h-5 mx-auto mb-1 text-blue-500" />
             <p className="text-2xl font-bold text-white">{data.stats.total}</p>
             <p className="text-xs text-gray-400">Indicacoes</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#1A1A2E] border-[#252542]">
+        <Card className="bg-[#0F1D32] border-[#1A3050]">
           <CardContent className="pt-4 text-center">
             <Check className="w-5 h-5 mx-auto mb-1 text-green-500" />
             <p className="text-2xl font-bold text-white">{data.stats.converted}</p>
             <p className="text-xs text-gray-400">Convertidas</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#1A1A2E] border-[#252542]">
+        <Card className="bg-[#0F1D32] border-[#1A3050]">
           <CardContent className="pt-4 text-center">
             <Gift className="w-5 h-5 mx-auto mb-1 text-yellow-500" />
             <p className="text-2xl font-bold text-white">{data.stats.rewarded}</p>
@@ -174,7 +174,7 @@ export default function ReferralsPage() {
       </div>
 
       {/* Rewards Tiers */}
-      <Card className="bg-[#1A1A2E] border-[#252542]">
+      <Card className="bg-[#0F1D32] border-[#1A3050]">
         <CardHeader>
           <CardTitle className="text-white text-lg">Recompensas</CardTitle>
         </CardHeader>
@@ -187,13 +187,13 @@ export default function ReferralsPage() {
             return (
               <div
                 key={tier.count}
-                className={`p-3 rounded-lg ${unlocked ? 'bg-[#252542]' : 'bg-[#1A1A2E] border border-[#252542]'}`}
+                className={`p-3 rounded-lg ${unlocked ? 'bg-[#1A3050]' : 'bg-[#0F1D32] border border-[#1A3050]'}`}
               >
                 <div className="flex items-center gap-3 mb-2">
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center"
                     style={{
-                      backgroundColor: unlocked ? tier.color + '20' : '#252542',
+                      backgroundColor: unlocked ? tier.color + '20' : '#1A3050',
                     }}
                   >
                     <Icon
@@ -224,7 +224,7 @@ export default function ReferralsPage() {
 
       {/* Referral History */}
       {data.referrals.length > 0 && (
-        <Card className="bg-[#1A1A2E] border-[#252542]">
+        <Card className="bg-[#0F1D32] border-[#1A3050]">
           <CardHeader>
             <CardTitle className="text-white text-lg">Suas Indicacoes</CardTitle>
           </CardHeader>
@@ -233,7 +233,7 @@ export default function ReferralsPage() {
               {data.referrals.map((ref) => (
                 <div
                   key={ref.id}
-                  className="flex items-center justify-between p-3 bg-[#252542] rounded-lg"
+                  className="flex items-center justify-between p-3 bg-[#1A3050] rounded-lg"
                 >
                   <div>
                     <p className="text-sm text-white">

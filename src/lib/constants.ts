@@ -73,14 +73,14 @@ export const REFERRAL_REWARDS = {
 } as const;
 
 export const COLORS = {
-  primary: '#1A1A2E',
-  secondary: '#E94560',
-  accent: '#0F3460',
-  background: '#0F0F1A',
-  surface: '#1A1A2E',
-  surfaceLight: '#252542',
+  primary: '#0F1D32',
+  secondary: '#C9A84C',
+  accent: '#4A90D9',
+  background: '#0A1628',
+  surface: '#0F1D32',
+  surfaceLight: '#1A3050',
   text: '#FFFFFF',
-  textMuted: '#94A3B8',
+  textMuted: '#8BA5BD',
   success: '#10B981',
   warning: '#F59E0B',
   error: '#EF4444',

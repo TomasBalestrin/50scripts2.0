@@ -43,24 +43,24 @@ function highlightVariables(text: string): React.ReactNode[] {
 
 function SkeletonDetail() {
   return (
-    <div className="min-h-screen bg-[#0F0F1A] p-4 sm:p-6">
+    <div className="min-h-screen bg-[#0A1628] p-4 sm:p-6">
       <div className="mx-auto max-w-3xl space-y-6 animate-pulse">
-        <div className="h-5 w-32 rounded bg-[#252542]" />
+        <div className="h-5 w-32 rounded bg-[#1A3050]" />
         <div className="space-y-3">
-          <div className="h-8 w-3/4 rounded bg-[#1A1A2E]" />
+          <div className="h-8 w-3/4 rounded bg-[#0F1D32]" />
           <div className="flex gap-2">
-            <div className="h-6 w-20 rounded-full bg-[#252542]" />
-            <div className="h-6 w-24 rounded-full bg-[#252542]" />
+            <div className="h-6 w-20 rounded-full bg-[#1A3050]" />
+            <div className="h-6 w-24 rounded-full bg-[#1A3050]" />
           </div>
         </div>
-        <div className="rounded-xl bg-[#1A1A2E] p-6 space-y-3">
-          <div className="h-4 w-full rounded bg-[#252542]" />
-          <div className="h-4 w-full rounded bg-[#252542]" />
-          <div className="h-4 w-3/4 rounded bg-[#252542]" />
-          <div className="h-4 w-full rounded bg-[#252542]" />
-          <div className="h-4 w-5/6 rounded bg-[#252542]" />
+        <div className="rounded-xl bg-[#0F1D32] p-6 space-y-3">
+          <div className="h-4 w-full rounded bg-[#1A3050]" />
+          <div className="h-4 w-full rounded bg-[#1A3050]" />
+          <div className="h-4 w-3/4 rounded bg-[#1A3050]" />
+          <div className="h-4 w-full rounded bg-[#1A3050]" />
+          <div className="h-4 w-5/6 rounded bg-[#1A3050]" />
         </div>
-        <div className="h-14 w-full rounded-xl bg-[#252542]" />
+        <div className="h-14 w-full rounded-xl bg-[#1A3050]" />
       </div>
     </div>
   );
@@ -180,17 +180,17 @@ export default function ScriptDetailPage() {
 
   if (!script) {
     return (
-      <div className="min-h-screen bg-[#0F0F1A] p-4 sm:p-6">
+      <div className="min-h-screen bg-[#0A1628] p-4 sm:p-6">
         <div className="mx-auto max-w-3xl">
           <button
             onClick={() => router.back()}
-            className="mb-6 inline-flex items-center gap-2 text-sm text-[#94A3B8] transition-colors hover:text-white"
+            className="mb-6 inline-flex items-center gap-2 text-sm text-[#8BA5BD] transition-colors hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </button>
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-lg text-[#94A3B8]">Script nao encontrado</p>
+            <p className="text-lg text-[#8BA5BD]">Script nao encontrado</p>
           </div>
         </div>
       </div>
@@ -198,12 +198,12 @@ export default function ScriptDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F0F1A] p-4 sm:p-6">
+    <div className="min-h-screen bg-[#0A1628] p-4 sm:p-6">
       <div className="mx-auto max-w-3xl">
         {/* Back button */}
         <button
           onClick={() => router.back()}
-          className="mb-6 inline-flex items-center gap-2 text-sm text-[#94A3B8] transition-colors hover:text-white"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-[#8BA5BD] transition-colors hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           Voltar
@@ -231,7 +231,7 @@ export default function ScriptDetailPage() {
                 </span>
               )}
               <StarRating value={Math.round(script.global_effectiveness)} readonly size={16} />
-              <span className="text-xs text-[#94A3B8]">
+              <span className="text-xs text-[#8BA5BD]">
                 {script.global_usage_count} {script.global_usage_count === 1 ? 'uso' : 'usos'}
               </span>
             </div>
@@ -245,8 +245,8 @@ export default function ScriptDetailPage() {
                 onClick={() => setActiveTone(tone)}
                 className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                   activeTone === tone
-                    ? 'bg-[#E94560] text-white'
-                    : 'bg-[#252542] text-[#94A3B8] hover:bg-[#252542]/80 hover:text-white'
+                    ? 'bg-[#C9A84C] text-white'
+                    : 'bg-[#1A3050] text-[#8BA5BD] hover:bg-[#1A3050]/80 hover:text-white'
                 }`}
               >
                 {TONE_LABELS[tone]}
@@ -255,7 +255,7 @@ export default function ScriptDetailPage() {
           </div>
 
           {/* Script Content */}
-          <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-6">
+          <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-6">
             <p className="whitespace-pre-wrap text-base leading-relaxed text-white/90">
               {highlightVariables(activeContent)}
             </p>
@@ -264,7 +264,7 @@ export default function ScriptDetailPage() {
           {/* Copy Button */}
           <button
             onClick={handleCopy}
-            className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#E94560] py-4 text-base font-bold text-white transition-colors hover:bg-[#E94560]/90 active:scale-[0.98]"
+            className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#C9A84C] py-4 text-base font-bold text-white transition-colors hover:bg-[#C9A84C]/90 active:scale-[0.98]"
           >
             {copied ? (
               <>
@@ -281,12 +281,12 @@ export default function ScriptDetailPage() {
 
           {/* Context Card */}
           {script.context_description && (
-            <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-5">
+            <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5">
               <div className="mb-2 flex items-center gap-2">
-                <Clock className="h-4 w-4 text-[#E94560]" />
+                <Clock className="h-4 w-4 text-[#C9A84C]" />
                 <h3 className="text-sm font-semibold text-white">Quando usar este script</h3>
               </div>
-              <p className="text-sm leading-relaxed text-[#94A3B8]">
+              <p className="text-sm leading-relaxed text-[#8BA5BD]">
                 {script.context_description}
               </p>
             </div>
@@ -294,16 +294,16 @@ export default function ScriptDetailPage() {
 
           {/* Tags */}
           {script.tags && script.tags.length > 0 && (
-            <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-5">
+            <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5">
               <div className="mb-3 flex items-center gap-2">
-                <Tag className="h-4 w-4 text-[#E94560]" />
+                <Tag className="h-4 w-4 text-[#C9A84C]" />
                 <h3 className="text-sm font-semibold text-white">Tags</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {script.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full bg-[#252542] px-3 py-1 text-xs text-[#94A3B8]"
+                    className="rounded-full bg-[#1A3050] px-3 py-1 text-xs text-[#8BA5BD]"
                   >
                     {tag}
                   </span>
@@ -313,19 +313,19 @@ export default function ScriptDetailPage() {
           )}
 
           {/* Rate Section */}
-          <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] overflow-hidden">
+          <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] overflow-hidden">
             <button
               onClick={() => setRateExpanded(!rateExpanded)}
               className="flex w-full items-center justify-between p-5 text-left"
             >
               <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-[#E94560]" />
+                <MessageSquare className="h-4 w-4 text-[#C9A84C]" />
                 <h3 className="text-sm font-semibold text-white">Avaliar este script</h3>
               </div>
               {rateExpanded ? (
-                <ChevronUp className="h-4 w-4 text-[#94A3B8]" />
+                <ChevronUp className="h-4 w-4 text-[#8BA5BD]" />
               ) : (
-                <ChevronDown className="h-4 w-4 text-[#94A3B8]" />
+                <ChevronDown className="h-4 w-4 text-[#8BA5BD]" />
               )}
             </button>
 
@@ -341,7 +341,7 @@ export default function ScriptDetailPage() {
                   <div className="space-y-5 px-5 pb-5">
                     {/* Star Rating */}
                     <div>
-                      <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
+                      <label className="mb-2 block text-xs font-medium text-[#8BA5BD]">
                         Efetividade
                       </label>
                       <StarRating value={rating} onChange={setRating} size={28} />
@@ -349,7 +349,7 @@ export default function ScriptDetailPage() {
 
                     {/* Sale Toggle */}
                     <div>
-                      <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
+                      <label className="mb-2 block text-xs font-medium text-[#8BA5BD]">
                         Resultou em venda?
                       </label>
                       <div className="flex gap-2">
@@ -358,7 +358,7 @@ export default function ScriptDetailPage() {
                           className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                             resultedInSale
                               ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                              : 'bg-[#252542] text-[#94A3B8] hover:text-white'
+                              : 'bg-[#1A3050] text-[#8BA5BD] hover:text-white'
                           }`}
                         >
                           Sim
@@ -370,8 +370,8 @@ export default function ScriptDetailPage() {
                           }}
                           className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                             !resultedInSale
-                              ? 'bg-[#E94560]/20 text-[#E94560] border border-[#E94560]/30'
-                              : 'bg-[#252542] text-[#94A3B8] hover:text-white'
+                              ? 'bg-[#C9A84C]/20 text-[#C9A84C] border border-[#C9A84C]/30'
+                              : 'bg-[#1A3050] text-[#8BA5BD] hover:text-white'
                           }`}
                         >
                           Nao
@@ -388,7 +388,7 @@ export default function ScriptDetailPage() {
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
+                          <label className="mb-2 block text-xs font-medium text-[#8BA5BD]">
                             Valor da venda (R$)
                           </label>
                           <input
@@ -396,7 +396,7 @@ export default function ScriptDetailPage() {
                             value={saleValue}
                             onChange={(e) => setSaleValue(e.target.value)}
                             placeholder="0,00"
-                            className="w-full rounded-lg border border-[#252542] bg-[#0F0F1A] px-4 py-2.5 text-sm text-white placeholder-[#94A3B8]/50 outline-none transition-colors focus:border-[#E94560]"
+                            className="w-full rounded-lg border border-[#1A3050] bg-[#0A1628] px-4 py-2.5 text-sm text-white placeholder-[#8BA5BD]/50 outline-none transition-colors focus:border-[#C9A84C]"
                           />
                         </motion.div>
                       )}
@@ -404,7 +404,7 @@ export default function ScriptDetailPage() {
 
                     {/* Feedback Note */}
                     <div>
-                      <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
+                      <label className="mb-2 block text-xs font-medium text-[#8BA5BD]">
                         Observacao (opcional)
                       </label>
                       <textarea
@@ -412,7 +412,7 @@ export default function ScriptDetailPage() {
                         onChange={(e) => setFeedbackNote(e.target.value)}
                         placeholder="Como foi a experiencia com este script?"
                         rows={3}
-                        className="w-full resize-none rounded-lg border border-[#252542] bg-[#0F0F1A] px-4 py-2.5 text-sm text-white placeholder-[#94A3B8]/50 outline-none transition-colors focus:border-[#E94560]"
+                        className="w-full resize-none rounded-lg border border-[#1A3050] bg-[#0A1628] px-4 py-2.5 text-sm text-white placeholder-[#8BA5BD]/50 outline-none transition-colors focus:border-[#C9A84C]"
                       />
                     </div>
 
@@ -420,7 +420,7 @@ export default function ScriptDetailPage() {
                     <button
                       onClick={handleSubmitRating}
                       disabled={rating === 0 || submittingRating}
-                      className="w-full rounded-lg bg-[#0F3460] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0F3460]/90 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="w-full rounded-lg bg-[#4A90D9] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#4A90D9]/90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {submittingRating ? 'Enviando...' : 'Enviar avaliacao'}
                     </button>
@@ -445,7 +445,7 @@ export default function ScriptDetailPage() {
                 t.type === 'error'
                   ? 'bg-red-500'
                   : t.type === 'info'
-                  ? 'bg-[#0F3460]'
+                  ? 'bg-[#4A90D9]'
                   : 'bg-emerald-500'
               }`}
               onClick={() => dismiss(t.id)}

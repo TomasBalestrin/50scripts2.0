@@ -156,7 +156,7 @@ function ExportContent() {
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-              color: #1A1A2E;
+              color: #0F1D32;
               padding: 40px;
               background: white;
             }
@@ -164,11 +164,11 @@ function ExportContent() {
               text-align: center;
               margin-bottom: 32px;
               padding-bottom: 16px;
-              border-bottom: 2px solid #E94560;
+              border-bottom: 2px solid #C9A84C;
             }
             .header h1 {
               font-size: 24px;
-              color: #E94560;
+              color: #C9A84C;
               margin-bottom: 4px;
             }
             .header p {
@@ -190,7 +190,7 @@ function ExportContent() {
             .stat-card .value {
               font-size: 22px;
               font-weight: 700;
-              color: #1A1A2E;
+              color: #0F1D32;
             }
             .stat-card .label {
               font-size: 12px;
@@ -220,7 +220,7 @@ function ExportContent() {
               font-size: 16px;
               font-weight: 600;
               margin-bottom: 12px;
-              color: #1A1A2E;
+              color: #0F1D32;
             }
             .footer {
               margin-top: 40px;
@@ -321,10 +321,10 @@ function ExportContent() {
   return (
     <div className="space-y-6">
       {/* Date Range */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base text-white">
-            <Calendar className="h-4 w-4 text-[#E94560]" />
+            <Calendar className="h-4 w-4 text-[#C9A84C]" />
             Periodo
           </CardTitle>
         </CardHeader>
@@ -338,7 +338,7 @@ function ExportContent() {
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="w-full rounded-lg border border-[#363660] bg-[#252542] px-3 py-2.5 text-sm text-white outline-none focus:border-[#E94560] transition-colors"
+                className="w-full rounded-lg border border-[#363660] bg-[#1A3050] px-3 py-2.5 text-sm text-white outline-none focus:border-[#C9A84C] transition-colors"
               />
             </div>
             <div>
@@ -349,7 +349,7 @@ function ExportContent() {
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="w-full rounded-lg border border-[#363660] bg-[#252542] px-3 py-2.5 text-sm text-white outline-none focus:border-[#E94560] transition-colors"
+                className="w-full rounded-lg border border-[#363660] bg-[#1A3050] px-3 py-2.5 text-sm text-white outline-none focus:border-[#C9A84C] transition-colors"
               />
             </div>
           </div>
@@ -357,10 +357,10 @@ function ExportContent() {
       </Card>
 
       {/* Format Selector */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base text-white">
-            <FileText className="h-4 w-4 text-[#E94560]" />
+            <FileText className="h-4 w-4 text-[#C9A84C]" />
             Formato
           </CardTitle>
         </CardHeader>
@@ -371,8 +371,8 @@ function ExportContent() {
               onClick={() => setFormat('csv')}
               className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition-all ${
                 format === 'csv'
-                  ? 'border-[#E94560] bg-[#E94560]/10 text-[#E94560]'
-                  : 'border-[#363660] bg-[#252542] text-gray-400 hover:border-gray-500'
+                  ? 'border-[#C9A84C] bg-[#C9A84C]/10 text-[#C9A84C]'
+                  : 'border-[#363660] bg-[#1A3050] text-gray-400 hover:border-gray-500'
               }`}
             >
               <FileSpreadsheet className="h-4 w-4" />
@@ -383,8 +383,8 @@ function ExportContent() {
               onClick={() => setFormat('pdf')}
               className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition-all ${
                 format === 'pdf'
-                  ? 'border-[#E94560] bg-[#E94560]/10 text-[#E94560]'
-                  : 'border-[#363660] bg-[#252542] text-gray-400 hover:border-gray-500'
+                  ? 'border-[#C9A84C] bg-[#C9A84C]/10 text-[#C9A84C]'
+                  : 'border-[#363660] bg-[#1A3050] text-gray-400 hover:border-gray-500'
               }`}
             >
               <FileText className="h-4 w-4" />
@@ -395,7 +395,7 @@ function ExportContent() {
       </Card>
 
       {/* Data Types */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardHeader>
           <CardTitle className="text-base text-white">
             Dados para exportar
@@ -408,14 +408,14 @@ function ExportContent() {
                 key={dt.key}
                 className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-all ${
                   selectedTypes.includes(dt.key)
-                    ? 'border-[#E94560]/50 bg-[#E94560]/5'
-                    : 'border-[#363660] bg-[#252542]'
+                    ? 'border-[#C9A84C]/50 bg-[#C9A84C]/5'
+                    : 'border-[#363660] bg-[#1A3050]'
                 }`}
               >
                 <div
                   className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-all ${
                     selectedTypes.includes(dt.key)
-                      ? 'border-[#E94560] bg-[#E94560]'
+                      ? 'border-[#C9A84C] bg-[#C9A84C]'
                       : 'border-[#363660]'
                   }`}
                 >
@@ -455,7 +455,7 @@ function ExportContent() {
       <Button
         onClick={handleExport}
         disabled={exporting || selectedTypes.length === 0}
-        className="h-12 w-full bg-[#E94560] text-white hover:bg-[#d63d56] disabled:opacity-50"
+        className="h-12 w-full bg-[#C9A84C] text-white hover:bg-[#d63d56] disabled:opacity-50"
       >
         {exporting ? (
           <>
@@ -483,14 +483,14 @@ export default function ExportPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#0F0F1A] p-4 md:p-6">
+      <div className="min-h-screen bg-[#0A1628] p-4 md:p-6">
         <div className="mx-auto max-w-2xl">
           <div className="animate-pulse">
-            <div className="mb-2 h-8 w-64 rounded bg-[#1A1A2E]" />
-            <div className="mb-6 h-4 w-40 rounded bg-[#1A1A2E]" />
+            <div className="mb-2 h-8 w-64 rounded bg-[#0F1D32]" />
+            <div className="mb-6 h-4 w-40 rounded bg-[#0F1D32]" />
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 rounded-xl bg-[#1A1A2E]" />
+                <div key={i} className="h-32 rounded-xl bg-[#0F1D32]" />
               ))}
             </div>
           </div>
@@ -503,13 +503,13 @@ export default function ExportPage() {
   const isCopilot = hasAccess(userPlan, 'copilot');
 
   return (
-    <div className="min-h-screen bg-[#0F0F1A] p-4 md:p-6">
+    <div className="min-h-screen bg-[#0A1628] p-4 md:p-6">
       <div className="mx-auto max-w-2xl">
         {/* Page Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-bold text-white">
-              <Download className="h-6 w-6 text-[#E94560]" />
+              <Download className="h-6 w-6 text-[#C9A84C]" />
               Exportar Dados
             </h1>
             <p className="mt-1 text-sm text-gray-400">

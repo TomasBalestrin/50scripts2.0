@@ -78,7 +78,7 @@ export function EmergencyScriptModal({
             aria-modal="true"
             aria-label="Script de emergência"
             className="fixed bottom-0 left-0 right-0 z-[61] max-h-[85vh] flex flex-col
-                       rounded-t-2xl bg-[#1A1A2E] border-t border-white/10 shadow-2xl
+                       rounded-t-2xl bg-[#0F1D32] border-t border-white/10 shadow-2xl
                        md:left-1/2 md:-translate-x-1/2 md:max-w-lg md:bottom-4 md:rounded-2xl
                        md:border md:max-h-[80vh]"
           >
@@ -98,9 +98,9 @@ export function EmergencyScriptModal({
                     className="inline-flex items-center mt-1.5 px-2.5 py-0.5 rounded-full text-[11px]
                                font-semibold uppercase tracking-wide border"
                     style={{
-                      color: script.category.color || '#E94560',
-                      borderColor: `${script.category.color || '#E94560'}40`,
-                      backgroundColor: `${script.category.color || '#E94560'}15`,
+                      color: script.category.color || '#C9A84C',
+                      borderColor: `${script.category.color || '#C9A84C'}40`,
+                      backgroundColor: `${script.category.color || '#C9A84C'}15`,
                     }}
                   >
                     {script.category.name}
@@ -123,7 +123,7 @@ export function EmergencyScriptModal({
             <div className="flex-1 overflow-y-auto px-5 py-4 scrollbar-thin">
               {/* Context description */}
               {script.context_description && (
-                <div className="mb-4 p-3 rounded-lg bg-[#0F3460]/20 border border-[#0F3460]/30">
+                <div className="mb-4 p-3 rounded-lg bg-[#4A90D9]/20 border border-[#4A90D9]/30">
                   <p className="text-xs font-semibold text-[#3B82F6] uppercase tracking-wide mb-1">
                     Contexto
                   </p>
@@ -134,7 +134,7 @@ export function EmergencyScriptModal({
               )}
 
               {/* Script content */}
-              <div className="p-4 rounded-xl bg-[#252542] border border-white/5">
+              <div className="p-4 rounded-xl bg-[#1A3050] border border-white/5">
                 <p className="text-sm text-white leading-relaxed whitespace-pre-wrap">
                   {script.content}
                 </p>
@@ -148,11 +148,11 @@ export function EmergencyScriptModal({
                 className="w-full flex items-center justify-center gap-2.5 h-12 rounded-xl
                            font-bold text-base text-white transition-all duration-200
                            focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
-                           focus-visible:ring-offset-[#1A1A2E]"
+                           focus-visible:ring-offset-[#0F1D32]"
                 style={{
                   background: copied
                     ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
-                    : 'linear-gradient(135deg, #E94560 0%, #c7374e 100%)',
+                    : 'linear-gradient(135deg, #C9A84C 0%, #c7374e 100%)',
                 }}
               >
                 {copied ? (

@@ -123,14 +123,14 @@ function getGreeting(): string {
 
 // Trail colors for revenue-by-trail chart
 const TRAIL_COLORS: Record<string, string> = {
-  'abordagem-inicial': '#3B82F6',
-  'ativacao-base': '#8B5CF6',
-  'qualificacao': '#F59E0B',
+  'abordagem-inicial': '#4A90D9',
+  'ativacao-base': '#6366F1',
+  'qualificacao': '#C9A84C',
   'apresentacao-oferta': '#10B981',
-  'follow-up': '#EC4899',
-  'contorno-objecao': '#EF4444',
+  'follow-up': '#3B82C4',
+  'contorno-objecao': '#E87040',
   'fechamento': '#06B6D4',
-  'pos-venda': '#F97316',
+  'pos-venda': '#D4A843',
 };
 
 // ---------------------------------------------------------------------------
@@ -139,23 +139,23 @@ const TRAIL_COLORS: Record<string, string> = {
 
 function SkeletonCard({ className = '' }: { className?: string }) {
   return (
-    <div className={`animate-pulse rounded-xl bg-[#1A1A2E] p-5 ${className}`}>
-      <div className="mb-3 h-4 w-3/4 rounded bg-[#252542]" />
-      <div className="mb-2 h-3 w-full rounded bg-[#252542]" />
-      <div className="h-3 w-2/3 rounded bg-[#252542]" />
+    <div className={`animate-pulse rounded-xl bg-[#0F1D32] p-5 ${className}`}>
+      <div className="mb-3 h-4 w-3/4 rounded bg-[#1A3050]" />
+      <div className="mb-2 h-3 w-full rounded bg-[#1A3050]" />
+      <div className="h-3 w-2/3 rounded bg-[#1A3050]" />
     </div>
   );
 }
 
 function SkeletonTip() {
   return (
-    <div className="animate-pulse rounded-xl bg-gradient-to-r from-[#E94560]/20 to-[#0F3460]/20 p-5">
+    <div className="animate-pulse rounded-xl bg-gradient-to-r from-[#C9A84C]/20 to-[#4A90D9]/20 p-5">
       <div className="flex items-start gap-4">
-        <div className="h-10 w-10 rounded-full bg-[#252542]" />
+        <div className="h-10 w-10 rounded-full bg-[#1A3050]" />
         <div className="flex-1 space-y-2">
-          <div className="h-3 w-1/4 rounded bg-[#252542]" />
-          <div className="h-3 w-full rounded bg-[#252542]" />
-          <div className="h-3 w-3/4 rounded bg-[#252542]" />
+          <div className="h-3 w-1/4 rounded bg-[#1A3050]" />
+          <div className="h-3 w-full rounded bg-[#1A3050]" />
+          <div className="h-3 w-3/4 rounded bg-[#1A3050]" />
         </div>
       </div>
     </div>
@@ -164,9 +164,9 @@ function SkeletonTip() {
 
 function SkeletonChart() {
   return (
-    <div className="animate-pulse rounded-xl border border-[#252542] bg-[#1A1A2E] p-5">
-      <div className="mb-4 h-4 w-32 rounded bg-[#252542]" />
-      <div className="h-64 w-full rounded bg-[#252542]/50" />
+    <div className="animate-pulse rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5">
+      <div className="mb-4 h-4 w-32 rounded bg-[#1A3050]" />
+      <div className="h-64 w-full rounded bg-[#1A3050]/50" />
     </div>
   );
 }
@@ -295,11 +295,11 @@ export default function DashboardPage() {
   // Loading state
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#0F0F1A] p-6">
+      <div className="min-h-screen bg-[#0A1628] p-6">
         <div className="mx-auto max-w-6xl space-y-6">
           <div className="animate-pulse">
-            <div className="mb-2 h-8 w-64 rounded bg-[#1A1A2E]" />
-            <div className="h-4 w-40 rounded bg-[#1A1A2E]" />
+            <div className="mb-2 h-8 w-64 rounded bg-[#0F1D32]" />
+            <div className="h-4 w-40 rounded bg-[#0F1D32]" />
           </div>
           <SkeletonTip />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -335,7 +335,7 @@ export default function DashboardPage() {
     ? revenueData.revenue_by_trail.map((t) => ({
         name: t.name,
         revenue: t.total,
-        color: TRAIL_COLORS[t.slug] || '#E94560',
+        color: TRAIL_COLORS[t.slug] || '#C9A84C',
       }))
     : [];
 
@@ -358,7 +358,7 @@ export default function DashboardPage() {
     ?.slice(0, 2) ?? [];
 
   return (
-    <div className="min-h-screen bg-[#0F0F1A] p-4 sm:p-6">
+    <div className="min-h-screen bg-[#0A1628] p-4 sm:p-6">
       <motion.div
         className="mx-auto max-w-6xl space-y-6"
         variants={containerVariants}
@@ -372,7 +372,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-white sm:text-3xl">
             {greeting}, {userName}!
           </h1>
-          <p className="mt-1 text-sm text-[#94A3B8]">
+          <p className="mt-1 text-sm text-[#8BA5BD]">
             Aqui esta seu painel de vendas
           </p>
         </motion.div>
@@ -393,18 +393,18 @@ export default function DashboardPage() {
           <motion.div variants={itemVariants}>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {/* Streak */}
-              <div className="flex items-center gap-3 rounded-xl border border-[#252542] bg-[#1A1A2E] p-4">
+              <div className="flex items-center gap-3 rounded-xl border border-[#1A3050] bg-[#0F1D32] p-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/15">
                   <Flame className="h-5 w-5 text-orange-400" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-white">{gamificationData.current_streak}</p>
-                  <p className="text-xs text-[#94A3B8]">Dias seguidos</p>
+                  <p className="text-xs text-[#8BA5BD]">Dias seguidos</p>
                 </div>
               </div>
 
               {/* XP */}
-              <div className="flex items-center gap-3 rounded-xl border border-[#252542] bg-[#1A1A2E] p-4">
+              <div className="flex items-center gap-3 rounded-xl border border-[#1A3050] bg-[#0F1D32] p-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-500/15">
                   <Zap className="h-5 w-5 text-yellow-400" />
                 </div>
@@ -412,12 +412,12 @@ export default function DashboardPage() {
                   <p className="text-2xl font-bold text-white">
                     {gamificationData.xp_points.toLocaleString('pt-BR')}
                   </p>
-                  <p className="text-xs text-[#94A3B8]">Pontos XP</p>
+                  <p className="text-xs text-[#8BA5BD]">Pontos XP</p>
                 </div>
               </div>
 
               {/* Level */}
-              <div className="flex items-center gap-3 rounded-xl border border-[#252542] bg-[#1A1A2E] p-4">
+              <div className="flex items-center gap-3 rounded-xl border border-[#1A3050] bg-[#0F1D32] p-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/15">
                   <Award className="h-5 w-5 text-purple-400" />
                 </div>
@@ -425,7 +425,7 @@ export default function DashboardPage() {
                   <p className="text-2xl font-bold text-white">
                     {LEVEL_LABELS[gamificationData.level] || gamificationData.level}
                   </p>
-                  <p className="text-xs text-[#94A3B8]">Nivel atual</p>
+                  <p className="text-xs text-[#8BA5BD]">Nivel atual</p>
                 </div>
               </div>
             </div>
@@ -454,11 +454,11 @@ export default function DashboardPage() {
               {proDataLoading ? (
                 <SkeletonCard className="h-36" />
               ) : challengeData?.challenge ? (
-                <div className="relative overflow-hidden rounded-xl border border-[#252542] bg-[#1A1A2E] p-5">
-                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#0F3460] to-[#E94560]" />
+                <div className="relative overflow-hidden rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5">
+                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#4A90D9] to-[#C9A84C]" />
                   <div className="mb-2 flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-[#E94560]" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#E94560]">
+                    <Sparkles className="h-4 w-4 text-[#C9A84C]" />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#C9A84C]">
                       Desafio do dia
                     </span>
                   </div>
@@ -468,9 +468,9 @@ export default function DashboardPage() {
                       : `Meta: ${challengeData.challenge.target_count} acoes`}
                   </p>
                   {/* Progress bar */}
-                  <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-[#252542]">
+                  <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-[#1A3050]">
                     <div
-                      className="h-full rounded-full bg-[#E94560] transition-all duration-500"
+                      className="h-full rounded-full bg-[#C9A84C] transition-all duration-500"
                       style={{
                         width: `${Math.min(
                           100,
@@ -479,7 +479,7 @@ export default function DashboardPage() {
                       }}
                     />
                   </div>
-                  <div className="flex items-center justify-between text-xs text-[#94A3B8]">
+                  <div className="flex items-center justify-between text-xs text-[#8BA5BD]">
                     <span>
                       {challengeData.challenge.current_count}/{challengeData.challenge.target_count}
                     </span>
@@ -495,29 +495,29 @@ export default function DashboardPage() {
                 <SkeletonCard className="h-36" />
               ) : nextAgendaItems.length > 0 ? (
                 <div
-                  className="cursor-pointer rounded-xl border border-[#252542] bg-[#1A1A2E] p-5 transition-colors hover:border-[#0F3460]"
+                  className="cursor-pointer rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5 transition-colors hover:border-[#4A90D9]"
                   onClick={() => router.push('/agenda')}
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-[#E94560]" />
-                      <span className="text-xs font-semibold uppercase tracking-wider text-[#E94560]">
+                      <Calendar className="h-4 w-4 text-[#C9A84C]" />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-[#C9A84C]">
                         Agenda de hoje
                       </span>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-[#94A3B8]" />
+                    <ArrowRight className="h-4 w-4 text-[#8BA5BD]" />
                   </div>
                   <div className="space-y-2">
                     {nextAgendaItems.map((block) => (
                       <div
                         key={block.block}
-                        className="flex items-center gap-2 rounded-lg bg-[#252542]/50 px-3 py-2"
+                        className="flex items-center gap-2 rounded-lg bg-[#1A3050]/50 px-3 py-2"
                       >
-                        <div className="h-2 w-2 rounded-full bg-[#E94560]" />
+                        <div className="h-2 w-2 rounded-full bg-[#C9A84C]" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-medium text-white">{block.label}</p>
                           {block.item?.suggested_script && (
-                            <p className="truncate text-[10px] text-[#94A3B8]">
+                            <p className="truncate text-[10px] text-[#8BA5BD]">
                               {block.item.suggested_script.title}
                             </p>
                           )}
@@ -568,19 +568,19 @@ export default function DashboardPage() {
         {/* ------------------------------------------------------------------ */}
         {isPro && communityData && communityData.insights.length > 0 && (
           <motion.div variants={itemVariants}>
-            <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-5">
+            <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5">
               <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
-                <Users className="h-4 w-4 text-[#E94560]" />
+                <Users className="h-4 w-4 text-[#C9A84C]" />
                 Insights da Comunidade
               </h3>
               <div className="space-y-3">
                 {communityData.insights.map((insight, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-3 rounded-lg bg-[#252542]/40 px-4 py-3"
+                    className="flex items-start gap-3 rounded-lg bg-[#1A3050]/40 px-4 py-3"
                   >
                     <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
-                    <p className="text-sm text-[#94A3B8]">{insight}</p>
+                    <p className="text-sm text-[#8BA5BD]">{insight}</p>
                   </div>
                 ))}
               </div>
@@ -594,17 +594,17 @@ export default function DashboardPage() {
         {suggestedTrail && (
           <motion.div variants={itemVariants}>
             <div
-              className="flex cursor-pointer items-center justify-between rounded-xl border border-[#252542] bg-[#1A1A2E] p-5 transition-colors hover:border-[#0F3460]"
+              className="flex cursor-pointer items-center justify-between rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5 transition-colors hover:border-[#4A90D9]"
               onClick={() => router.push(`/trilhas/${suggestedTrail.slug}`)}
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{suggestedTrail.icon}</span>
                 <div>
-                  <p className="text-xs font-medium text-[#E94560]">Trilha sugerida para agora</p>
+                  <p className="text-xs font-medium text-[#C9A84C]">Trilha sugerida para agora</p>
                   <p className="text-base font-semibold text-white">{suggestedTrail.name}</p>
                 </div>
               </div>
-              <ArrowRight className="h-5 w-5 text-[#94A3B8]" />
+              <ArrowRight className="h-5 w-5 text-[#8BA5BD]" />
             </div>
           </motion.div>
         )}
@@ -615,7 +615,7 @@ export default function DashboardPage() {
         {recommendations.length > 0 && (
           <motion.div variants={itemVariants}>
             <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
-              <Sparkles className="h-5 w-5 text-[#E94560]" />
+              <Sparkles className="h-5 w-5 text-[#C9A84C]" />
               Scripts mais usados
             </h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -624,7 +624,7 @@ export default function DashboardPage() {
                   key={script.id}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="cursor-pointer rounded-xl border border-[#252542] bg-[#1A1A2E] p-4 transition-colors hover:border-[#E94560]/30"
+                  className="cursor-pointer rounded-xl border border-[#1A3050] bg-[#0F1D32] p-4 transition-colors hover:border-[#C9A84C]/30"
                   onClick={() => router.push(`/scripts/${script.id}`)}
                 >
                   <div className="mb-2 flex items-center gap-2">
@@ -641,7 +641,7 @@ export default function DashboardPage() {
                   <div className="mb-2">
                     <StarRating value={Math.round(script.global_effectiveness)} readonly size={12} />
                   </div>
-                  <p className="text-xs text-[#94A3B8]">
+                  <p className="text-xs text-[#8BA5BD]">
                     {script.global_usage_count} {script.global_usage_count === 1 ? 'uso' : 'usos'}
                   </p>
                 </motion.div>
@@ -655,9 +655,9 @@ export default function DashboardPage() {
         {/* ------------------------------------------------------------------ */}
         {dashboardData?.trails && dashboardData.trails.length > 0 && (
           <motion.div variants={itemVariants}>
-            <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-5">
+            <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5">
               <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
-                <TrendingUp className="h-5 w-5 text-[#E94560]" />
+                <TrendingUp className="h-5 w-5 text-[#C9A84C]" />
                 Progresso das Trilhas
               </h2>
               <TrailProgress trails={dashboardData.trails} />
@@ -670,35 +670,35 @@ export default function DashboardPage() {
         {/* ------------------------------------------------------------------ */}
         {isStarter && (
           <motion.div variants={itemVariants}>
-            <div className="relative overflow-hidden rounded-xl border border-[#252542] bg-[#1A1A2E] p-6">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#E94560]/5 to-[#0F3460]/5" />
+            <div className="relative overflow-hidden rounded-xl border border-[#1A3050] bg-[#0F1D32] p-6">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#C9A84C]/5 to-[#4A90D9]/5" />
               <div className="relative">
                 <div className="mb-4 flex items-center gap-2">
-                  <Lock className="h-5 w-5 text-[#E94560]" />
+                  <Lock className="h-5 w-5 text-[#C9A84C]" />
                   <h3 className="text-lg font-semibold text-white">Desbloqueie todo o potencial</h3>
                 </div>
 
                 {/* Blurred revenue preview */}
-                <div className="mb-4 rounded-xl border border-[#252542]/50 bg-[#0F0F1A]/50 p-5">
-                  <p className="mb-1 text-xs text-[#94A3B8]">Receita Total</p>
+                <div className="mb-4 rounded-xl border border-[#1A3050]/50 bg-[#0A1628]/50 p-5">
+                  <p className="mb-1 text-xs text-[#8BA5BD]">Receita Total</p>
                   <p className="mb-2 text-3xl font-bold text-white/20 blur-sm select-none">
                     R$ 12.450
                   </p>
-                  <p className="text-sm text-[#94A3B8]">
+                  <p className="text-sm text-[#8BA5BD]">
                     Seus scripts geraram este valor
                   </p>
                   <div className="mt-3 flex gap-4">
-                    <div className="h-16 flex-1 rounded-lg bg-[#252542]/30 blur-sm" />
-                    <div className="h-16 flex-1 rounded-lg bg-[#252542]/30 blur-sm" />
+                    <div className="h-16 flex-1 rounded-lg bg-[#1A3050]/30 blur-sm" />
+                    <div className="h-16 flex-1 rounded-lg bg-[#1A3050]/30 blur-sm" />
                   </div>
                 </div>
 
-                <p className="mb-4 text-sm text-[#94A3B8]">
+                <p className="mb-4 text-sm text-[#8BA5BD]">
                   Faca upgrade para ver suas metricas completas, desafios diarios, agenda inteligente e insights da comunidade.
                 </p>
                 <button
                   onClick={() => router.push('/upgrade')}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#E94560] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#E94560]/90"
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#C9A84C] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#C9A84C]/90"
                 >
                   Faca upgrade Pro
                   <ArrowRight className="h-4 w-4" />

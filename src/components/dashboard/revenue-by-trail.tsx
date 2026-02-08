@@ -40,8 +40,8 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
   const item = payload[0].payload;
 
   return (
-    <div className="rounded-lg border border-[#252542] bg-[#1A1A2E] px-4 py-3 shadow-xl">
-      <p className="mb-1 text-xs font-medium text-[#94A3B8]">{item.name}</p>
+    <div className="rounded-lg border border-[#1A3050] bg-[#0F1D32] px-4 py-3 shadow-xl">
+      <p className="mb-1 text-xs font-medium text-[#8BA5BD]">{item.name}</p>
       <p className="text-sm font-bold text-white">
         {item.revenue.toLocaleString('pt-BR', {
           style: 'currency',
@@ -54,12 +54,12 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
 
 export function RevenueByTrail({ data }: RevenueByTrailProps) {
   return (
-    <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-5">
+    <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5">
       <h3 className="mb-4 text-sm font-semibold text-white">Receita por Trilha</h3>
 
       {data.length === 0 ? (
         <div className="flex h-48 items-center justify-center">
-          <p className="text-sm text-[#94A3B8]">Nenhum dado de receita ainda</p>
+          <p className="text-sm text-[#8BA5BD]">Nenhum dado de receita ainda</p>
         </div>
       ) : (
         <div className="h-64 w-full">
@@ -71,14 +71,14 @@ export function RevenueByTrail({ data }: RevenueByTrailProps) {
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="#252542"
+                stroke="#1A3050"
                 horizontal={false}
               />
               <XAxis
                 type="number"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94A3B8', fontSize: 11 }}
+                tick={{ fill: '#8BA5BD', fontSize: 11 }}
                 tickFormatter={formatCurrency}
               />
               <YAxis
@@ -86,10 +86,10 @@ export function RevenueByTrail({ data }: RevenueByTrailProps) {
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94A3B8', fontSize: 11 }}
+                tick={{ fill: '#8BA5BD', fontSize: 11 }}
                 width={110}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#252542' }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#1A3050' }} />
               <Bar dataKey="revenue" radius={[0, 6, 6, 0]} barSize={24}>
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} fillOpacity={0.85} />

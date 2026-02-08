@@ -129,7 +129,7 @@ export function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="rounded-xl border border-[#252542] bg-[#252542] p-4">
+    <div className="rounded-xl border border-[#1A3050] bg-[#1A3050] p-4">
       {/* Title */}
       {title && (
         <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-400">
@@ -145,7 +145,7 @@ export function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
           disabled={isLoading && !isPlaying}
           className={cn(
             'flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors',
-            'bg-[#E94560] text-white hover:bg-[#d63d56]',
+            'bg-[#C9A84C] text-white hover:bg-[#d63d56]',
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >
@@ -164,16 +164,16 @@ export function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
           <div
             ref={progressRef}
             onClick={handleProgressClick}
-            className="group relative h-2 w-full cursor-pointer rounded-full bg-[#1A1A2E]"
+            className="group relative h-2 w-full cursor-pointer rounded-full bg-[#0F1D32]"
           >
             {/* Filled portion */}
             <div
-              className="absolute left-0 top-0 h-full rounded-full bg-[#E94560] transition-[width] duration-100"
+              className="absolute left-0 top-0 h-full rounded-full bg-[#C9A84C] transition-[width] duration-100"
               style={{ width: `${progress}%` }}
             />
             {/* Thumb */}
             <div
-              className="absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-2 border-[#E94560] bg-white opacity-0 transition-opacity group-hover:opacity-100"
+              className="absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-2 border-[#C9A84C] bg-white opacity-0 transition-opacity group-hover:opacity-100"
               style={{ left: `calc(${progress}% - 6px)` }}
             />
           </div>
@@ -205,7 +205,7 @@ export function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
 
           {/* Volume slider (appears on hover) */}
           {showVolume && (
-            <div className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded-lg border border-[#363660] bg-[#1A1A2E] px-3 py-2 shadow-lg">
+            <div className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded-lg border border-[#363660] bg-[#0F1D32] px-3 py-2 shadow-lg">
               <input
                 type="range"
                 min="0"
@@ -216,7 +216,7 @@ export function AudioPlayer({ audioUrl, title }: AudioPlayerProps) {
                 className="h-1 w-20 cursor-pointer appearance-none rounded-full bg-[#363660]
                   [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3
                   [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full
-                  [&::-webkit-slider-thumb]:bg-[#E94560]"
+                  [&::-webkit-slider-thumb]:bg-[#C9A84C]"
               />
             </div>
           )}

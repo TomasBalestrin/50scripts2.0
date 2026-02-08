@@ -37,7 +37,7 @@ const emptyForm: CategoryForm = {
   slug: '',
   description: '',
   icon: '',
-  color: '#E94560',
+  color: '#C9A84C',
   display_order: 0,
 };
 
@@ -105,7 +105,7 @@ export default function AdminCategoriesPage() {
       slug: cat.slug,
       description: cat.description || '',
       icon: cat.icon || '',
-      color: cat.color || '#E94560',
+      color: cat.color || '#C9A84C',
       display_order: cat.display_order,
     });
     setDialogOpen(true);
@@ -192,7 +192,7 @@ export default function AdminCategoriesPage() {
         <h1 className="text-2xl font-bold text-white">Categorias</h1>
         <Button
           onClick={openCreateDialog}
-          className="bg-[#E94560] text-white hover:bg-[#E94560]/90"
+          className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
         >
           <Plus className="mr-2 h-4 w-4" />
           Adicionar Categoria
@@ -200,17 +200,17 @@ export default function AdminCategoriesPage() {
       </div>
 
       {/* Table */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardContent className="p-0">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-[#E94560]" />
+              <Loader2 className="h-6 w-6 animate-spin text-[#C9A84C]" />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#252542] text-left text-gray-400">
+                  <tr className="border-b border-[#1A3050] text-left text-gray-400">
                     <th className="px-4 py-3">Ordem</th>
                     <th className="px-4 py-3">Emoji</th>
                     <th className="px-4 py-3">Nome</th>
@@ -224,7 +224,7 @@ export default function AdminCategoriesPage() {
                   {categories.map((cat, idx) => (
                     <tr
                       key={cat.id}
-                      className="border-b border-[#252542]/50 text-white"
+                      className="border-b border-[#1A3050]/50 text-white"
                     >
                       <td className="px-4 py-3 text-gray-400">
                         {cat.display_order}
@@ -299,7 +299,7 @@ export default function AdminCategoriesPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="border-[#252542] bg-[#1A1A2E] text-white">
+        <DialogContent className="border-[#1A3050] bg-[#0F1D32] text-white">
           <DialogHeader>
             <DialogTitle className="text-white">
               {editingId ? 'Editar Categoria' : 'Nova Categoria'}
@@ -319,7 +319,7 @@ export default function AdminCategoriesPage() {
                     slug: editingId ? f.slug : generateSlug(name),
                   }));
                 }}
-                className="mt-1 border-[#252542] bg-[#252542] text-white"
+                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
               />
             </div>
 
@@ -330,7 +330,7 @@ export default function AdminCategoriesPage() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, slug: e.target.value }))
                 }
-                className="mt-1 border-[#252542] bg-[#252542] font-mono text-white"
+                className="mt-1 border-[#1A3050] bg-[#1A3050] font-mono text-white"
               />
             </div>
 
@@ -342,7 +342,7 @@ export default function AdminCategoriesPage() {
                   setForm((f) => ({ ...f, description: e.target.value }))
                 }
                 rows={3}
-                className="mt-1 border-[#252542] bg-[#252542] text-white"
+                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
               />
             </div>
 
@@ -355,7 +355,7 @@ export default function AdminCategoriesPage() {
                     setForm((f) => ({ ...f, icon: e.target.value }))
                   }
                   placeholder="Ex: 👋"
-                  className="mt-1 border-[#252542] bg-[#252542] text-white placeholder:text-gray-500"
+                  className="mt-1 border-[#1A3050] bg-[#1A3050] text-white placeholder:text-gray-500"
                 />
               </div>
               <div>
@@ -374,7 +374,7 @@ export default function AdminCategoriesPage() {
                     onChange={(e) =>
                       setForm((f) => ({ ...f, color: e.target.value }))
                     }
-                    className="border-[#252542] bg-[#252542] font-mono text-white"
+                    className="border-[#1A3050] bg-[#1A3050] font-mono text-white"
                   />
                 </div>
               </div>
@@ -391,7 +391,7 @@ export default function AdminCategoriesPage() {
                     display_order: parseInt(e.target.value) || 0,
                   }))
                 }
-                className="mt-1 w-24 border-[#252542] bg-[#252542] text-white"
+                className="mt-1 w-24 border-[#1A3050] bg-[#1A3050] text-white"
               />
             </div>
 
@@ -399,14 +399,14 @@ export default function AdminCategoriesPage() {
               <Button
                 variant="outline"
                 onClick={() => setDialogOpen(false)}
-                className="border-[#252542] text-gray-300 hover:bg-[#252542]"
+                className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={handleSave}
                 disabled={saving || !form.name.trim()}
-                className="bg-[#E94560] text-white hover:bg-[#E94560]/90"
+                className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
               >
                 {saving ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -423,7 +423,7 @@ export default function AdminCategoriesPage() {
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
       >
-        <DialogContent className="border-[#252542] bg-[#1A1A2E] text-white">
+        <DialogContent className="border-[#1A3050] bg-[#0F1D32] text-white">
           <DialogHeader>
             <DialogTitle className="text-white">
               Confirmar Exclusão
@@ -437,7 +437,7 @@ export default function AdminCategoriesPage() {
             <Button
               variant="outline"
               onClick={() => setDeleteId(null)}
-              className="border-[#252542] text-gray-300 hover:bg-[#252542]"
+              className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
             >
               Cancelar
             </Button>

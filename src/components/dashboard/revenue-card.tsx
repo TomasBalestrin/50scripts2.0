@@ -26,11 +26,11 @@ export function RevenueCard({ totalRevenue, previousRevenue }: RevenueCardProps)
   const isPositive = difference >= 0;
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-[#252542] bg-[#1A1A2E] p-6">
+    <div className="relative overflow-hidden rounded-xl border border-[#1A3050] bg-[#0F1D32] p-6">
       {/* Gradient accent at top */}
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#E94560] to-[#0F3460]" />
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#C9A84C] to-[#4A90D9]" />
 
-      <div className="mb-1 text-sm font-medium text-[#94A3B8]">Receita Total</div>
+      <div className="mb-1 text-sm font-medium text-[#8BA5BD]">Receita Total</div>
 
       <div className="flex items-end gap-3">
         <span className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -53,12 +53,12 @@ export function RevenueCard({ totalRevenue, previousRevenue }: RevenueCardProps)
         </div>
       </div>
 
-      <p className="mt-2 text-sm text-[#94A3B8]">
+      <p className="mt-2 text-sm text-[#8BA5BD]">
         Seus scripts geraram este valor
       </p>
 
       {/* Subtle background decoration */}
-      <div className="pointer-events-none absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-[#E94560]/5" />
+      <div className="pointer-events-none absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-[#C9A84C]/5" />
     </div>
   );
 }

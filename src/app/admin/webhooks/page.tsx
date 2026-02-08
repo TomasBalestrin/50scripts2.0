@@ -102,7 +102,7 @@ export default function AdminWebhooksPage() {
       <h1 className="text-2xl font-bold text-white">Webhooks</h1>
 
       {/* Filters */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardContent className="p-4">
           <div className="flex items-center gap-2 pb-3">
             <Filter className="h-4 w-4 text-gray-500" />
@@ -120,10 +120,10 @@ export default function AdminWebhooksPage() {
                   setPage(0);
                 }}
               >
-                <SelectTrigger className="border-[#252542] bg-[#252542] text-white">
+                <SelectTrigger className="border-[#1A3050] bg-[#1A3050] text-white">
                   <SelectValue placeholder="Fonte" />
                 </SelectTrigger>
-                <SelectContent className="border-[#252542] bg-[#1A1A2E] text-white">
+                <SelectContent className="border-[#1A3050] bg-[#0F1D32] text-white">
                   <SelectItem value="all">Todas</SelectItem>
                   {sources.map((s) => (
                     <SelectItem key={s} value={s}>
@@ -145,10 +145,10 @@ export default function AdminWebhooksPage() {
                   setPage(0);
                 }}
               >
-                <SelectTrigger className="border-[#252542] bg-[#252542] text-white">
+                <SelectTrigger className="border-[#1A3050] bg-[#1A3050] text-white">
                   <SelectValue placeholder="Evento" />
                 </SelectTrigger>
-                <SelectContent className="border-[#252542] bg-[#1A1A2E] text-white">
+                <SelectContent className="border-[#1A3050] bg-[#0F1D32] text-white">
                   <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="purchase">Purchase</SelectItem>
                   <SelectItem value="upgrade">Upgrade</SelectItem>
@@ -168,10 +168,10 @@ export default function AdminWebhooksPage() {
                   setPage(0);
                 }}
               >
-                <SelectTrigger className="border-[#252542] bg-[#252542] text-white">
+                <SelectTrigger className="border-[#1A3050] bg-[#1A3050] text-white">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent className="border-[#252542] bg-[#1A1A2E] text-white">
+                <SelectContent className="border-[#1A3050] bg-[#0F1D32] text-white">
                   <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="success">Sucesso</SelectItem>
                   <SelectItem value="error">Erro</SelectItem>
@@ -188,7 +188,7 @@ export default function AdminWebhooksPage() {
                   setDateFrom(e.target.value);
                   setPage(0);
                 }}
-                className="w-40 border-[#252542] bg-[#252542] text-white"
+                className="w-40 border-[#1A3050] bg-[#1A3050] text-white"
               />
             </div>
 
@@ -201,7 +201,7 @@ export default function AdminWebhooksPage() {
                   setDateTo(e.target.value);
                   setPage(0);
                 }}
-                className="w-40 border-[#252542] bg-[#252542] text-white"
+                className="w-40 border-[#1A3050] bg-[#1A3050] text-white"
               />
             </div>
 
@@ -225,17 +225,17 @@ export default function AdminWebhooksPage() {
       </Card>
 
       {/* Table */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardContent className="p-0">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-[#E94560]" />
+              <Loader2 className="h-6 w-6 animate-spin text-[#C9A84C]" />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#252542] text-left text-gray-400">
+                  <tr className="border-b border-[#1A3050] text-left text-gray-400">
                     <th className="w-8 px-4 py-3" />
                     <th className="px-4 py-3">Fonte</th>
                     <th className="px-4 py-3">Evento</th>
@@ -251,7 +251,7 @@ export default function AdminWebhooksPage() {
                     return (
                       <React.Fragment key={log.id}>
                         <tr
-                          className="cursor-pointer border-b border-[#252542]/50 text-white transition-colors hover:bg-[#252542]/50"
+                          className="cursor-pointer border-b border-[#1A3050]/50 text-white transition-colors hover:bg-[#1A3050]/50"
                           onClick={() =>
                             setExpandedId(isExpanded ? null : log.id)
                           }
@@ -267,7 +267,7 @@ export default function AdminWebhooksPage() {
                             {log.source}
                           </td>
                           <td className="px-4 py-3">
-                            <Badge className="bg-[#252542] text-gray-300">
+                            <Badge className="bg-[#1A3050] text-gray-300">
                               {log.event_type}
                             </Badge>
                           </td>
@@ -296,8 +296,8 @@ export default function AdminWebhooksPage() {
                           </td>
                         </tr>
                         {isExpanded && (
-                          <tr className="border-b border-[#252542]/50">
-                            <td colSpan={6} className="bg-[#0F0F1A] px-4 py-4">
+                          <tr className="border-b border-[#1A3050]/50">
+                            <td colSpan={6} className="bg-[#0A1628] px-4 py-4">
                               <div className="space-y-3">
                                 {log.error_message && (
                                   <div>
@@ -341,7 +341,7 @@ export default function AdminWebhooksPage() {
                                   <p className="mb-1 text-xs font-medium uppercase text-gray-500">
                                     Payload JSON
                                   </p>
-                                  <pre className="max-h-64 overflow-auto rounded-lg border border-[#252542] bg-[#1A1A2E] p-3 font-mono text-xs text-gray-300 whitespace-pre-wrap">
+                                  <pre className="max-h-64 overflow-auto rounded-lg border border-[#1A3050] bg-[#0F1D32] p-3 font-mono text-xs text-gray-300 whitespace-pre-wrap">
                                     {JSON.stringify(log.payload, null, 2)}
                                   </pre>
                                 </div>
@@ -369,7 +369,7 @@ export default function AdminWebhooksPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-[#252542] px-4 py-3">
+            <div className="flex items-center justify-between border-t border-[#1A3050] px-4 py-3">
               <p className="text-sm text-gray-400">
                 Mostrando {page * PAGE_SIZE + 1}-
                 {Math.min((page + 1) * PAGE_SIZE, totalCount)} de {totalCount}

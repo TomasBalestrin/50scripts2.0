@@ -30,11 +30,11 @@ const itemVariants = {
 
 function SkeletonBlock({ className = '' }: { className?: string }) {
   return (
-    <div className={`animate-pulse rounded-xl bg-[#1A1A2E] ${className}`}>
+    <div className={`animate-pulse rounded-xl bg-[#0F1D32] ${className}`}>
       <div className="p-5 space-y-3">
-        <div className="h-4 w-1/3 rounded bg-[#252542]" />
-        <div className="h-3 w-full rounded bg-[#252542]" />
-        <div className="h-2.5 w-2/3 rounded bg-[#252542]" />
+        <div className="h-4 w-1/3 rounded bg-[#1A3050]" />
+        <div className="h-3 w-full rounded bg-[#1A3050]" />
+        <div className="h-2.5 w-2/3 rounded bg-[#1A3050]" />
       </div>
     </div>
   );
@@ -95,11 +95,11 @@ export default function DesafioPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#0F0F1A] p-4 sm:p-6">
+      <div className="min-h-screen bg-[#0A1628] p-4 sm:p-6">
         <div className="mx-auto max-w-4xl space-y-6">
           <div className="animate-pulse">
-            <div className="mb-2 h-8 w-56 rounded bg-[#1A1A2E]" />
-            <div className="h-4 w-72 rounded bg-[#1A1A2E]" />
+            <div className="mb-2 h-8 w-56 rounded bg-[#0F1D32]" />
+            <div className="h-4 w-72 rounded bg-[#0F1D32]" />
           </div>
           <SkeletonBlock className="h-36" />
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -114,7 +114,7 @@ export default function DesafioPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F0F1A] p-4 sm:p-6">
+    <div className="min-h-screen bg-[#0A1628] p-4 sm:p-6">
       <motion.div
         className="mx-auto max-w-4xl space-y-6"
         variants={containerVariants}
@@ -124,10 +124,10 @@ export default function DesafioPage() {
         {/* Header */}
         <motion.div variants={itemVariants}>
           <h1 className="flex items-center gap-3 text-2xl font-bold text-white sm:text-3xl">
-            <Target className="h-7 w-7 text-[#E94560]" />
+            <Target className="h-7 w-7 text-[#C9A84C]" />
             Desafios
           </h1>
-          <p className="mt-1 text-sm text-[#94A3B8]">
+          <p className="mt-1 text-sm text-[#8BA5BD]">
             Complete desafios diarios para ganhar XP extra e subir de nivel
           </p>
         </motion.div>
@@ -146,7 +146,7 @@ export default function DesafioPage() {
         <motion.div variants={itemVariants}>
           <div className="mb-2">
             <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
-              <CalendarDays className="h-5 w-5 text-[#E94560]" />
+              <CalendarDays className="h-5 w-5 text-[#C9A84C]" />
               Desafio de Hoje
             </h2>
           </div>
@@ -157,48 +157,48 @@ export default function DesafioPage() {
         <motion.div variants={itemVariants}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {/* Total completed */}
-            <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-4 text-center">
+            <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-4 text-center">
               <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/15">
                 <Trophy className="h-5 w-5 text-emerald-400" />
               </div>
               <p className="text-xl font-bold text-white">{stats.totalCompleted}</p>
-              <p className="text-[10px] text-[#94A3B8] sm:text-xs">Desafios concluidos</p>
+              <p className="text-[10px] text-[#8BA5BD] sm:text-xs">Desafios concluidos</p>
             </div>
 
             {/* Total XP earned */}
-            <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-4 text-center">
+            <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-4 text-center">
               <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-500/15">
                 <Zap className="h-5 w-5 text-yellow-400" />
               </div>
               <p className="text-xl font-bold text-white">{stats.totalXpEarned}</p>
-              <p className="text-[10px] text-[#94A3B8] sm:text-xs">XP de desafios</p>
+              <p className="text-[10px] text-[#8BA5BD] sm:text-xs">XP de desafios</p>
             </div>
 
             {/* Current streak */}
-            <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-4 text-center">
+            <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-4 text-center">
               <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/15">
                 <Flame className="h-5 w-5 text-orange-400" />
               </div>
               <p className="text-xl font-bold text-white">{stats.currentStreak}</p>
-              <p className="text-[10px] text-[#94A3B8] sm:text-xs">Sequencia atual</p>
+              <p className="text-[10px] text-[#8BA5BD] sm:text-xs">Sequencia atual</p>
             </div>
 
             {/* Longest streak */}
-            <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-4 text-center">
+            <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-4 text-center">
               <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/15">
                 <Target className="h-5 w-5 text-purple-400" />
               </div>
               <p className="text-xl font-bold text-white">{stats.longestStreak}</p>
-              <p className="text-[10px] text-[#94A3B8] sm:text-xs">Recorde</p>
+              <p className="text-[10px] text-[#8BA5BD] sm:text-xs">Recorde</p>
             </div>
           </div>
         </motion.div>
 
         {/* Motivational section */}
         <motion.div variants={itemVariants}>
-          <div className="relative overflow-hidden rounded-xl border border-[#252542] bg-[#1A1A2E] p-6">
+          <div className="relative overflow-hidden rounded-xl border border-[#1A3050] bg-[#0F1D32] p-6">
             {/* Background decoration */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#E94560]/5 via-transparent to-[#0F3460]/5" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#C9A84C]/5 via-transparent to-[#4A90D9]/5" />
 
             <div className="relative flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-8">
               {/* Streak counter */}
@@ -216,7 +216,7 @@ export default function DesafioPage() {
                       }`
                     : 'Comece sua sequencia hoje!'}
                 </h3>
-                <p className="text-sm text-[#94A3B8]">
+                <p className="text-sm text-[#8BA5BD]">
                   {stats.currentStreak === 0 &&
                     'Complete o desafio de hoje para iniciar uma nova sequencia e ganhar bonus de XP.'}
                   {stats.currentStreak > 0 &&
@@ -235,14 +235,14 @@ export default function DesafioPage() {
                 {stats.currentStreak > 0 && stats.currentStreak < 30 && (
                   <div className="mt-3">
                     <div className="mb-1 flex items-center justify-between text-xs">
-                      <span className="text-[#94A3B8]">
+                      <span className="text-[#8BA5BD]">
                         Proximo bonus: {stats.currentStreak < 7 ? '7 dias' : '30 dias'}
                       </span>
                       <span className="font-medium text-white">
                         {stats.currentStreak}/{stats.currentStreak < 7 ? 7 : 30}
                       </span>
                     </div>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#252542]">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#1A3050]">
                       <motion.div
                         className="h-full rounded-full bg-gradient-to-r from-orange-500 to-yellow-400"
                         initial={{ width: 0 }}
@@ -265,30 +265,30 @@ export default function DesafioPage() {
 
         {/* How it works */}
         <motion.div variants={itemVariants}>
-          <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-5">
+          <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5">
             <h3 className="mb-3 text-sm font-semibold text-white">Como funciona</h3>
             <div className="space-y-2">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#E94560]/15 text-[10px] font-bold text-[#E94560]">
+                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#C9A84C]/15 text-[10px] font-bold text-[#C9A84C]">
                   1
                 </div>
-                <p className="text-xs text-[#94A3B8]">
+                <p className="text-xs text-[#8BA5BD]">
                   Todo dia um novo desafio e gerado automaticamente para voce
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#E94560]/15 text-[10px] font-bold text-[#E94560]">
+                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#C9A84C]/15 text-[10px] font-bold text-[#C9A84C]">
                   2
                 </div>
-                <p className="text-xs text-[#94A3B8]">
+                <p className="text-xs text-[#8BA5BD]">
                   Complete o desafio usando a plataforma normalmente
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#E94560]/15 text-[10px] font-bold text-[#E94560]">
+                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#C9A84C]/15 text-[10px] font-bold text-[#C9A84C]">
                   3
                 </div>
-                <p className="text-xs text-[#94A3B8]">
+                <p className="text-xs text-[#8BA5BD]">
                   Ganhe XP bonus e mantenha sua sequencia para desbloquear recompensas
                 </p>
               </div>

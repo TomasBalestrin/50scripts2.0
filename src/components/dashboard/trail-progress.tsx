@@ -26,11 +26,11 @@ export function TrailProgress({ trails }: TrailProgressProps) {
                 <span>{trail.icon}</span>
                 <span>{trail.name}</span>
               </span>
-              <span className="text-[#94A3B8]">
+              <span className="text-[#8BA5BD]">
                 {trail.used}/{trail.total}
               </span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-[#252542]">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-[#1A3050]">
               <div
                 className={cn('h-full rounded-full transition-all duration-500')}
                 style={{

@@ -102,13 +102,13 @@ function groupByDate(usages: UsageItem[]): Record<string, UsageItem[]> {
 
 function SkeletonCard() {
   return (
-    <div className="animate-pulse rounded-xl border border-[#252542] bg-[#1A1A2E] p-4">
+    <div className="animate-pulse rounded-xl border border-[#1A3050] bg-[#0F1D32] p-4">
       <div className="flex items-start gap-3">
-        <div className="h-8 w-8 rounded-lg bg-[#252542]" />
+        <div className="h-8 w-8 rounded-lg bg-[#1A3050]" />
         <div className="flex-1 space-y-2">
-          <div className="h-4 w-3/4 rounded bg-[#252542]" />
-          <div className="h-3 w-1/2 rounded bg-[#252542]" />
-          <div className="h-3 w-1/3 rounded bg-[#252542]" />
+          <div className="h-4 w-3/4 rounded bg-[#1A3050]" />
+          <div className="h-3 w-1/2 rounded bg-[#1A3050]" />
+          <div className="h-3 w-1/3 rounded bg-[#1A3050]" />
         </div>
       </div>
     </div>
@@ -143,7 +143,7 @@ function UsageCard({ usage }: UsageCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-4 transition-colors hover:border-[#E94560]/20"
+      className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-4 transition-colors hover:border-[#C9A84C]/20"
     >
       <div className="flex items-start gap-3">
         {/* Category icon */}
@@ -162,7 +162,7 @@ function UsageCard({ usage }: UsageCardProps) {
             <h4 className="text-sm font-semibold text-white line-clamp-1">
               {usage.scripts.title}
             </h4>
-            <span className="shrink-0 text-xs text-[#94A3B8]">
+            <span className="shrink-0 text-xs text-[#8BA5BD]">
               {formatTime(usage.used_at)}
             </span>
           </div>
@@ -197,7 +197,7 @@ function UsageCard({ usage }: UsageCardProps) {
 
             {/* No sale explicit */}
             {usage.resulted_in_sale === false && (
-              <span className="text-xs text-[#94A3B8]">
+              <span className="text-xs text-[#8BA5BD]">
                 Sem venda
               </span>
             )}
@@ -205,9 +205,9 @@ function UsageCard({ usage }: UsageCardProps) {
 
           {/* Feedback note */}
           {usage.feedback_note && (
-            <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-[#252542]/50 px-3 py-2">
-              <MessageSquare className="mt-0.5 h-3 w-3 shrink-0 text-[#94A3B8]" />
-              <p className="text-xs leading-relaxed text-[#94A3B8]">
+            <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-[#1A3050]/50 px-3 py-2">
+              <MessageSquare className="mt-0.5 h-3 w-3 shrink-0 text-[#8BA5BD]" />
+              <p className="text-xs leading-relaxed text-[#8BA5BD]">
                 {usage.feedback_note}
               </p>
             </div>
@@ -286,36 +286,36 @@ export default function HistoricoPage() {
   const dateKeys = Object.keys(grouped);
 
   return (
-    <div className="min-h-screen bg-[#0F0F1A] p-4 sm:p-6">
+    <div className="min-h-screen bg-[#0A1628] p-4 sm:p-6">
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Header */}
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-white sm:text-3xl">
-            <History className="h-7 w-7 text-[#E94560]" />
+            <History className="h-7 w-7 text-[#C9A84C]" />
             Historico de Uso
           </h1>
-          <p className="mt-1 text-sm text-[#94A3B8]">
+          <p className="mt-1 text-sm text-[#8BA5BD]">
             Todos os scripts que voce utilizou
           </p>
         </div>
 
         {/* Filters */}
-        <div className="rounded-xl border border-[#252542] bg-[#1A1A2E] p-4">
+        <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-4">
           <button
             onClick={() => setFiltersOpen(!filtersOpen)}
             className="flex w-full items-center justify-between text-sm font-medium text-white"
           >
             <span className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-[#E94560]" />
+              <Filter className="h-4 w-4 text-[#C9A84C]" />
               Filtros
               {(trail || result) && (
-                <span className="rounded-full bg-[#E94560]/20 px-2 py-0.5 text-[10px] font-semibold text-[#E94560]">
+                <span className="rounded-full bg-[#C9A84C]/20 px-2 py-0.5 text-[10px] font-semibold text-[#C9A84C]">
                   Ativos
                 </span>
               )}
             </span>
             <ChevronDown
-              className={`h-4 w-4 text-[#94A3B8] transition-transform ${
+              className={`h-4 w-4 text-[#8BA5BD] transition-transform ${
                 filtersOpen ? 'rotate-180' : ''
               }`}
             />
@@ -333,13 +333,13 @@ export default function HistoricoPage() {
                 <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {/* Trail filter */}
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-[#94A3B8]">
+                    <label className="mb-1 block text-xs font-medium text-[#8BA5BD]">
                       Trilha
                     </label>
                     <select
                       value={trail}
                       onChange={(e) => setTrail(e.target.value)}
-                      className="w-full rounded-lg border border-[#252542] bg-[#0F0F1A] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#E94560]"
+                      className="w-full rounded-lg border border-[#1A3050] bg-[#0A1628] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#C9A84C]"
                     >
                       {TRAIL_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -351,13 +351,13 @@ export default function HistoricoPage() {
 
                   {/* Result filter */}
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-[#94A3B8]">
+                    <label className="mb-1 block text-xs font-medium text-[#8BA5BD]">
                       Resultado
                     </label>
                     <select
                       value={result}
                       onChange={(e) => setResult(e.target.value)}
-                      className="w-full rounded-lg border border-[#252542] bg-[#0F0F1A] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#E94560]"
+                      className="w-full rounded-lg border border-[#1A3050] bg-[#0A1628] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#C9A84C]"
                     >
                       {RESULT_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -375,7 +375,7 @@ export default function HistoricoPage() {
                       setTrail('');
                       setResult('');
                     }}
-                    className="mt-3 text-xs font-medium text-[#E94560] transition-colors hover:text-[#E94560]/80"
+                    className="mt-3 text-xs font-medium text-[#C9A84C] transition-colors hover:text-[#C9A84C]/80"
                   >
                     Limpar filtros
                   </button>
@@ -389,8 +389,8 @@ export default function HistoricoPage() {
         {loading && (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin text-[#E94560]" />
-              <span className="text-sm text-[#94A3B8]">Carregando historico...</span>
+              <Loader2 className="h-4 w-4 animate-spin text-[#C9A84C]" />
+              <span className="text-sm text-[#8BA5BD]">Carregando historico...</span>
             </div>
             {[1, 2, 3, 4].map((i) => (
               <SkeletonCard key={i} />
@@ -400,14 +400,14 @@ export default function HistoricoPage() {
 
         {/* Empty state */}
         {!loading && data && data.usages.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-[#252542] bg-[#1A1A2E] py-16">
-            <Inbox className="mb-4 h-12 w-12 text-[#252542]" />
+          <div className="flex flex-col items-center justify-center rounded-xl border border-[#1A3050] bg-[#0F1D32] py-16">
+            <Inbox className="mb-4 h-12 w-12 text-[#1A3050]" />
             <h3 className="mb-1 text-lg font-semibold text-white">
               {trail || result
                 ? 'Nenhum resultado encontrado'
                 : 'Voce ainda nao usou nenhum script'}
             </h3>
-            <p className="text-sm text-[#94A3B8]">
+            <p className="text-sm text-[#8BA5BD]">
               {trail || result
                 ? 'Tente ajustar os filtros'
                 : 'Comece usando scripts para ver seu historico aqui'}
@@ -423,8 +423,8 @@ export default function HistoricoPage() {
                 {/* Date header */}
                 <div className="mb-3 flex items-center gap-3">
                   <span className="text-sm font-semibold text-white">{dateKey}</span>
-                  <div className="h-px flex-1 bg-[#252542]" />
-                  <span className="text-xs text-[#94A3B8]">
+                  <div className="h-px flex-1 bg-[#1A3050]" />
+                  <span className="text-xs text-[#8BA5BD]">
                     {grouped[dateKey].length} {grouped[dateKey].length === 1 ? 'uso' : 'usos'}
                   </span>
                 </div>
@@ -442,22 +442,22 @@ export default function HistoricoPage() {
 
         {/* Pagination */}
         {!loading && data && data.totalPages > 1 && (
-          <div className="flex items-center justify-between rounded-xl border border-[#252542] bg-[#1A1A2E] px-4 py-3">
-            <span className="text-xs text-[#94A3B8]">
+          <div className="flex items-center justify-between rounded-xl border border-[#1A3050] bg-[#0F1D32] px-4 py-3">
+            <span className="text-xs text-[#8BA5BD]">
               Pagina {data.page} de {data.totalPages} ({data.total} registros)
             </span>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#252542] text-white transition-colors hover:bg-[#252542] disabled:opacity-30 disabled:hover:bg-transparent"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#1A3050] text-white transition-colors hover:bg-[#1A3050] disabled:opacity-30 disabled:hover:bg-transparent"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
                 disabled={page >= data.totalPages}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#252542] text-white transition-colors hover:bg-[#252542] disabled:opacity-30 disabled:hover:bg-transparent"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#1A3050] text-white transition-colors hover:bg-[#1A3050] disabled:opacity-30 disabled:hover:bg-transparent"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
