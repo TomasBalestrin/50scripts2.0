@@ -173,7 +173,7 @@ export default function UpgradePage() {
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-96 bg-[#1A1A2E] rounded-xl animate-pulse" />
+            <div key={i} className="h-96 bg-[#0F1D32] rounded-xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -216,7 +216,7 @@ export default function UpgradePage() {
           <Button
             onClick={handleManageSubscription}
             disabled={portalLoading}
-            className="bg-[#252542] hover:bg-[#2f2f55] text-white border border-[#252542] hover:border-[#E94560]/50 transition-all"
+            className="bg-[#1A3050] hover:bg-[#2f2f55] text-white border border-[#1A3050] hover:border-[#C9A84C]/50 transition-all"
           >
             {portalLoading ? (
               <>
@@ -244,12 +244,12 @@ export default function UpgradePage() {
           return (
             <Card
               key={plan}
-              className={`relative bg-[#1A1A2E] border-2 transition-all ${
+              className={`relative bg-[#0F1D32] border-2 transition-all ${
                 isCurrentPlan
-                  ? 'border-[#E94560] shadow-lg shadow-[#E94560]/20'
+                  ? 'border-[#C9A84C] shadow-lg shadow-[#C9A84C]/20'
                   : isPopular
                   ? 'border-purple-500/50'
-                  : 'border-[#252542]'
+                  : 'border-[#1A3050]'
               }`}
             >
               {isPopular && !isCurrentPlan && (
@@ -259,7 +259,7 @@ export default function UpgradePage() {
               )}
               {isCurrentPlan && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-[#E94560] text-white px-3">Plano Atual</Badge>
+                  <Badge className="bg-[#C9A84C] text-white px-3">Plano Atual</Badge>
                 </div>
               )}
 
@@ -290,7 +290,7 @@ export default function UpgradePage() {
 
                 <div className="pt-4">
                   {isCurrentPlan ? (
-                    <Button disabled className="w-full bg-[#252542] text-gray-400">
+                    <Button disabled className="w-full bg-[#1A3050] text-gray-400">
                       Plano Atual
                     </Button>
                   ) : isUpgrade ? (
@@ -313,7 +313,7 @@ export default function UpgradePage() {
                     <Button
                       disabled
                       variant="outline"
-                      className="w-full border-[#252542] text-gray-500"
+                      className="w-full border-[#1A3050] text-gray-500"
                     >
                       <Lock className="w-4 h-4 mr-2" />
                       Incluido

@@ -17,12 +17,12 @@ interface CategoryWithScripts {
 function SkeletonHeader() {
   return (
     <div className="animate-pulse space-y-3">
-      <div className="h-5 w-24 rounded bg-[#252542]" />
+      <div className="h-5 w-24 rounded bg-[#1A3050]" />
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-lg bg-[#252542]" />
+        <div className="h-10 w-10 rounded-lg bg-[#1A3050]" />
         <div className="space-y-2">
-          <div className="h-7 w-48 rounded bg-[#252542]" />
-          <div className="h-4 w-72 rounded bg-[#252542]" />
+          <div className="h-7 w-48 rounded bg-[#1A3050]" />
+          <div className="h-4 w-72 rounded bg-[#1A3050]" />
         </div>
       </div>
     </div>
@@ -31,13 +31,13 @@ function SkeletonHeader() {
 
 function SkeletonScriptCard() {
   return (
-    <div className="animate-pulse rounded-xl border border-[#252542] bg-[#1A1A2E] p-5">
-      <div className="mb-3 h-4 w-3/4 rounded bg-[#252542]" />
-      <div className="mb-2 h-3 w-full rounded bg-[#252542]" />
-      <div className="mb-3 h-3 w-2/3 rounded bg-[#252542]" />
+    <div className="animate-pulse rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5">
+      <div className="mb-3 h-4 w-3/4 rounded bg-[#1A3050]" />
+      <div className="mb-2 h-3 w-full rounded bg-[#1A3050]" />
+      <div className="mb-3 h-3 w-2/3 rounded bg-[#1A3050]" />
       <div className="flex gap-1">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-4 w-12 rounded-full bg-[#252542]" />
+          <div key={i} className="h-4 w-12 rounded-full bg-[#1A3050]" />
         ))}
       </div>
     </div>
@@ -95,7 +95,7 @@ export default function TrailScriptsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F0F1A] p-4 sm:p-6">
+      <div className="min-h-screen bg-[#0A1628] p-4 sm:p-6">
         <div className="mx-auto max-w-6xl space-y-6">
           <SkeletonHeader />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -110,17 +110,17 @@ export default function TrailScriptsPage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-[#0F0F1A] p-4 sm:p-6">
+      <div className="min-h-screen bg-[#0A1628] p-4 sm:p-6">
         <div className="mx-auto max-w-6xl">
           <button
             onClick={() => router.push('/trilhas')}
-            className="mb-6 inline-flex items-center gap-2 text-sm text-[#94A3B8] transition-colors hover:text-white"
+            className="mb-6 inline-flex items-center gap-2 text-sm text-[#8BA5BD] transition-colors hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar para Trilhas
           </button>
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-lg text-[#94A3B8]">Trilha nao encontrada</p>
+            <p className="text-lg text-[#8BA5BD]">Trilha nao encontrada</p>
           </div>
         </div>
       </div>
@@ -130,12 +130,12 @@ export default function TrailScriptsPage() {
   const { category, scripts } = data;
 
   return (
-    <div className="min-h-screen bg-[#0F0F1A] p-4 sm:p-6">
+    <div className="min-h-screen bg-[#0A1628] p-4 sm:p-6">
       <div className="mx-auto max-w-6xl">
         {/* Back button */}
         <button
           onClick={() => router.push('/trilhas')}
-          className="mb-6 inline-flex items-center gap-2 text-sm text-[#94A3B8] transition-colors hover:text-white"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-[#8BA5BD] transition-colors hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           Voltar para Trilhas
@@ -147,7 +147,7 @@ export default function TrailScriptsPage() {
             <span className="text-4xl">{category.icon}</span>
             <div>
               <h1 className="text-2xl font-bold text-white sm:text-3xl">{category.name}</h1>
-              <p className="mt-1 text-sm text-[#94A3B8]">{category.description}</p>
+              <p className="mt-1 text-sm text-[#8BA5BD]">{category.description}</p>
             </div>
           </div>
           <div
@@ -180,8 +180,8 @@ export default function TrailScriptsPage() {
           </motion.div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-lg text-[#94A3B8]">Nenhum script nesta trilha</p>
-            <p className="mt-1 text-sm text-[#94A3B8]/70">
+            <p className="text-lg text-[#8BA5BD]">Nenhum script nesta trilha</p>
+            <p className="mt-1 text-sm text-[#8BA5BD]/70">
               Scripts serao adicionados em breve.
             </p>
           </div>

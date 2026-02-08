@@ -38,7 +38,7 @@ export default async function DashboardLayout({
   const role = profile?.role || 'user';
 
   return (
-    <div className="min-h-screen bg-[#0F0F1A]">
+    <div className="min-h-screen bg-[#0A1628]">
       {/* Desktop sidebar */}
       <Sidebar plan={plan} role={role} userName={userName} userAvatar={null} />
 

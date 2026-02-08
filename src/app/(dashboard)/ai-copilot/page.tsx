@@ -130,14 +130,14 @@ export default function AICopilotPage() {
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Bot className="w-6 h-6 text-[#E94560]" />
+          <Bot className="w-6 h-6 text-[#C9A84C]" />
           IA Copilot
         </h1>
         <Badge className="bg-amber-500/20 text-amber-400">Copilot</Badge>
       </div>
 
       {/* Input Section */}
-      <Card className="bg-[#1A1A2E] border-[#252542] mb-6">
+      <Card className="bg-[#0F1D32] border-[#1A3050] mb-6">
         <CardHeader>
           <CardTitle className="text-white text-lg">Cole a conversa</CardTitle>
           <p className="text-sm text-gray-400">
@@ -149,10 +149,10 @@ export default function AICopilotPage() {
             <div>
               <label className="text-sm text-gray-400 mb-2 block">Lead (opcional)</label>
               <Select value={leadId} onValueChange={setLeadId}>
-                <SelectTrigger className="bg-[#252542] border-[#363660] text-white">
+                <SelectTrigger className="bg-[#1A3050] border-[#363660] text-white">
                   <SelectValue placeholder="Selecionar lead para contexto" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#252542] border-[#363660]">
+                <SelectContent className="bg-[#1A3050] border-[#363660]">
                   <SelectItem value="" className="text-gray-400">
                     Nenhum lead específico
                   </SelectItem>
@@ -170,13 +170,13 @@ export default function AICopilotPage() {
             value={conversation}
             onChange={(e) => setConversation(e.target.value)}
             placeholder={`Cole a conversa aqui...\n\nExemplo:\nVocê: Oi Maria, tudo bem? Vi que você se interessou pelo nosso curso...\nMaria: Oi! Sim, achei interessante, mas achei o preço um pouco alto...\nVocê: Entendo! E se eu te mostrar que...`}
-            className="bg-[#252542] border-[#363660] text-white min-h-[200px] font-mono text-sm"
+            className="bg-[#1A3050] border-[#363660] text-white min-h-[200px] font-mono text-sm"
           />
 
           <Button
             onClick={handleAnalyze}
             disabled={analyzing || conversation.length < 10}
-            className="w-full bg-[#E94560] hover:bg-[#d63d56] text-white h-12"
+            className="w-full bg-[#C9A84C] hover:bg-[#d63d56] text-white h-12"
           >
             {analyzing ? (
               <>
@@ -197,15 +197,15 @@ export default function AICopilotPage() {
       {result && (
         <div className="space-y-4">
           {parseResult(result).map((section, i) => (
-            <Card key={i} className="bg-[#1A1A2E] border-[#252542]">
+            <Card key={i} className="bg-[#0F1D32] border-[#1A3050]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-base flex items-center gap-2">
-                  <span className="text-[#E94560]">{section.icon}</span>
+                  <span className="text-[#C9A84C]">{section.icon}</span>
                   {section.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-[#252542] rounded-lg p-4 mb-3">
+                <div className="bg-[#1A3050] rounded-lg p-4 mb-3">
                   <pre className="whitespace-pre-wrap text-gray-200 text-sm font-sans leading-relaxed">
                     {section.content}
                   </pre>
@@ -214,7 +214,7 @@ export default function AICopilotPage() {
                   <Button
                     size="sm"
                     onClick={() => handleCopy(section.content, section.title)}
-                    className="bg-[#E94560] hover:bg-[#d63d56] text-white"
+                    className="bg-[#C9A84C] hover:bg-[#d63d56] text-white"
                   >
                     {copiedSection === section.title ? (
                       <><Check className="w-3 h-3 mr-1" /> Copiado!</>

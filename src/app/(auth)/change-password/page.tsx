@@ -58,16 +58,16 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="w-full max-w-md">
-      <Card className="border-[#252542] bg-[#1A1A2E] shadow-2xl">
+      <Card className="border-[#1A3050] bg-[#0F1D32] shadow-2xl">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto">
             <h1 className="text-3xl font-bold">
               <span className="text-white">50 Scripts</span>{' '}
-              <span className="text-[#E94560]">2.0</span>
+              <span className="text-[#C9A84C]">2.0</span>
             </h1>
           </div>
           <CardTitle className="text-xl text-white">Alterar Senha</CardTitle>
-          <CardDescription className="text-[#94A3B8]">
+          <CardDescription className="text-[#8BA5BD]">
             Por seguran&ccedil;a, crie uma nova senha para sua conta
           </CardDescription>
         </CardHeader>
@@ -75,7 +75,7 @@ export default function ChangePasswordPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-[#94A3B8]">
+              <Label htmlFor="password" className="text-[#8BA5BD]">
                 Nova Senha
               </Label>
               <Input
@@ -86,12 +86,12 @@ export default function ChangePasswordPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
-                className="bg-[#0F0F1A] border-[#252542] text-white placeholder:text-[#4A4A6A] focus-visible:ring-[#E94560]"
+                className="bg-[#0A1628] border-[#1A3050] text-white placeholder:text-[#4A4A6A] focus-visible:ring-[#C9A84C]"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-[#94A3B8]">
+              <Label htmlFor="confirmPassword" className="text-[#8BA5BD]">
                 Confirmar Nova Senha
               </Label>
               <Input
@@ -102,7 +102,7 @@ export default function ChangePasswordPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 disabled={loading}
-                className="bg-[#0F0F1A] border-[#252542] text-white placeholder:text-[#4A4A6A] focus-visible:ring-[#E94560]"
+                className="bg-[#0A1628] border-[#1A3050] text-white placeholder:text-[#4A4A6A] focus-visible:ring-[#C9A84C]"
               />
             </div>
 
@@ -115,7 +115,7 @@ export default function ChangePasswordPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#E94560] hover:bg-[#E94560]/90 text-white font-semibold"
+              className="w-full bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white font-semibold"
             >
               {loading ? 'Salvando...' : 'Salvar Nova Senha'}
             </Button>

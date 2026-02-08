@@ -15,7 +15,7 @@ export function QRCode({ value, size = 200, className }: QRCodeProps) {
     // Fallback: show a simple placeholder
     return (
       <div
-        className={`flex items-center justify-center rounded-lg border border-[#252542] bg-white ${className || ''}`}
+        className={`flex items-center justify-center rounded-lg border border-[#1A3050] bg-white ${className || ''}`}
         style={{ width: size, height: size }}
       >
         <span className="text-xs text-gray-400 text-center px-4">

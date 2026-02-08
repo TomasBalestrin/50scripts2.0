@@ -26,11 +26,11 @@ export function LockedFeature({
       <div className="pointer-events-none select-none blur-[6px] opacity-50">
         {children}
       </div>
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#0F0F1A]/60 backdrop-blur-sm rounded-lg">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#252542] border border-[#E94560]/20">
-          <Lock className="h-5 w-5 text-[#E94560]" />
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#0A1628]/60 backdrop-blur-sm rounded-lg">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1A3050] border border-[#C9A84C]/20">
+          <Lock className="h-5 w-5 text-[#C9A84C]" />
         </div>
-        <p className="text-sm text-[#94A3B8] text-center px-4">
+        <p className="text-sm text-[#8BA5BD] text-center px-4">
           Recurso exclusivo do plano{" "}
           <span className="font-semibold text-white">
             {PLAN_LABELS[requiredPlan]}
@@ -38,7 +38,7 @@ export function LockedFeature({
         </p>
         <Button
           size="sm"
-          className="bg-[#E94560] hover:bg-[#E94560]/90 text-white text-xs"
+          className="bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white text-xs"
           onClick={() => {
             // Navigate to upgrade page
             window.location.href = `/upgrade?plan=${requiredPlan}`;

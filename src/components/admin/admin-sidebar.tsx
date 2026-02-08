@@ -43,8 +43,8 @@ export function AdminSidebar() {
   const sidebarContent = (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-[#252542] px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#E94560]">
+      <div className="flex h-16 items-center gap-3 border-b border-[#1A3050] px-6">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#C9A84C]">
           <FileText className="h-5 w-5 text-white" />
         </div>
         <div>
@@ -68,11 +68,11 @@ export function AdminSidebar() {
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
                 active
-                  ? 'bg-[#E94560]/10 text-[#E94560]'
-                  : 'text-gray-400 hover:bg-[#252542] hover:text-white'
+                  ? 'bg-[#C9A84C]/10 text-[#C9A84C]'
+                  : 'text-gray-400 hover:bg-[#1A3050] hover:text-white'
               )}
             >
-              <Icon className={cn('h-5 w-5', active ? 'text-[#E94560]' : 'text-gray-500')} />
+              <Icon className={cn('h-5 w-5', active ? 'text-[#C9A84C]' : 'text-gray-500')} />
               {item.label}
             </Link>
           );
@@ -80,10 +80,10 @@ export function AdminSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-[#252542] p-3">
+      <div className="border-t border-[#1A3050] p-3">
         <Link
           href="/"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 transition-all hover:bg-[#252542] hover:text-white"
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 transition-all hover:bg-[#1A3050] hover:text-white"
         >
           <LogOut className="h-5 w-5 text-gray-500" />
           Voltar ao App
@@ -97,7 +97,7 @@ export function AdminSidebar() {
       {/* Mobile toggle */}
       <button
         type="button"
-        className="fixed left-4 top-4 z-50 rounded-lg bg-[#1A1A2E] p-2 text-white shadow-lg lg:hidden"
+        className="fixed left-4 top-4 z-50 rounded-lg bg-[#0F1D32] p-2 text-white shadow-lg lg:hidden"
         onClick={() => setMobileOpen(!mobileOpen)}
       >
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -114,7 +114,7 @@ export function AdminSidebar() {
       {/* Sidebar - mobile */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 w-64 transform border-r border-[#252542] bg-[#1A1A2E] transition-transform duration-200 lg:hidden',
+          'fixed inset-y-0 left-0 z-40 w-64 transform border-r border-[#1A3050] bg-[#0F1D32] transition-transform duration-200 lg:hidden',
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -122,7 +122,7 @@ export function AdminSidebar() {
       </aside>
 
       {/* Sidebar - desktop */}
-      <aside className="hidden w-64 shrink-0 border-r border-[#252542] bg-[#1A1A2E] lg:block">
+      <aside className="hidden w-64 shrink-0 border-r border-[#1A3050] bg-[#0F1D32] lg:block">
         {sidebarContent}
       </aside>
     </>

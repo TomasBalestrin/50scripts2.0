@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#E94560",
+  themeColor: "#C9A84C",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className="dark">
-      <body className="font-sans bg-[#0F0F1A] text-white antialiased">
+      <body className="font-sans bg-[#0A1628] text-white antialiased">
         {children}
         <AnalyticsProvider />
       </body>

@@ -81,7 +81,7 @@ export function XpBar({ xp, level }: XpBarProps) {
         </div>
         <div className="hidden sm:block">
           <p className="text-xs font-semibold text-white">{label}</p>
-          <p className="text-[10px] text-[#94A3B8]">
+          <p className="text-[10px] text-[#8BA5BD]">
             {nextLevel ? `${xp} / ${nextThreshold} XP` : `${xp} XP (Max)`}
           </p>
         </div>
@@ -89,7 +89,7 @@ export function XpBar({ xp, level }: XpBarProps) {
 
       {/* Progress bar */}
       <div className="flex-1 min-w-0">
-        <div className="relative h-3 w-full overflow-hidden rounded-full bg-[#252542]">
+        <div className="relative h-3 w-full overflow-hidden rounded-full bg-[#1A3050]">
           <motion.div
             className="absolute inset-y-0 left-0 rounded-full"
             style={{
@@ -113,7 +113,7 @@ export function XpBar({ xp, level }: XpBarProps) {
         </div>
         <div className="mt-1 flex items-center justify-between sm:hidden">
           <p className="text-[10px] font-medium text-white">{label}</p>
-          <p className="text-[10px] text-[#94A3B8]">
+          <p className="text-[10px] text-[#8BA5BD]">
             {nextLevel ? `${xpInLevel}/${xpNeeded}` : 'MAX'}
           </p>
         </div>

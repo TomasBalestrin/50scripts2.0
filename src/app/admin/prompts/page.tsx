@@ -189,7 +189,7 @@ export default function AdminPromptsPage() {
         <h1 className="text-2xl font-bold text-white">Prompts IA</h1>
         <Button
           onClick={openCreateDialog}
-          className="bg-[#E94560] text-white hover:bg-[#E94560]/90"
+          className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
         >
           <Plus className="mr-2 h-4 w-4" />
           Adicionar Prompt
@@ -197,17 +197,17 @@ export default function AdminPromptsPage() {
       </div>
 
       {/* Table */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardContent className="p-0">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-[#E94560]" />
+              <Loader2 className="h-6 w-6 animate-spin text-[#C9A84C]" />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#252542] text-left text-gray-400">
+                  <tr className="border-b border-[#1A3050] text-left text-gray-400">
                     <th className="px-4 py-3">Nome</th>
                     <th className="px-4 py-3">Tipo</th>
                     <th className="px-4 py-3">Modelo</th>
@@ -221,7 +221,7 @@ export default function AdminPromptsPage() {
                   {prompts.map((prompt) => (
                     <tr
                       key={prompt.id}
-                      className="border-b border-[#252542]/50 text-white"
+                      className="border-b border-[#1A3050]/50 text-white"
                     >
                       <td className="px-4 py-3 font-medium">{prompt.name}</td>
                       <td className="px-4 py-3">
@@ -289,7 +289,7 @@ export default function AdminPromptsPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto border-[#252542] bg-[#1A1A2E] text-white">
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto border-[#1A3050] bg-[#0F1D32] text-white">
           <DialogHeader>
             <DialogTitle className="text-white">
               {editingId ? 'Editar Prompt' : 'Novo Prompt'}
@@ -305,7 +305,7 @@ export default function AdminPromptsPage() {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, name: e.target.value }))
                   }
-                  className="mt-1 border-[#252542] bg-[#252542] text-white"
+                  className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
                 />
               </div>
               <div>
@@ -319,10 +319,10 @@ export default function AdminPromptsPage() {
                     }))
                   }
                 >
-                  <SelectTrigger className="mt-1 border-[#252542] bg-[#252542] text-white">
+                  <SelectTrigger className="mt-1 border-[#1A3050] bg-[#1A3050] text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-[#252542] bg-[#1A1A2E] text-white">
+                  <SelectContent className="border-[#1A3050] bg-[#0F1D32] text-white">
                     <SelectItem value="generation">Geracao</SelectItem>
                     <SelectItem value="conversation">Conversa</SelectItem>
                     <SelectItem value="analysis">Analise</SelectItem>
@@ -369,7 +369,7 @@ export default function AdminPromptsPage() {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, model: e.target.value }))
                   }
-                  className="mt-1 border-[#252542] bg-[#252542] font-mono text-sm text-white"
+                  className="mt-1 border-[#1A3050] bg-[#1A3050] font-mono text-sm text-white"
                 />
               </div>
               <div>
@@ -386,7 +386,7 @@ export default function AdminPromptsPage() {
                       temperature: parseFloat(e.target.value) || 0,
                     }))
                   }
-                  className="mt-1 border-[#252542] bg-[#252542] text-white"
+                  className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
                 />
               </div>
               <div>
@@ -400,7 +400,7 @@ export default function AdminPromptsPage() {
                       max_tokens: parseInt(e.target.value) || 0,
                     }))
                   }
-                  className="mt-1 border-[#252542] bg-[#252542] text-white"
+                  className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
                 />
               </div>
             </div>
@@ -419,7 +419,7 @@ export default function AdminPromptsPage() {
               <Button
                 variant="outline"
                 onClick={() => setDialogOpen(false)}
-                className="border-[#252542] text-gray-300 hover:bg-[#252542]"
+                className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
               >
                 Cancelar
               </Button>
@@ -428,7 +428,7 @@ export default function AdminPromptsPage() {
                 disabled={
                   saving || !form.name.trim() || !form.system_prompt.trim()
                 }
-                className="bg-[#E94560] text-white hover:bg-[#E94560]/90"
+                className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
               >
                 {saving ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -442,7 +442,7 @@ export default function AdminPromptsPage() {
 
       {/* Test Playground Dialog */}
       <Dialog open={testOpen} onOpenChange={setTestOpen}>
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-[#252542] bg-[#1A1A2E] text-white">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-[#1A3050] bg-[#0F1D32] text-white">
           <DialogHeader>
             <DialogTitle className="text-white">
               Testar Prompt: {testPrompt?.name}
@@ -457,7 +457,7 @@ export default function AdminPromptsPage() {
                 onChange={(e) => setTestInput(e.target.value)}
                 rows={4}
                 placeholder="Digite o texto de entrada para testar o prompt..."
-                className="mt-1 border-[#252542] bg-[#252542] text-white placeholder:text-gray-500"
+                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white placeholder:text-gray-500"
               />
             </div>
 
@@ -473,7 +473,7 @@ export default function AdminPromptsPage() {
             {testResult && (
               <div>
                 <Label className="text-gray-400">Resultado</Label>
-                <pre className="mt-1 max-h-80 overflow-auto rounded-lg border border-[#252542] bg-[#0F0F1A] p-4 font-mono text-xs text-gray-300 whitespace-pre-wrap">
+                <pre className="mt-1 max-h-80 overflow-auto rounded-lg border border-[#1A3050] bg-[#0A1628] p-4 font-mono text-xs text-gray-300 whitespace-pre-wrap">
                   {testResult}
                 </pre>
               </div>

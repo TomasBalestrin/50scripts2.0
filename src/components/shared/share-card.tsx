@@ -65,33 +65,33 @@ export function ShareCard({
         style={{
           width: 350,
           minHeight: 600,
-          background: 'linear-gradient(180deg, #1A1A2E 0%, #0F0F1A 100%)',
+          background: 'linear-gradient(180deg, #0F1D32 0%, #0A1628 100%)',
         }}
       >
         {/* Decorative circles */}
         <div
           className="absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-20"
-          style={{ background: 'radial-gradient(circle, #E94560 0%, transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, #C9A84C 0%, transparent 70%)' }}
         />
         <div
           className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full opacity-15"
-          style={{ background: 'radial-gradient(circle, #0F3460 0%, transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, #4A90D9 0%, transparent 70%)' }}
         />
 
         {/* Top branding */}
         <div className="relative z-10 flex w-full flex-col items-center pt-10">
           <div className="mb-1 flex items-center gap-2">
-            <Share2 className="h-5 w-5 text-[#E94560]" />
+            <Share2 className="h-5 w-5 text-[#C9A84C]" />
             <span
               className="text-lg font-bold tracking-wider"
-              style={{ color: '#E94560' }}
+              style={{ color: '#C9A84C' }}
             >
               50 Scripts 2.0
             </span>
           </div>
           <div
             className="h-0.5 w-16 rounded-full"
-            style={{ backgroundColor: '#E94560' }}
+            style={{ backgroundColor: '#C9A84C' }}
           />
         </div>
 
@@ -104,14 +104,14 @@ export function ShareCard({
             <span className="text-lg font-medium text-gray-400">R$</span>
             <span
               className="text-5xl font-extrabold"
-              style={{ color: '#E94560' }}
+              style={{ color: '#C9A84C' }}
             >
               {formattedValue}
             </span>
           </div>
 
           {/* Divider */}
-          <div className="mb-4 h-px w-3/4 bg-[#252542]" />
+          <div className="mb-4 h-px w-3/4 bg-[#1A3050]" />
 
           {/* Script title */}
           <p className="mb-1 text-xs uppercase tracking-wider text-gray-500">
@@ -125,7 +125,7 @@ export function ShareCard({
           <div className="flex items-center gap-2">
             <div
               className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
-              style={{ backgroundColor: '#E94560' }}
+              style={{ backgroundColor: '#C9A84C' }}
             >
               {userName.charAt(0).toUpperCase()}
             </div>
@@ -140,7 +140,7 @@ export function ShareCard({
               <div
                 className="rounded-xl border px-4 py-3 text-center"
                 style={{
-                  borderColor: '#E94560',
+                  borderColor: '#C9A84C',
                   backgroundColor: 'rgba(233, 69, 96, 0.08)',
                 }}
               >
@@ -149,7 +149,7 @@ export function ShareCard({
                 </p>
                 <p
                   className="text-lg font-bold tracking-widest"
-                  style={{ color: '#E94560' }}
+                  style={{ color: '#C9A84C' }}
                 >
                   {referralCode}
                 </p>
@@ -179,7 +179,7 @@ export function ShareCard({
       <Button
         onClick={handleExport}
         disabled={exporting}
-        className="w-full max-w-[350px] bg-[#E94560] hover:bg-[#d63d56] text-white h-11"
+        className="w-full max-w-[350px] bg-[#C9A84C] hover:bg-[#d63d56] text-white h-11"
       >
         {exporting ? (
           <>

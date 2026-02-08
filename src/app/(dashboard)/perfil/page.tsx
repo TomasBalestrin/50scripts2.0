@@ -76,7 +76,7 @@ export default function PerfilPage() {
     return (
       <div className="p-6 space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-32 bg-[#1A1A2E] rounded-xl animate-pulse" />
+          <div key={i} className="h-32 bg-[#0F1D32] rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -89,12 +89,12 @@ export default function PerfilPage() {
       <h1 className="text-2xl font-bold">Meu Perfil</h1>
 
       {/* Plan & Level Card */}
-      <Card className="bg-[#1A1A2E] border-[#252542]">
+      <Card className="bg-[#0F1D32] border-[#1A3050]">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-[#252542] flex items-center justify-center">
-                <User className="w-8 h-8 text-[#E94560]" />
+              <div className="w-16 h-16 rounded-full bg-[#1A3050] flex items-center justify-center">
+                <User className="w-8 h-8 text-[#C9A84C]" />
               </div>
               <div>
                 <p className="text-lg font-semibold text-white">{profile.full_name || profile.email}</p>
@@ -109,7 +109,7 @@ export default function PerfilPage() {
             </Badge>
           </div>
 
-          <Separator className="my-4 bg-[#252542]" />
+          <Separator className="my-4 bg-[#1A3050]" />
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
@@ -139,7 +139,7 @@ export default function PerfilPage() {
       </Card>
 
       {/* Personal Info */}
-      <Card className="bg-[#1A1A2E] border-[#252542]">
+      <Card className="bg-[#0F1D32] border-[#1A3050]">
         <CardHeader>
           <CardTitle className="text-white text-lg">Informações Pessoais</CardTitle>
         </CardHeader>
@@ -149,7 +149,7 @@ export default function PerfilPage() {
             <Input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="bg-[#252542] border-[#363660] text-white mt-1"
+              className="bg-[#1A3050] border-[#363660] text-white mt-1"
             />
           </div>
           <div>
@@ -158,14 +158,14 @@ export default function PerfilPage() {
               value={niche}
               onChange={(e) => setNiche(e.target.value)}
               placeholder="Ex: Saúde, Educação, Tecnologia..."
-              className="bg-[#252542] border-[#363660] text-white mt-1"
+              className="bg-[#1A3050] border-[#363660] text-white mt-1"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Saved Variables */}
-      <Card className="bg-[#1A1A2E] border-[#252542]">
+      <Card className="bg-[#0F1D32] border-[#1A3050]">
         <CardHeader>
           <CardTitle className="text-white text-lg">Variáveis Salvas</CardTitle>
           <p className="text-sm text-gray-400">
@@ -180,7 +180,7 @@ export default function PerfilPage() {
                 value={value}
                 onChange={(e) => setSavedVars((prev) => ({ ...prev, [key]: e.target.value }))}
                 placeholder={key === 'MEU_PRECO' ? 'Ex: R$ 497,00' : `Seu ${key.toLowerCase().replace('meu_', '').replace('minha_', '')}`}
-                className="bg-[#252542] border-[#363660] text-white mt-1"
+                className="bg-[#1A3050] border-[#363660] text-white mt-1"
               />
             </div>
           ))}
@@ -192,14 +192,14 @@ export default function PerfilPage() {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="flex-1 bg-[#E94560] hover:bg-[#d63d56] text-white"
+          className="flex-1 bg-[#C9A84C] hover:bg-[#d63d56] text-white"
         >
           {saving ? 'Salvando...' : 'Salvar Alterações'}
         </Button>
         <Button
           onClick={handleSignOut}
           variant="outline"
-          className="border-[#252542] text-gray-400 hover:text-white hover:bg-[#252542]"
+          className="border-[#1A3050] text-gray-400 hover:text-white hover:bg-[#1A3050]"
         >
           <LogOut className="w-4 h-4 mr-2" />
           Sair
@@ -208,16 +208,16 @@ export default function PerfilPage() {
 
       {/* Referral Code */}
       {profile.referral_code && (
-        <Card className="bg-[#1A1A2E] border-[#252542]">
+        <Card className="bg-[#0F1D32] border-[#1A3050]">
           <CardContent className="pt-6">
             <p className="text-sm text-gray-400 mb-2">Seu código de indicação</p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 bg-[#252542] p-3 rounded-lg text-[#E94560] font-mono text-lg">
+              <code className="flex-1 bg-[#1A3050] p-3 rounded-lg text-[#C9A84C] font-mono text-lg">
                 {profile.referral_code}
               </code>
               <Button
                 variant="outline"
-                className="border-[#252542] text-white hover:bg-[#252542]"
+                className="border-[#1A3050] text-white hover:bg-[#1A3050]"
                 onClick={() => navigator.clipboard.writeText(
                   `${window.location.origin}?ref=${profile.referral_code}`
                 )}

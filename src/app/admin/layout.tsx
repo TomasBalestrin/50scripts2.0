@@ -28,11 +28,11 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0F0F1A]">
+    <div className="flex h-screen overflow-hidden bg-[#0A1628]">
       <AdminSidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top header */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#252542] bg-[#1A1A2E] px-6">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#1A3050] bg-[#0F1D32] px-6">
           <div className="pl-12 lg:pl-0">
             <h2 className="text-sm font-medium text-gray-400">
               Bem-vindo de volta,{' '}
@@ -40,7 +40,7 @@ export default async function AdminLayout({
             </h2>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E94560] text-xs font-bold text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#C9A84C] text-xs font-bold text-white">
               {(profile.full_name || profile.email || 'A').charAt(0).toUpperCase()}
             </div>
           </div>

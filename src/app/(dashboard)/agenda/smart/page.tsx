@@ -87,7 +87,7 @@ export default function SmartAgendaPage() {
   if (loading) {
     return (
       <div className="p-4 md:p-6 flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#E94560]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#C9A84C]" />
       </div>
     );
   }
@@ -98,7 +98,7 @@ export default function SmartAgendaPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Brain className="w-6 h-6 text-[#E94560]" />
+            <Brain className="w-6 h-6 text-[#C9A84C]" />
             Agenda Inteligente
           </h1>
           <p className="text-sm text-gray-400 mt-1">
@@ -110,13 +110,13 @@ export default function SmartAgendaPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <Card className="bg-[#1A1A2E] border-[#252542]">
+        <Card className="bg-[#0F1D32] border-[#1A3050]">
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold text-white">{leads.length}</p>
             <p className="text-xs text-gray-400">Leads Priorizados</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#1A1A2E] border-[#252542]">
+        <Card className="bg-[#0F1D32] border-[#1A3050]">
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold text-green-400">
               R$ {totalValue.toLocaleString('pt-BR')}
@@ -124,15 +124,15 @@ export default function SmartAgendaPage() {
             <p className="text-xs text-gray-400">Pipeline Total</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#1A1A2E] border-[#252542]">
+        <Card className="bg-[#0F1D32] border-[#1A3050]">
           <CardContent className="pt-4 text-center">
-            <p className="text-2xl font-bold text-[#E94560]">
+            <p className="text-2xl font-bold text-[#C9A84C]">
               {leads.filter((l) => l.closing_probability > 50).length}
             </p>
             <p className="text-xs text-gray-400">Alta Probabilidade</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#1A1A2E] border-[#252542]">
+        <Card className="bg-[#0F1D32] border-[#1A3050]">
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold text-yellow-400">
               {leads.filter((l) => l.reasons.includes('Follow-up atrasado')).length}
@@ -144,7 +144,7 @@ export default function SmartAgendaPage() {
 
       {/* Best Hours */}
       {bestHours.length > 0 && (
-        <Card className="bg-[#1A1A2E] border-[#252542] mb-6">
+        <Card className="bg-[#0F1D32] border-[#1A3050] mb-6">
           <CardHeader className="pb-2">
             <CardTitle className="text-white text-base flex items-center gap-2">
               <Zap className="w-4 h-4 text-yellow-400" />
@@ -156,7 +156,7 @@ export default function SmartAgendaPage() {
               {bestHours.map((h, i) => (
                 <div
                   key={h.hour}
-                  className="flex-1 bg-[#252542] rounded-lg p-3 text-center"
+                  className="flex-1 bg-[#1A3050] rounded-lg p-3 text-center"
                 >
                   <p className="text-lg font-bold text-white">{h.label}</p>
                   <p className="text-sm text-green-400">{h.conversion_rate}% conversão</p>
@@ -174,16 +174,16 @@ export default function SmartAgendaPage() {
 
       {/* Prioritized Leads */}
       <h2 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-        <Target className="w-5 h-5 text-[#E94560]" />
+        <Target className="w-5 h-5 text-[#C9A84C]" />
         Leads Priorizados
       </h2>
 
       {leads.length === 0 ? (
-        <Card className="bg-[#1A1A2E] border-[#252542]">
+        <Card className="bg-[#0F1D32] border-[#1A3050]">
           <CardContent className="pt-6 text-center text-gray-400">
             <p>Nenhum lead ativo no pipeline.</p>
             <Button
-              className="mt-3 bg-[#E94560] hover:bg-[#d63d56] text-white"
+              className="mt-3 bg-[#C9A84C] hover:bg-[#d63d56] text-white"
               onClick={() => router.push('/pipeline')}
             >
               Ir para Pipeline
@@ -199,7 +199,7 @@ export default function SmartAgendaPage() {
             return (
               <Card
                 key={lead.id}
-                className={`bg-[#1A1A2E] border-[#252542] transition-all hover:border-[#363660] ${
+                className={`bg-[#0F1D32] border-[#1A3050] transition-all hover:border-[#363660] ${
                   isOverdue ? 'border-l-2 border-l-red-500' : ''
                 }`}
               >
@@ -207,7 +207,7 @@ export default function SmartAgendaPage() {
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
                       {/* Priority rank */}
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#252542] text-sm font-bold text-white">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#1A3050] text-sm font-bold text-white">
                         {index + 1}
                       </div>
                       <div>
@@ -274,7 +274,7 @@ export default function SmartAgendaPage() {
                             ? 'bg-green-500/20 text-green-400'
                             : reason.includes('valor')
                             ? 'bg-yellow-500/20 text-yellow-400'
-                            : 'bg-[#252542] text-gray-400'
+                            : 'bg-[#1A3050] text-gray-400'
                         }`}
                       >
                         {reason}
@@ -284,7 +284,7 @@ export default function SmartAgendaPage() {
 
                   {/* Suggested Script */}
                   {lead.suggested_script && (
-                    <div className="bg-[#252542] rounded-lg p-3">
+                    <div className="bg-[#1A3050] rounded-lg p-3">
                       <p className="text-xs text-gray-400 mb-1">Script sugerido:</p>
                       <p className="text-sm font-medium text-white mb-1">
                         {lead.suggested_script.title}
@@ -295,7 +295,7 @@ export default function SmartAgendaPage() {
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          className="bg-[#E94560] hover:bg-[#d63d56] text-white text-xs h-7"
+                          className="bg-[#C9A84C] hover:bg-[#d63d56] text-white text-xs h-7"
                           onClick={() =>
                             handleCopy(lead.suggested_script!.content, lead.suggested_script!.id)
                           }

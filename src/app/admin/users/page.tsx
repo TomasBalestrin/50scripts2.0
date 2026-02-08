@@ -141,7 +141,7 @@ export default function AdminUsersPage() {
       <h1 className="text-2xl font-bold text-white">Usuários</h1>
 
       {/* Filters */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardContent className="flex flex-wrap items-center gap-4 p-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
@@ -152,7 +152,7 @@ export default function AdminUsersPage() {
                 setSearch(e.target.value);
                 setPage(0);
               }}
-              className="border-[#252542] bg-[#252542] pl-10 text-white placeholder:text-gray-500"
+              className="border-[#1A3050] bg-[#1A3050] pl-10 text-white placeholder:text-gray-500"
             />
           </div>
           <div className="w-40">
@@ -163,10 +163,10 @@ export default function AdminUsersPage() {
                 setPage(0);
               }}
             >
-              <SelectTrigger className="border-[#252542] bg-[#252542] text-white">
+              <SelectTrigger className="border-[#1A3050] bg-[#1A3050] text-white">
                 <SelectValue placeholder="Plano" />
               </SelectTrigger>
-              <SelectContent className="border-[#252542] bg-[#1A1A2E] text-white">
+              <SelectContent className="border-[#1A3050] bg-[#0F1D32] text-white">
                 <SelectItem value="all">Todos os planos</SelectItem>
                 <SelectItem value="starter">Starter</SelectItem>
                 <SelectItem value="pro">Pro</SelectItem>
@@ -179,17 +179,17 @@ export default function AdminUsersPage() {
       </Card>
 
       {/* Table */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardContent className="p-0">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-[#E94560]" />
+              <Loader2 className="h-6 w-6 animate-spin text-[#C9A84C]" />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#252542] text-left text-gray-400">
+                  <tr className="border-b border-[#1A3050] text-left text-gray-400">
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Nome</th>
                     <th className="px-4 py-3">Plano</th>
@@ -204,7 +204,7 @@ export default function AdminUsersPage() {
                   {users.map((user) => (
                     <tr
                       key={user.id}
-                      className="cursor-pointer border-b border-[#252542]/50 text-white transition-colors hover:bg-[#252542]/50"
+                      className="cursor-pointer border-b border-[#1A3050]/50 text-white transition-colors hover:bg-[#1A3050]/50"
                       onClick={() => setSelectedUser(user)}
                     >
                       <td className="px-4 py-3 font-medium">{user.email}</td>
@@ -262,7 +262,7 @@ export default function AdminUsersPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-[#252542] px-4 py-3">
+            <div className="flex items-center justify-between border-t border-[#1A3050] px-4 py-3">
               <p className="text-sm text-gray-400">
                 Mostrando {page * PAGE_SIZE + 1}-
                 {Math.min((page + 1) * PAGE_SIZE, totalCount)} de {totalCount}
@@ -300,12 +300,12 @@ export default function AdminUsersPage() {
         open={!!selectedUser}
         onOpenChange={(open) => !open && setSelectedUser(null)}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto border-[#252542] bg-[#1A1A2E] text-white">
+        <DialogContent className="max-h-[90vh] overflow-y-auto border-[#1A3050] bg-[#0F1D32] text-white">
           {selectedUser && (
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-white">
-                  <Shield className="h-5 w-5 text-[#E94560]" />
+                  <Shield className="h-5 w-5 text-[#C9A84C]" />
                   Detalhes do Usuário
                 </DialogTitle>
               </DialogHeader>
@@ -405,7 +405,7 @@ export default function AdminUsersPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="space-y-3 border-t border-[#252542] pt-4">
+                <div className="space-y-3 border-t border-[#1A3050] pt-4">
                   <p className="text-sm font-medium text-gray-400">Ações</p>
 
                   {/* Plan upgrade/downgrade */}
@@ -426,8 +426,8 @@ export default function AdminUsersPage() {
                           }
                           className={
                             selectedUser.plan === plan
-                              ? 'bg-[#E94560] text-white hover:bg-[#E94560]/90'
-                              : 'border-[#252542] text-gray-300 hover:bg-[#252542]'
+                              ? 'bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90'
+                              : 'border-[#1A3050] text-gray-300 hover:bg-[#1A3050]'
                           }
                         >
                           {plan === selectedUser.plan ? (
@@ -454,7 +454,7 @@ export default function AdminUsersPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-[#252542] text-gray-300 hover:bg-[#252542]"
+                      className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
                       disabled={actionLoading}
                       onClick={() => handleResetPassword(selectedUser.id)}
                     >

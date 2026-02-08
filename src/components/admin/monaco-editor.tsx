@@ -114,7 +114,7 @@ export function MonacoEditor({
     // Highlight template variables {{VAR_NAME}} in accent color
     html = html.replace(
       /\{\{([^}]+)\}\}/g,
-      '<span style="color: #E94560; font-weight: 600;">{{$1}}</span>'
+      '<span style="color: #C9A84C; font-weight: 600;">{{$1}}</span>'
     );
 
     // Language-specific highlighting
@@ -175,9 +175,9 @@ export function MonacoEditor({
   }, [handleScroll]);
 
   return (
-    <div className="rounded-lg border border-[#252542] overflow-hidden">
+    <div className="rounded-lg border border-[#1A3050] overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center justify-between bg-[#1A1A2E] px-3 py-1.5 border-b border-[#252542]">
+      <div className="flex items-center justify-between bg-[#0F1D32] px-3 py-1.5 border-b border-[#1A3050]">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-mono uppercase tracking-wider text-gray-500">
             {language}
@@ -190,7 +190,7 @@ export function MonacoEditor({
             size="sm"
             onClick={() => setWordWrap((w) => !w)}
             className={`h-6 px-2 text-xs ${
-              wordWrap ? 'text-[#E94560]' : 'text-gray-500'
+              wordWrap ? 'text-[#C9A84C]' : 'text-gray-500'
             } hover:text-white`}
             title={wordWrap ? 'Desativar quebra de linha' : 'Ativar quebra de linha'}
           >
@@ -205,7 +205,7 @@ export function MonacoEditor({
         {/* Line Numbers */}
         <div
           ref={lineNumbersRef}
-          className="flex-shrink-0 overflow-hidden bg-[#1E1E3A] select-none border-r border-[#252542]"
+          className="flex-shrink-0 overflow-hidden bg-[#1E1E3A] select-none border-r border-[#1A3050]"
           style={{ width: '48px' }}
         >
           <div className="py-2">
@@ -246,20 +246,20 @@ export function MonacoEditor({
             readOnly={readOnly}
             placeholder={placeholder}
             spellCheck={false}
-            className="absolute inset-0 w-full h-full resize-none bg-[#252542] py-2 px-3 font-mono text-sm leading-[20px] text-gray-200 placeholder:text-gray-600 focus:outline-none caret-[#E94560]"
+            className="absolute inset-0 w-full h-full resize-none bg-[#1A3050] py-2 px-3 font-mono text-sm leading-[20px] text-gray-200 placeholder:text-gray-600 focus:outline-none caret-[#C9A84C]"
             style={{
               whiteSpace: wordWrap ? 'pre-wrap' : 'pre',
               wordBreak: wordWrap ? 'break-all' : 'normal',
               overflowWrap: wordWrap ? 'break-word' : 'normal',
               color: 'rgba(209, 213, 219, 0.85)',
-              caretColor: '#E94560',
+              caretColor: '#C9A84C',
             }}
           />
         </div>
       </div>
 
       {/* Status Bar */}
-      <div className="flex items-center justify-between bg-[#1A1A2E] px-3 py-1 border-t border-[#252542]">
+      <div className="flex items-center justify-between bg-[#0F1D32] px-3 py-1 border-t border-[#1A3050]">
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1 text-[10px] text-gray-500">
             <Hash className="h-3 w-3" />

@@ -4,8 +4,8 @@
   "description": "Sistema Inteligente de Scripts Persuasivos para WhatsApp",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F0F1A",
-  "theme_color": "#E94560",
+  "background_color": "#0A1628",
+  "theme_color": "#C9A84C",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -28,9 +28,9 @@ function baseTemplate(content: string): string {
 <body style="margin:0;padding:0;background-color:#0F0F14;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#0F0F14;">
 <tr><td align="center" style="padding:40px 16px;">
-<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;background-color:#1A1A2E;border-radius:12px;overflow:hidden;border:1px solid #2A2A3E;">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;background-color:#0F1D32;border-radius:12px;overflow:hidden;border:1px solid #2A2A3E;">
 <tr><td style="padding:32px 40px 24px;text-align:center;border-bottom:1px solid #2A2A3E;">
-<h1 style="margin:0;font-size:28px;font-weight:800;"><span style="color:#E94560;">50</span><span style="color:#FFFFFF;"> Scripts </span><span style="color:#E94560;">2.0</span></h1>
+<h1 style="margin:0;font-size:28px;font-weight:800;"><span style="color:#C9A84C;">50</span><span style="color:#FFFFFF;"> Scripts </span><span style="color:#C9A84C;">2.0</span></h1>
 </td></tr>
 <tr><td style="padding:40px;">${content}</td></tr>
 <tr><td style="padding:24px 40px;text-align:center;border-top:1px solid #2A2A3E;">
@@ -41,8 +41,8 @@ function baseTemplate(content: string): string {
 
 function ctaButton(text: string, href: string): string {
   return `<table role="presentation" cellspacing="0" cellpadding="0" style="margin:32px auto 0;">
-<tr><td align="center" style="border-radius:8px;background-color:#E94560;">
-<a href="${href}" target="_blank" style="display:inline-block;padding:14px 32px;font-size:16px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:8px;background-color:#E94560;">${text}</a>
+<tr><td align="center" style="border-radius:8px;background-color:#C9A84C;">
+<a href="${href}" target="_blank" style="display:inline-block;padding:14px 32px;font-size:16px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:8px;background-color:#C9A84C;">${text}</a>
 </td></tr></table>`;
 }
 

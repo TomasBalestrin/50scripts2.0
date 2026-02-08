@@ -169,7 +169,7 @@ export default function AdminConfigPage() {
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#E94560]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#C9A84C]" />
       </div>
     );
   }
@@ -181,7 +181,7 @@ export default function AdminConfigPage() {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-[#E94560] text-white hover:bg-[#E94560]/90"
+          className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
         >
           {saving ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -201,10 +201,10 @@ export default function AdminConfigPage() {
       )}
 
       {/* Webhook Secret */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base text-white">
-            <Shield className="h-5 w-5 text-[#E94560]" />
+            <Shield className="h-5 w-5 text-[#C9A84C]" />
             Webhook Secret
           </CardTitle>
         </CardHeader>
@@ -221,7 +221,7 @@ export default function AdminConfigPage() {
                   }))
                 }
                 placeholder="whsec_..."
-                className="border-[#252542] bg-[#252542] pr-10 text-white placeholder:text-gray-500"
+                className="border-[#1A3050] bg-[#1A3050] pr-10 text-white placeholder:text-gray-500"
               />
               <button
                 type="button"
@@ -243,10 +243,10 @@ export default function AdminConfigPage() {
       </Card>
 
       {/* AI Credits per Plan */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base text-white">
-            <Bot className="h-5 w-5 text-[#E94560]" />
+            <Bot className="h-5 w-5 text-[#C9A84C]" />
             Créditos IA por Plano
           </CardTitle>
         </CardHeader>
@@ -266,7 +266,7 @@ export default function AdminConfigPage() {
                     },
                   }))
                 }
-                className="mt-1 border-[#252542] bg-[#252542] text-white"
+                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
               />
             </div>
             <div>
@@ -283,7 +283,7 @@ export default function AdminConfigPage() {
                     },
                   }))
                 }
-                className="mt-1 border-[#252542] bg-[#252542] text-white"
+                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
               />
             </div>
             <div>
@@ -300,7 +300,7 @@ export default function AdminConfigPage() {
                     },
                   }))
                 }
-                className="mt-1 border-[#252542] bg-[#252542] text-white"
+                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
               />
             </div>
             <div>
@@ -320,7 +320,7 @@ export default function AdminConfigPage() {
                     },
                   }))
                 }
-                className="mt-1 border-[#252542] bg-[#252542] text-white"
+                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
               />
             </div>
           </div>
@@ -331,10 +331,10 @@ export default function AdminConfigPage() {
       </Card>
 
       {/* Default Password */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base text-white">
-            <Key className="h-5 w-5 text-[#E94560]" />
+            <Key className="h-5 w-5 text-[#C9A84C]" />
             Senha Padrão
           </CardTitle>
         </CardHeader>
@@ -349,7 +349,7 @@ export default function AdminConfigPage() {
                   default_password: e.target.value,
                 }))
               }
-              className="border-[#252542] bg-[#252542] pr-10 text-white"
+              className="border-[#1A3050] bg-[#1A3050] pr-10 text-white"
             />
             <button
               type="button"
@@ -370,10 +370,10 @@ export default function AdminConfigPage() {
       </Card>
 
       {/* Feature Flags */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base text-white">
-            <ToggleLeft className="h-5 w-5 text-[#E94560]" />
+            <ToggleLeft className="h-5 w-5 text-[#C9A84C]" />
             Feature Flags
           </CardTitle>
         </CardHeader>
@@ -440,18 +440,18 @@ export default function AdminConfigPage() {
       </Card>
 
       {/* Referral Rewards */}
-      <Card className="border-[#252542] bg-[#1A1A2E]">
+      <Card className="border-[#1A3050] bg-[#0F1D32]">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base text-white">
-            <Gift className="h-5 w-5 text-[#E94560]" />
+            <Gift className="h-5 w-5 text-[#C9A84C]" />
             Recompensas de Indicação
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {/* 1 referral */}
-            <div className="flex items-center gap-4 rounded-lg border border-[#252542] bg-[#252542]/50 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E94560]/10 text-sm font-bold text-[#E94560]">
+            <div className="flex items-center gap-4 rounded-lg border border-[#1A3050] bg-[#1A3050]/50 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C9A84C]/10 text-sm font-bold text-[#C9A84C]">
                 1
               </div>
               <div className="flex-1">
@@ -479,14 +479,14 @@ export default function AdminConfigPage() {
                       },
                     }))
                   }
-                  className="w-20 border-[#252542] bg-[#0F0F1A] text-white"
+                  className="w-20 border-[#1A3050] bg-[#0A1628] text-white"
                 />
               </div>
             </div>
 
             {/* 3 referrals */}
-            <div className="flex items-center gap-4 rounded-lg border border-[#252542] bg-[#252542]/50 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E94560]/10 text-sm font-bold text-[#E94560]">
+            <div className="flex items-center gap-4 rounded-lg border border-[#1A3050] bg-[#1A3050]/50 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C9A84C]/10 text-sm font-bold text-[#C9A84C]">
                 3
               </div>
               <div className="flex-1">
@@ -514,14 +514,14 @@ export default function AdminConfigPage() {
                       },
                     }))
                   }
-                  className="w-20 border-[#252542] bg-[#0F0F1A] text-white"
+                  className="w-20 border-[#1A3050] bg-[#0A1628] text-white"
                 />
               </div>
             </div>
 
             {/* 10 referrals */}
-            <div className="flex items-center gap-4 rounded-lg border border-[#252542] bg-[#252542]/50 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E94560]/10 text-sm font-bold text-[#E94560]">
+            <div className="flex items-center gap-4 rounded-lg border border-[#1A3050] bg-[#1A3050]/50 p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C9A84C]/10 text-sm font-bold text-[#C9A84C]">
                 10
               </div>
               <div className="flex-1">
@@ -549,7 +549,7 @@ export default function AdminConfigPage() {
                       },
                     }))
                   }
-                  className="w-20 border-[#252542] bg-[#0F0F1A] text-white"
+                  className="w-20 border-[#1A3050] bg-[#0A1628] text-white"
                 />
               </div>
             </div>
@@ -562,7 +562,7 @@ export default function AdminConfigPage() {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-[#E94560] text-white hover:bg-[#E94560]/90"
+          className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
         >
           {saving ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -588,7 +588,7 @@ function FeatureFlagRow({
   onCheckedChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-[#252542] bg-[#252542]/50 p-4">
+    <div className="flex items-center justify-between rounded-lg border border-[#1A3050] bg-[#1A3050]/50 p-4">
       <div>
         <p className="text-sm font-medium text-white">{label}</p>
         <p className="text-xs text-gray-500">{description}</p>
