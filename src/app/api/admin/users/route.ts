@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/admin/auth';
+import { createAdminClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -121,6 +122,68 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ profile });
   } catch (err) {
     console.error('[admin/users] Unexpected error:', err);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { error } = await getAdminUser();
+    if (error) return error;
+
+    const body = await request.json();
+    const { email, password, full_name, plan } = body as {
+      email?: string;
+      password?: string;
+      full_name?: string;
+      plan?: string;
+    };
+
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: 'Email e senha são obrigatórios' },
+        { status: 400 }
+      );
+    }
+
+    const adminClient = await createAdminClient();
+
+    // Create auth user
+    const { data: authData, error: createError } =
+      await adminClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+      });
+
+    if (createError) {
+      console.error('[admin/users] Error creating user:', createError);
+      return NextResponse.json(
+        { error: createError.message },
+        { status: 400 }
+      );
+    }
+
+    // Update profile with additional fields
+    if (authData.user) {
+      const updates: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+      if (full_name) updates.full_name = full_name;
+      if (plan) updates.plan = plan;
+
+      await adminClient
+        .from('profiles')
+        .update(updates)
+        .eq('id', authData.user.id);
+    }
+
+    return NextResponse.json({ user: authData.user }, { status: 201 });
+  } catch (err) {
+    console.error('[admin/users] Unexpected error creating user:', err);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -6,19 +6,25 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
-  X,
   Shield,
   ArrowUpCircle,
   ArrowDownCircle,
   KeyRound,
   Power,
+  Plus,
+  Pencil,
+  Trash2,
+  UserPlus,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile, Plan } from '@/types/database';
 
@@ -40,6 +46,24 @@ export default function AdminUsersPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Add user modal
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({ email: '', password: '', full_name: '', plan: 'starter' });
+  const [addError, setAddError] = useState('');
+  const [showAddPassword, setShowAddPassword] = useState(false);
+
+  // Edit user modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editUser, setEditUser] = useState<Profile | null>(null);
+  const [editForm, setEditForm] = useState({ email: '', password: '' });
+  const [editError, setEditError] = useState('');
+  const [showEditPassword, setShowEditPassword] = useState(false);
+
+  // Delete confirm modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteUser, setDeleteUser] = useState<Profile | null>(null);
+  const [deleteError, setDeleteError] = useState('');
 
   const supabase = createClient();
 
@@ -70,13 +94,15 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, planFilter, search, supabase]);
+  }, [page, planFilter, search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+  // --- Actions ---
 
   async function handleUpgrade(userId: string, newPlan: Plan) {
     setActionLoading(true);
@@ -117,20 +143,141 @@ export default function AdminUsersPage() {
   async function handleResetPassword(userId: string) {
     setActionLoading(true);
     try {
-      await supabase
-        .from('profiles')
-        .update({
-          password_changed: false,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', userId);
+      const res = await fetch(`/api/admin/users/${userId}/reset-password`, {
+        method: 'POST',
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || 'Erro ao resetar senha');
+        return;
+      }
 
       if (selectedUser?.id === userId) {
         setSelectedUser((prev) =>
           prev ? { ...prev, password_changed: false } : null
         );
       }
-      alert('Senha resetada. O usuário precisará trocar na próxima vez que entrar.');
+      alert('Senha resetada para a padrão. O usuário precisará trocar na próxima vez que entrar.');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleAddUser() {
+    setAddError('');
+    if (!addForm.email || !addForm.password) {
+      setAddError('Email e senha são obrigatórios');
+      return;
+    }
+    if (addForm.password.length < 6) {
+      setAddError('Senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(addForm),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setAddError(data.error || 'Erro ao criar usuário');
+        return;
+      }
+
+      setShowAddModal(false);
+      setAddForm({ email: '', password: '', full_name: '', plan: 'starter' });
+      await fetchUsers();
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  function openEditModal(user: Profile) {
+    setEditUser(user);
+    setEditForm({ email: user.email, password: '' });
+    setEditError('');
+    setShowEditPassword(false);
+    setShowEditModal(true);
+  }
+
+  async function handleEditUser() {
+    if (!editUser) return;
+    setEditError('');
+
+    const payload: { email?: string; password?: string } = {};
+    if (editForm.email && editForm.email !== editUser.email) {
+      payload.email = editForm.email;
+    }
+    if (editForm.password) {
+      if (editForm.password.length < 6) {
+        setEditError('Senha deve ter pelo menos 6 caracteres');
+        return;
+      }
+      payload.password = editForm.password;
+    }
+
+    if (!payload.email && !payload.password) {
+      setEditError('Nenhuma alteração detectada');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/admin/users/${editUser.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setEditError(data.error || 'Erro ao editar usuário');
+        return;
+      }
+
+      setShowEditModal(false);
+      setEditUser(null);
+      // Close detail modal too if open
+      if (selectedUser?.id === editUser.id) {
+        setSelectedUser(null);
+      }
+      await fetchUsers();
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  function openDeleteModal(user: Profile) {
+    setDeleteUser(user);
+    setDeleteError('');
+    setShowDeleteModal(true);
+  }
+
+  async function handleDeleteUser() {
+    if (!deleteUser) return;
+    setDeleteError('');
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/admin/users/${deleteUser.id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setDeleteError(data.error || 'Erro ao remover usuário');
+        return;
+      }
+
+      setShowDeleteModal(false);
+      setDeleteUser(null);
+      if (selectedUser?.id === deleteUser.id) {
+        setSelectedUser(null);
+      }
+      await fetchUsers();
     } finally {
       setActionLoading(false);
     }
@@ -138,7 +285,21 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">Usuários</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-white">Usuários</h1>
+        <Button
+          onClick={() => {
+            setAddForm({ email: '', password: '', full_name: '', plan: 'starter' });
+            setAddError('');
+            setShowAddPassword(false);
+            setShowAddModal(true);
+          }}
+          className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Adicionar Usuário
+        </Button>
+      </div>
 
       {/* Filters */}
       <Card className="border-[#1A3050] bg-[#0F1D32]">
@@ -198,14 +359,14 @@ export default function AdminUsersPage() {
                     <th className="px-4 py-3">Criado em</th>
                     <th className="px-4 py-3">Último login</th>
                     <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-center">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((user) => (
                     <tr
                       key={user.id}
-                      className="cursor-pointer border-b border-[#1A3050]/50 text-white transition-colors hover:bg-[#1A3050]/50"
-                      onClick={() => setSelectedUser(user)}
+                      className="border-b border-[#1A3050]/50 text-white transition-colors hover:bg-[#1A3050]/50"
                     >
                       <td className="px-4 py-3 font-medium">{user.email}</td>
                       <td className="px-4 py-3 text-gray-300">
@@ -243,12 +404,43 @@ export default function AdminUsersPage() {
                           }`}
                         />
                       </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-gray-400 hover:text-white"
+                            title="Ver detalhes"
+                            onClick={() => setSelectedUser(user)}
+                          >
+                            <Shield className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-gray-400 hover:text-[#4A90D9]"
+                            title="Editar email/senha"
+                            onClick={() => openEditModal(user)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-gray-400 hover:text-red-400"
+                            title="Remover usuário"
+                            onClick={() => openDeleteModal(user)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                   {users.length === 0 && (
                     <tr>
                       <td
-                        colSpan={8}
+                        colSpan={9}
                         className="py-12 text-center text-gray-500"
                       >
                         Nenhum usuário encontrado.
@@ -295,7 +487,7 @@ export default function AdminUsersPage() {
         </CardContent>
       </Card>
 
-      {/* User Detail Modal */}
+      {/* ===== User Detail Modal ===== */}
       <Dialog
         open={!!selectedUser}
         onOpenChange={(open) => !open && setSelectedUser(null)}
@@ -450,7 +642,19 @@ export default function AdminUsersPage() {
                     )}
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
+                      disabled={actionLoading}
+                      onClick={() => {
+                        openEditModal(selectedUser);
+                      }}
+                    >
+                      <Pencil className="mr-1 h-3 w-3" />
+                      Editar Email/Senha
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -480,11 +684,240 @@ export default function AdminUsersPage() {
                       <Power className="mr-1 h-3 w-3" />
                       {selectedUser.is_active ? 'Desativar' : 'Ativar'}
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-red-800 text-red-400 hover:bg-red-900/30"
+                      disabled={actionLoading}
+                      onClick={() => {
+                        openDeleteModal(selectedUser);
+                      }}
+                    >
+                      <Trash2 className="mr-1 h-3 w-3" />
+                      Remover
+                    </Button>
                   </div>
                 </div>
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== Add User Modal ===== */}
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="border-[#1A3050] bg-[#0F1D32] text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <UserPlus className="h-5 w-5 text-[#C9A84C]" />
+              Adicionar Usuário
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label className="text-gray-300">Nome completo</Label>
+              <Input
+                placeholder="Nome do usuário"
+                value={addForm.full_name}
+                onChange={(e) => setAddForm({ ...addForm, full_name: e.target.value })}
+                className="border-[#1A3050] bg-[#1A3050] text-white placeholder:text-gray-500"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-gray-300">Email *</Label>
+              <Input
+                type="email"
+                placeholder="email@exemplo.com"
+                value={addForm.email}
+                onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
+                className="border-[#1A3050] bg-[#1A3050] text-white placeholder:text-gray-500"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-gray-300">Senha *</Label>
+              <div className="relative">
+                <Input
+                  type={showAddPassword ? 'text' : 'password'}
+                  placeholder="Mínimo 6 caracteres"
+                  value={addForm.password}
+                  onChange={(e) => setAddForm({ ...addForm, password: e.target.value })}
+                  className="border-[#1A3050] bg-[#1A3050] pr-10 text-white placeholder:text-gray-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAddPassword(!showAddPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                >
+                  {showAddPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-gray-300">Plano</Label>
+              <Select
+                value={addForm.plan}
+                onValueChange={(val) => setAddForm({ ...addForm, plan: val })}
+              >
+                <SelectTrigger className="border-[#1A3050] bg-[#1A3050] text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-[#1A3050] bg-[#0F1D32] text-white">
+                  <SelectItem value="starter">Starter</SelectItem>
+                  <SelectItem value="pro">Pro</SelectItem>
+                  <SelectItem value="premium">Premium</SelectItem>
+                  <SelectItem value="copilot">Copilot</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {addError && (
+              <p className="text-sm text-red-400">{addError}</p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setShowAddModal(false)}
+              className="text-gray-400 hover:text-white"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleAddUser}
+              disabled={actionLoading}
+              className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
+            >
+              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Criar Usuário
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== Edit User Modal ===== */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="border-[#1A3050] bg-[#0F1D32] text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <Pencil className="h-5 w-5 text-[#4A90D9]" />
+              Editar Usuário
+            </DialogTitle>
+          </DialogHeader>
+
+          {editUser && (
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-gray-400">
+                Editando: <span className="font-medium text-white">{editUser.full_name || editUser.email}</span>
+              </p>
+
+              <div className="space-y-2">
+                <Label className="text-gray-300">Email</Label>
+                <Input
+                  type="email"
+                  placeholder="Novo email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  className="border-[#1A3050] bg-[#1A3050] text-white placeholder:text-gray-500"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-300">Nova Senha</Label>
+                <div className="relative">
+                  <Input
+                    type={showEditPassword ? 'text' : 'password'}
+                    placeholder="Deixe vazio para não alterar"
+                    value={editForm.password}
+                    onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                    className="border-[#1A3050] bg-[#1A3050] pr-10 text-white placeholder:text-gray-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowEditPassword(!showEditPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                  >
+                    {showEditPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500">Deixe em branco para manter a senha atual</p>
+              </div>
+
+              {editError && (
+                <p className="text-sm text-red-400">{editError}</p>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setShowEditModal(false)}
+              className="text-gray-400 hover:text-white"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleEditUser}
+              disabled={actionLoading}
+              className="bg-[#4A90D9] text-white hover:bg-[#4A90D9]/90"
+            >
+              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Salvar Alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== Delete Confirmation Modal ===== */}
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <DialogContent className="border-[#1A3050] bg-[#0F1D32] text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-400">
+              <Trash2 className="h-5 w-5" />
+              Remover Usuário
+            </DialogTitle>
+          </DialogHeader>
+
+          {deleteUser && (
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-gray-300">
+                Tem certeza que deseja remover o usuário?
+              </p>
+              <div className="rounded-lg border border-red-800/50 bg-red-900/10 p-3">
+                <p className="font-medium text-white">{deleteUser.full_name || '-'}</p>
+                <p className="text-sm text-gray-400">{deleteUser.email}</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Plano: {deleteUser.plan.charAt(0).toUpperCase() + deleteUser.plan.slice(1)}
+                </p>
+              </div>
+              <p className="text-xs text-red-400">
+                Esta ação é irreversível. Todos os dados do usuário serão removidos permanentemente.
+              </p>
+
+              {deleteError && (
+                <p className="text-sm text-red-400">{deleteError}</p>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setShowDeleteModal(false)}
+              className="text-gray-400 hover:text-white"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleDeleteUser}
+              disabled={actionLoading}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sim, Remover
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
