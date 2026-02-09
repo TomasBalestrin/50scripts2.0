@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
-import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -46,12 +45,14 @@ export default function LoginPage() {
           <CardHeader className="text-center space-y-4">
             {/* Logo + Name */}
             <div className="flex flex-col items-center gap-3">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/logo.png"
                 alt="50 Scripts"
                 width={64}
                 height={64}
                 className="rounded-xl"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
               <h1 className="text-2xl font-heading font-bold text-white">
                 50 Scripts
