@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { error, supabase } = await getAdminUser();
+    const { error } = await getAdminUser();
     if (error) return error;
 
     const { searchParams } = request.nextUrl;
@@ -15,12 +15,12 @@ export async function GET(request: NextRequest) {
 
     const offset = (page - 1) * limit;
 
-    let query = supabase
+    // Use admin client to bypass RLS and see all users
+    const adminClient = await createAdminClient();
+
+    let query = adminClient
       .from('profiles')
-      .select(
-        'id, email, full_name, plan, role, xp_points, level, current_streak, created_at, last_login_at, is_active',
-        { count: 'exact' }
-      )
+      .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -42,22 +42,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const transformed = (users ?? []).map((u) => ({
-      id: u.id,
-      email: u.email,
-      full_name: u.full_name,
-      plan: u.plan,
-      role: u.role,
-      xp: u.xp_points,
-      level: u.level,
-      streak_count: u.current_streak,
-      created_at: u.created_at,
-      last_login_at: u.last_login_at,
-      is_active: u.is_active,
-    }));
-
     return NextResponse.json({
-      users: transformed,
+      users: users ?? [],
       total: count ?? 0,
       page,
     });
@@ -72,7 +58,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { error, supabase } = await getAdminUser();
+    const { error } = await getAdminUser();
     if (error) return error;
 
     const body = await request.json();
@@ -104,7 +90,9 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const { data: profile, error: updateError } = await supabase
+    const adminClient = await createAdminClient();
+
+    const { data: profile, error: updateError } = await adminClient
       .from('profiles')
       .update(updates)
       .eq('id', id)
