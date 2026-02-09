@@ -6,13 +6,53 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Send, Copy, Check, Loader2, MessageSquare, Target, Lightbulb } from 'lucide-react';
+import {
+  Bot, Send, Copy, Check, Loader2,
+  MessageSquare, Target, Lightbulb, AlertTriangle,
+  TrendingUp, Flame, Eye, Ban,
+} from 'lucide-react';
 
 interface Lead {
   id: string;
   name: string;
   stage: string;
 }
+
+interface CopilotAnalysis {
+  analysis?: {
+    funnel_stage?: string;
+    interest_level?: string;
+    detected_objections?: string[];
+    buying_signals?: string[];
+    missed_opportunities?: string[];
+  };
+  suggested_message?: {
+    casual?: string;
+    formal?: string;
+    reasoning?: string;
+    mental_trigger?: string;
+    what_not_to_do?: string;
+  };
+}
+
+const FUNNEL_STAGE_LABELS: Record<string, { label: string; color: string }> = {
+  abordagem: { label: 'Abordagem', color: '#3B82F6' },
+  qualificacao: { label: 'Qualificação', color: '#8B5CF6' },
+  'qualificação': { label: 'Qualificação', color: '#8B5CF6' },
+  apresentacao: { label: 'Apresentação', color: '#F59E0B' },
+  'apresentação': { label: 'Apresentação', color: '#F59E0B' },
+  negociacao: { label: 'Negociação', color: '#EF4444' },
+  'negociação': { label: 'Negociação', color: '#EF4444' },
+  fechamento: { label: 'Fechamento', color: '#10B981' },
+  'pós-venda': { label: 'Pós-venda', color: '#06B6D4' },
+  'pos-venda': { label: 'Pós-venda', color: '#06B6D4' },
+};
+
+const INTEREST_LABELS: Record<string, { label: string; color: string; icon: typeof Flame }> = {
+  quente: { label: 'Quente', color: '#EF4444', icon: Flame },
+  morno: { label: 'Morno', color: '#F59E0B', icon: TrendingUp },
+  frio: { label: 'Frio', color: '#3B82F6', icon: Eye },
+};
 
 export default function AICopilotPage() {
   const [conversation, setConversation] = useState('');
@@ -21,6 +61,7 @@ export default function AICopilotPage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState('');
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
+  const [messageTab, setMessageTab] = useState<'casual' | 'formal'>('casual');
 
   useEffect(() => {
     async function loadLeads() {
@@ -70,8 +111,27 @@ export default function AICopilotPage() {
     setTimeout(() => setCopiedSection(null), 2000);
   };
 
-  // Parse result sections - handles markdown headers (## or **bold**) and numbered lists
-  const parseResult = (text: string) => {
+  // Try to parse JSON from result
+  function tryParseJSON(text: string): CopilotAnalysis | null {
+    try {
+      const parsed = JSON.parse(text);
+      if (typeof parsed === 'object' && parsed !== null) return parsed;
+    } catch {
+      const match = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (match) {
+        try {
+          const parsed = JSON.parse(match[1].trim());
+          if (typeof parsed === 'object' && parsed !== null) return parsed;
+        } catch { /* ignore */ }
+      }
+    }
+    return null;
+  }
+
+  const parsed = result ? tryParseJSON(result) : null;
+
+  // Fallback markdown renderer for non-JSON responses
+  const renderMarkdown = (text: string) => {
     const sections: Array<{ title: string; content: string; icon: React.ReactNode; copyable: boolean }> = [];
 
     const getIcon = (title: string) => {
@@ -88,7 +148,6 @@ export default function AICopilotPage() {
       return t.includes('mensagem') || t.includes('alternativa') || t.includes('próxima') || t.includes('proxima') || t.includes('sugerid');
     };
 
-    // Try splitting by markdown ## headers first
     const headerRegex = /^#{1,3}\s+(.+)$/gm;
     const headerMatches = [...text.matchAll(headerRegex)];
 
@@ -98,28 +157,19 @@ export default function AICopilotPage() {
         const startIdx = headerMatches[i].index! + headerMatches[i][0].length;
         const endIdx = i < headerMatches.length - 1 ? headerMatches[i + 1].index! : text.length;
         const content = text.slice(startIdx, endIdx).trim();
-        if (content) {
-          sections.push({ title, content, icon: getIcon(title), copyable: isCopyable(title) });
-        }
+        if (content) sections.push({ title, content, icon: getIcon(title), copyable: isCopyable(title) });
       }
     }
 
-    // Fallback: try **bold** headers
     if (sections.length === 0) {
       const parts = text.split(/\*\*(.*?)\*\*/g);
       let currentTitle = '';
       let currentContent = '';
-
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i].trim();
         if (i % 2 === 1) {
           if (currentTitle && currentContent) {
-            sections.push({
-              title: currentTitle,
-              content: currentContent.trim(),
-              icon: getIcon(currentTitle),
-              copyable: isCopyable(currentTitle),
-            });
+            sections.push({ title: currentTitle, content: currentContent.trim(), icon: getIcon(currentTitle), copyable: isCopyable(currentTitle) });
           }
           currentTitle = part.replace(/:$/, '');
           currentContent = '';
@@ -128,43 +178,22 @@ export default function AICopilotPage() {
         }
       }
       if (currentTitle && currentContent) {
-        sections.push({
-          title: currentTitle,
-          content: currentContent.trim(),
-          icon: getIcon(currentTitle),
-          copyable: isCopyable(currentTitle),
-        });
+        sections.push({ title: currentTitle, content: currentContent.trim(), icon: getIcon(currentTitle), copyable: isCopyable(currentTitle) });
       }
     }
 
-    // Fallback: try numbered sections (1. Title\n content)
     if (sections.length === 0) {
-      const numberedRegex = /^\d+\.\s*\*?\*?(.+?)\*?\*?\s*[:：]?\s*$/gm;
-      const numberedMatches = [...text.matchAll(numberedRegex)];
-      if (numberedMatches.length > 0) {
-        for (let i = 0; i < numberedMatches.length; i++) {
-          const title = numberedMatches[i][1].trim();
-          const startIdx = numberedMatches[i].index! + numberedMatches[i][0].length;
-          const endIdx = i < numberedMatches.length - 1 ? numberedMatches[i + 1].index! : text.length;
-          const content = text.slice(startIdx, endIdx).trim();
-          if (content) {
-            sections.push({ title, content, icon: getIcon(title), copyable: isCopyable(title) });
-          }
-        }
-      }
-    }
-
-    // Final fallback: show full text as single analysis card
-    if (sections.length === 0) {
-      sections.push({
-        title: 'Análise',
-        content: text,
-        icon: <Bot className="w-4 h-4" />,
-        copyable: true,
-      });
+      sections.push({ title: 'Análise', content: text, icon: <Bot className="w-4 h-4" />, copyable: true });
     }
 
     return sections;
+  };
+
+  const getActiveMessage = (): string => {
+    if (!parsed?.suggested_message) return '';
+    return messageTab === 'formal'
+      ? (parsed.suggested_message.formal || parsed.suggested_message.casual || '')
+      : (parsed.suggested_message.casual || parsed.suggested_message.formal || '');
   };
 
   return (
@@ -234,10 +263,221 @@ export default function AICopilotPage() {
         </CardContent>
       </Card>
 
-      {/* Result Section */}
-      {result && (
+      {/* === RESULT SECTION === */}
+      {result && !result.startsWith('Erro') && parsed ? (
         <div className="space-y-4">
-          {parseResult(result).map((section, i) => (
+          {/* Analysis Card */}
+          {parsed.analysis && (
+            <Card className="bg-[#0F1D32] border-[#1A3050]">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-sm flex items-center gap-2">
+                  <Target className="w-4 h-4 text-[#C9A84C]" />
+                  Análise da Conversa
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Funnel Stage & Interest Level */}
+                <div className="flex flex-wrap gap-2">
+                  {parsed.analysis.funnel_stage && (() => {
+                    const stage = FUNNEL_STAGE_LABELS[parsed.analysis!.funnel_stage!.toLowerCase()] || {
+                      label: parsed.analysis!.funnel_stage,
+                      color: '#8BA5BD',
+                    };
+                    return (
+                      <Badge
+                        className="px-3 py-1 text-white text-xs"
+                        style={{ backgroundColor: stage.color + '30', borderColor: stage.color, border: '1px solid' }}
+                      >
+                        Estágio: {stage.label}
+                      </Badge>
+                    );
+                  })()}
+
+                  {parsed.analysis.interest_level && (() => {
+                    const interest = INTEREST_LABELS[parsed.analysis!.interest_level!.toLowerCase()] || {
+                      label: parsed.analysis!.interest_level,
+                      color: '#8BA5BD',
+                      icon: Eye,
+                    };
+                    const InterestIcon = interest.icon;
+                    return (
+                      <Badge
+                        className="px-3 py-1 text-white text-xs flex items-center gap-1"
+                        style={{ backgroundColor: interest.color + '30', borderColor: interest.color, border: '1px solid' }}
+                      >
+                        <InterestIcon className="w-3 h-3" />
+                        Lead {interest.label}
+                      </Badge>
+                    );
+                  })()}
+                </div>
+
+                {/* Buying Signals */}
+                {parsed.analysis.buying_signals && parsed.analysis.buying_signals.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-emerald-400 mb-1.5 flex items-center gap-1">
+                      <TrendingUp className="w-3.5 h-3.5" />
+                      Sinais de Compra
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {parsed.analysis.buying_signals.map((signal, i) => (
+                        <Badge key={i} className="bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 text-xs">
+                          {signal}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Detected Objections */}
+                {parsed.analysis.detected_objections && parsed.analysis.detected_objections.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-amber-400 mb-1.5 flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      Objeções Detectadas
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {parsed.analysis.detected_objections.map((obj, i) => (
+                        <Badge key={i} className="bg-amber-500/10 text-amber-300 border border-amber-500/30 text-xs">
+                          {obj}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Missed Opportunities */}
+                {parsed.analysis.missed_opportunities && parsed.analysis.missed_opportunities.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-blue-400 mb-1.5 flex items-center gap-1">
+                      <Lightbulb className="w-3.5 h-3.5" />
+                      Oportunidades Perdidas
+                    </p>
+                    <div className="space-y-1">
+                      {parsed.analysis.missed_opportunities.map((opp, i) => (
+                        <p key={i} className="text-sm text-gray-300 flex items-start gap-2">
+                          <span className="text-blue-400 mt-0.5">-</span>
+                          {opp}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Suggested Message Card */}
+          {parsed.suggested_message && (parsed.suggested_message.casual || parsed.suggested_message.formal) && (
+            <Card className="bg-[#0F1D32] border-[#C9A84C]/30">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white text-sm flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-[#C9A84C]" />
+                    Próxima Mensagem
+                  </CardTitle>
+                </div>
+                {parsed.suggested_message.casual && parsed.suggested_message.formal && (
+                  <div className="flex gap-1 mt-3">
+                    <button
+                      onClick={() => setMessageTab('casual')}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                        messageTab === 'casual'
+                          ? 'bg-[#C9A84C] text-white'
+                          : 'bg-[#1A3050] text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      Casual
+                    </button>
+                    <button
+                      onClick={() => setMessageTab('formal')}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                        messageTab === 'formal'
+                          ? 'bg-[#C9A84C] text-white'
+                          : 'bg-[#1A3050] text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      Formal
+                    </button>
+                  </div>
+                )}
+              </CardHeader>
+              <CardContent>
+                <div className="bg-[#1A3050] rounded-lg p-4 mb-3">
+                  <p className="text-gray-200 text-sm leading-relaxed whitespace-pre-wrap">
+                    {getActiveMessage()}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => handleCopy(getActiveMessage(), 'message')}
+                  className="bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white"
+                >
+                  {copiedSection === 'message' ? (
+                    <><Check className="w-3.5 h-3.5 mr-1.5" /> Copiado!</>
+                  ) : (
+                    <><Copy className="w-3.5 h-3.5 mr-1.5" /> Copiar Mensagem</>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Reasoning Card */}
+          {parsed.suggested_message?.reasoning && (
+            <Card className="bg-[#0F1D32] border-[#1A3050]">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-sm flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-[#C9A84C]" />
+                  Por que essa abordagem?
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-300 leading-relaxed">
+                  {parsed.suggested_message.reasoning}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Mental Trigger Card */}
+          {parsed.suggested_message?.mental_trigger && (
+            <Card className="bg-[#0F1D32] border-purple-500/30">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-sm flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-purple-400" />
+                  Gatilho Mental
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-purple-200 leading-relaxed">
+                  {parsed.suggested_message.mental_trigger}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* What NOT to do Card */}
+          {parsed.suggested_message?.what_not_to_do && (
+            <Card className="bg-[#0F1D32] border-red-500/30">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-sm flex items-center gap-2">
+                  <Ban className="w-4 h-4 text-red-400" />
+                  O que NÃO fazer
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-red-200/80 leading-relaxed">
+                  {parsed.suggested_message.what_not_to_do}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      ) : result ? (
+        /* Fallback: markdown/plain text rendering */
+        <div className="space-y-4">
+          {renderMarkdown(result).map((section, i) => (
             <Card key={i} className="bg-[#0F1D32] border-[#1A3050]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-base flex items-center gap-2">
@@ -251,14 +491,12 @@ export default function AICopilotPage() {
                     {section.content.split('\n').map((line, j) => {
                       const trimmed = line.trim();
                       if (!trimmed) return null;
-                      // Bold text
                       const formatted = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>');
-                      // Bullet points
-                      if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+                      if (trimmed.startsWith('- ') || trimmed.startsWith('\u2022 ')) {
                         return (
                           <div key={j} className="flex gap-2 pl-2">
-                            <span className="text-[#C9A84C] mt-1">•</span>
-                            <span dangerouslySetInnerHTML={{ __html: formatted.replace(/^[-•]\s*/, '') }} />
+                            <span className="text-[#C9A84C] mt-1">&bull;</span>
+                            <span dangerouslySetInnerHTML={{ __html: formatted.replace(/^[-\u2022]\s*/, '') }} />
                           </div>
                         );
                       }
@@ -283,7 +521,7 @@ export default function AICopilotPage() {
             </Card>
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
