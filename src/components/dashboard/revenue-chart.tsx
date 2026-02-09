@@ -31,8 +31,8 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload || !payload.length) return null;
 
   return (
-    <div className="rounded-lg border border-[#1A3050] bg-[#0F1D32] px-4 py-3 shadow-xl">
-      <p className="mb-1 text-xs font-medium text-[#8BA5BD]">{label}</p>
+    <div className="rounded-lg border border-[#131B35] bg-[#0A0F1E] px-4 py-3 shadow-xl">
+      <p className="mb-1 text-xs font-medium text-[#94A3B8]">{label}</p>
       <p className="text-sm font-bold text-white">
         {payload[0].value.toLocaleString('pt-BR', {
           style: 'currency',
@@ -45,7 +45,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 
 export function RevenueChart({ data }: RevenueChartProps) {
   return (
-    <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5">
+    <div className="rounded-xl border border-[#131B35] bg-[#0A0F1E] p-5">
       <h3 className="mb-4 text-sm font-semibold text-white">Receita Semanal</h3>
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -55,27 +55,27 @@ export function RevenueChart({ data }: RevenueChartProps) {
           >
             <defs>
               <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#C9A84C" stopOpacity={0.4} />
-                <stop offset="50%" stopColor="#C9A84C" stopOpacity={0.15} />
-                <stop offset="100%" stopColor="#C9A84C" stopOpacity={0} />
+                <stop offset="0%" stopColor="#1D4ED8" stopOpacity={0.4} />
+                <stop offset="50%" stopColor="#1D4ED8" stopOpacity={0.15} />
+                <stop offset="100%" stopColor="#1D4ED8" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#1A3050"
+              stroke="#131B35"
               vertical={false}
             />
             <XAxis
               dataKey="week"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#8BA5BD', fontSize: 12 }}
+              tick={{ fill: '#94A3B8', fontSize: 12 }}
               dy={8}
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#8BA5BD', fontSize: 12 }}
+              tick={{ fill: '#94A3B8', fontSize: 12 }}
               tickFormatter={formatCurrency}
               width={65}
             />
@@ -83,11 +83,11 @@ export function RevenueChart({ data }: RevenueChartProps) {
             <Area
               type="monotone"
               dataKey="revenue"
-              stroke="#C9A84C"
+              stroke="#1D4ED8"
               strokeWidth={2.5}
               fill="url(#revenueGradient)"
-              dot={{ fill: '#C9A84C', strokeWidth: 0, r: 3 }}
-              activeDot={{ fill: '#C9A84C', strokeWidth: 2, stroke: '#fff', r: 5 }}
+              dot={{ fill: '#1D4ED8', strokeWidth: 0, r: 3 }}
+              activeDot={{ fill: '#1D4ED8', strokeWidth: 2, stroke: '#fff', r: 5 }}
             />
           </AreaChart>
         </ResponsiveContainer>

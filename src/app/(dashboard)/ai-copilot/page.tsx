@@ -200,14 +200,14 @@ export default function AICopilotPage() {
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Bot className="w-6 h-6 text-[#C9A84C]" />
+          <Bot className="w-6 h-6 text-[#1D4ED8]" />
           IA Copilot
         </h1>
         <Badge className="bg-amber-500/20 text-amber-400">Copilot</Badge>
       </div>
 
       {/* Input Section */}
-      <Card className="bg-[#0F1D32] border-[#1A3050] mb-6">
+      <Card className="bg-[#0A0F1E] border-[#131B35] mb-6">
         <CardHeader>
           <CardTitle className="text-white text-lg">Cole a conversa</CardTitle>
           <p className="text-sm text-gray-400">
@@ -219,10 +219,10 @@ export default function AICopilotPage() {
             <div>
               <label className="text-sm text-gray-400 mb-2 block">Lead (opcional)</label>
               <Select value={leadId} onValueChange={setLeadId}>
-                <SelectTrigger className="bg-[#1A3050] border-[#363660] text-white">
+                <SelectTrigger className="bg-[#131B35] border-[#1E2A52] text-white">
                   <SelectValue placeholder="Selecionar lead para contexto" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1A3050] border-[#363660]">
+                <SelectContent className="bg-[#131B35] border-[#1E2A52]">
                   <SelectItem value="" className="text-gray-400">
                     Nenhum lead específico
                   </SelectItem>
@@ -240,13 +240,13 @@ export default function AICopilotPage() {
             value={conversation}
             onChange={(e) => setConversation(e.target.value)}
             placeholder={`Cole a conversa aqui...\n\nExemplo:\nVocê: Oi Maria, tudo bem? Vi que você se interessou pelo nosso curso...\nMaria: Oi! Sim, achei interessante, mas achei o preço um pouco alto...\nVocê: Entendo! E se eu te mostrar que...`}
-            className="bg-[#1A3050] border-[#363660] text-white min-h-[200px] font-mono text-sm"
+            className="bg-[#131B35] border-[#1E2A52] text-white min-h-[200px] font-mono text-sm"
           />
 
           <Button
             onClick={handleAnalyze}
             disabled={analyzing || conversation.length < 10}
-            className="w-full bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white h-12"
+            className="w-full bg-[#1D4ED8] hover:bg-[#1D4ED8]/90 text-white h-12"
           >
             {analyzing ? (
               <>
@@ -268,10 +268,10 @@ export default function AICopilotPage() {
         <div className="space-y-4">
           {/* Analysis Card */}
           {parsed.analysis && (
-            <Card className="bg-[#0F1D32] border-[#1A3050]">
+            <Card className="bg-[#0A0F1E] border-[#131B35]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-sm flex items-center gap-2">
-                  <Target className="w-4 h-4 text-[#C9A84C]" />
+                  <Target className="w-4 h-4 text-[#1D4ED8]" />
                   Análise da Conversa
                 </CardTitle>
               </CardHeader>
@@ -281,7 +281,7 @@ export default function AICopilotPage() {
                   {parsed.analysis.funnel_stage && (() => {
                     const stage = FUNNEL_STAGE_LABELS[parsed.analysis!.funnel_stage!.toLowerCase()] || {
                       label: parsed.analysis!.funnel_stage,
-                      color: '#8BA5BD',
+                      color: '#94A3B8',
                     };
                     return (
                       <Badge
@@ -296,7 +296,7 @@ export default function AICopilotPage() {
                   {parsed.analysis.interest_level && (() => {
                     const interest = INTEREST_LABELS[parsed.analysis!.interest_level!.toLowerCase()] || {
                       label: parsed.analysis!.interest_level,
-                      color: '#8BA5BD',
+                      color: '#94A3B8',
                       icon: Eye,
                     };
                     const InterestIcon = interest.icon;
@@ -369,11 +369,11 @@ export default function AICopilotPage() {
 
           {/* Suggested Message Card */}
           {parsed.suggested_message && (parsed.suggested_message.casual || parsed.suggested_message.formal) && (
-            <Card className="bg-[#0F1D32] border-[#C9A84C]/30">
+            <Card className="bg-[#0A0F1E] border-[#1D4ED8]/30">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white text-sm flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-[#C9A84C]" />
+                    <MessageSquare className="w-4 h-4 text-[#1D4ED8]" />
                     Próxima Mensagem
                   </CardTitle>
                 </div>
@@ -383,8 +383,8 @@ export default function AICopilotPage() {
                       onClick={() => setMessageTab('casual')}
                       className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                         messageTab === 'casual'
-                          ? 'bg-[#C9A84C] text-white'
-                          : 'bg-[#1A3050] text-gray-400 hover:text-white'
+                          ? 'bg-[#1D4ED8] text-white'
+                          : 'bg-[#131B35] text-gray-400 hover:text-white'
                       }`}
                     >
                       Casual
@@ -393,8 +393,8 @@ export default function AICopilotPage() {
                       onClick={() => setMessageTab('formal')}
                       className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                         messageTab === 'formal'
-                          ? 'bg-[#C9A84C] text-white'
-                          : 'bg-[#1A3050] text-gray-400 hover:text-white'
+                          ? 'bg-[#1D4ED8] text-white'
+                          : 'bg-[#131B35] text-gray-400 hover:text-white'
                       }`}
                     >
                       Formal
@@ -403,7 +403,7 @@ export default function AICopilotPage() {
                 )}
               </CardHeader>
               <CardContent>
-                <div className="bg-[#1A3050] rounded-lg p-4 mb-3">
+                <div className="bg-[#131B35] rounded-lg p-4 mb-3">
                   <p className="text-gray-200 text-sm leading-relaxed whitespace-pre-wrap">
                     {getActiveMessage()}
                   </p>
@@ -411,7 +411,7 @@ export default function AICopilotPage() {
                 <Button
                   size="sm"
                   onClick={() => handleCopy(getActiveMessage(), 'message')}
-                  className="bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white"
+                  className="bg-[#1D4ED8] hover:bg-[#1D4ED8]/90 text-white"
                 >
                   {copiedSection === 'message' ? (
                     <><Check className="w-3.5 h-3.5 mr-1.5" /> Copiado!</>
@@ -425,10 +425,10 @@ export default function AICopilotPage() {
 
           {/* Reasoning Card */}
           {parsed.suggested_message?.reasoning && (
-            <Card className="bg-[#0F1D32] border-[#1A3050]">
+            <Card className="bg-[#0A0F1E] border-[#131B35]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-sm flex items-center gap-2">
-                  <Lightbulb className="w-4 h-4 text-[#C9A84C]" />
+                  <Lightbulb className="w-4 h-4 text-[#1D4ED8]" />
                   Por que essa abordagem?
                 </CardTitle>
               </CardHeader>
@@ -442,7 +442,7 @@ export default function AICopilotPage() {
 
           {/* Mental Trigger Card */}
           {parsed.suggested_message?.mental_trigger && (
-            <Card className="bg-[#0F1D32] border-purple-500/30">
+            <Card className="bg-[#0A0F1E] border-purple-500/30">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-sm flex items-center gap-2">
                   <Flame className="w-4 h-4 text-purple-400" />
@@ -459,7 +459,7 @@ export default function AICopilotPage() {
 
           {/* What NOT to do Card */}
           {parsed.suggested_message?.what_not_to_do && (
-            <Card className="bg-[#0F1D32] border-red-500/30">
+            <Card className="bg-[#0A0F1E] border-red-500/30">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-sm flex items-center gap-2">
                   <Ban className="w-4 h-4 text-red-400" />
@@ -478,15 +478,15 @@ export default function AICopilotPage() {
         /* Fallback: markdown/plain text rendering */
         <div className="space-y-4">
           {renderMarkdown(result).map((section, i) => (
-            <Card key={i} className="bg-[#0F1D32] border-[#1A3050]">
+            <Card key={i} className="bg-[#0A0F1E] border-[#131B35]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-base flex items-center gap-2">
-                  <span className="text-[#C9A84C]">{section.icon}</span>
+                  <span className="text-[#1D4ED8]">{section.icon}</span>
                   {section.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-[#1A3050] rounded-lg p-4 mb-3">
+                <div className="bg-[#131B35] rounded-lg p-4 mb-3">
                   <div className="text-gray-200 text-sm leading-relaxed space-y-2">
                     {section.content.split('\n').map((line, j) => {
                       const trimmed = line.trim();
@@ -495,7 +495,7 @@ export default function AICopilotPage() {
                       if (trimmed.startsWith('- ') || trimmed.startsWith('\u2022 ')) {
                         return (
                           <div key={j} className="flex gap-2 pl-2">
-                            <span className="text-[#C9A84C] mt-1">&bull;</span>
+                            <span className="text-[#1D4ED8] mt-1">&bull;</span>
                             <span dangerouslySetInnerHTML={{ __html: formatted.replace(/^[-\u2022]\s*/, '') }} />
                           </div>
                         );
@@ -508,7 +508,7 @@ export default function AICopilotPage() {
                   <Button
                     size="sm"
                     onClick={() => handleCopy(section.content, section.title)}
-                    className="bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white"
+                    className="bg-[#1D4ED8] hover:bg-[#1D4ED8]/90 text-white"
                   >
                     {copiedSection === section.title ? (
                       <><Check className="w-3 h-3 mr-1" /> Copiado!</>

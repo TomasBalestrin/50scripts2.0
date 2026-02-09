@@ -57,7 +57,7 @@ export function StreakCounter({ current, longest }: StreakCounterProps) {
                 ? isHot
                   ? 'text-orange-400 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]'
                   : 'text-orange-500 drop-shadow-[0_0_6px_rgba(249,115,22,0.5)]'
-                : 'text-[#4A4A6A]'
+                : 'text-[#475569]'
             }`}
           />
 
@@ -98,7 +98,7 @@ export function StreakCounter({ current, longest }: StreakCounterProps) {
         </motion.div>
 
         <motion.span
-          className={`text-2xl font-bold ${isActive ? 'text-white' : 'text-[#4A4A6A]'}`}
+          className={`text-2xl font-bold ${isActive ? 'text-white' : 'text-[#475569]'}`}
           key={current}
           initial={{ scale: 1.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -109,12 +109,12 @@ export function StreakCounter({ current, longest }: StreakCounterProps) {
       </div>
 
       {/* Subtitle */}
-      <p className={`text-sm font-medium ${isActive ? 'text-orange-300/80' : 'text-[#4A4A6A]'}`}>
+      <p className={`text-sm font-medium ${isActive ? 'text-orange-300/80' : 'text-[#475569]'}`}>
         {current === 1 ? '1 dia seguido' : `${current} dias seguidos`}
       </p>
 
       {/* Longest streak */}
-      <p className="text-[10px] text-[#8BA5BD]">
+      <p className="text-[10px] text-[#94A3B8]">
         Recorde: {longest} {longest === 1 ? 'dia' : 'dias'}
       </p>
     </div>

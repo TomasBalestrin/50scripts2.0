@@ -42,12 +42,12 @@ interface ChallengeCardProps {
 export function ChallengeCard({ challenge }: ChallengeCardProps) {
   if (!challenge) {
     return (
-      <div className="rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5">
-        <div className="flex items-center gap-3 text-[#4A4A6A]">
+      <div className="rounded-xl border border-[#131B35] bg-[#0A0F1E] p-5">
+        <div className="flex items-center gap-3 text-[#475569]">
           <Target className="h-6 w-6" />
           <div>
-            <p className="text-sm font-medium text-[#8BA5BD]">Sem desafio hoje</p>
-            <p className="text-xs text-[#4A4A6A]">Volte amanha para um novo desafio!</p>
+            <p className="text-sm font-medium text-[#94A3B8]">Sem desafio hoje</p>
+            <p className="text-xs text-[#475569]">Volte amanha para um novo desafio!</p>
           </div>
         </div>
       </div>
@@ -62,8 +62,8 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
     <motion.div
       className={`relative overflow-hidden rounded-xl border p-5 ${
         completed
-          ? 'border-emerald-500/30 bg-[#0F1D32]'
-          : 'border-[#1A3050] bg-[#0F1D32]'
+          ? 'border-emerald-500/30 bg-[#0A0F1E]'
+          : 'border-[#131B35] bg-[#0A0F1E]'
       }`}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -80,17 +80,17 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
           <div className="flex items-center gap-3">
             <div
               className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                completed ? 'bg-emerald-500/20' : 'bg-[#C9A84C]/15'
+                completed ? 'bg-emerald-500/20' : 'bg-[#1D4ED8]/15'
               }`}
             >
               {completed ? (
                 <CheckCircle2 className="h-5 w-5 text-emerald-400" />
               ) : (
-                <Target className="h-5 w-5 text-[#C9A84C]" />
+                <Target className="h-5 w-5 text-[#1D4ED8]" />
               )}
             </div>
             <div>
-              <p className="text-xs font-medium text-[#8BA5BD] uppercase tracking-wide">
+              <p className="text-xs font-medium text-[#94A3B8] uppercase tracking-wide">
                 Desafio do dia
               </p>
               <p className="text-sm font-semibold text-white">{label}</p>
@@ -98,7 +98,7 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
           </div>
 
           {/* XP reward */}
-          <div className="flex items-center gap-1 rounded-full bg-[#1A3050] px-2.5 py-1">
+          <div className="flex items-center gap-1 rounded-full bg-[#131B35] px-2.5 py-1">
             <Zap className="h-3.5 w-3.5 text-yellow-400" />
             <span className="text-xs font-bold text-yellow-400">+{xp_reward} XP</span>
           </div>
@@ -121,16 +121,16 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
           <div>
             {/* Progress bar */}
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs text-[#8BA5BD]">
+              <span className="text-xs text-[#94A3B8]">
                 {current_count} / {target_count}
               </span>
               <span className="text-xs font-medium text-white">
                 {Math.round(percentage)}%
               </span>
             </div>
-            <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-[#1A3050]">
+            <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-[#131B35]">
               <motion.div
-                className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#C9A84C] to-[#F59E0B]"
+                className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#1D4ED8] to-[#F59E0B]"
                 initial={{ width: 0 }}
                 animate={{ width: `${percentage}%` }}
                 transition={{ type: 'spring', stiffness: 50, damping: 12, duration: 1 }}
@@ -150,7 +150,7 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
             </div>
 
             {/* Motivational text */}
-            <p className="mt-2 text-xs text-[#8BA5BD]">
+            <p className="mt-2 text-xs text-[#94A3B8]">
               {getMotivationalText(percentage)}
             </p>
           </div>

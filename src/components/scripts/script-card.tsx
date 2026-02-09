@@ -22,7 +22,7 @@ export function ScriptCard({ script, locked = false, onClick }: ScriptCardProps)
       whileHover={{ scale: locked ? 1 : 1.02 }}
       whileTap={{ scale: locked ? 1 : 0.98 }}
       className={cn(
-        'relative cursor-pointer overflow-hidden rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5 transition-colors hover:border-[#C9A84C]/30',
+        'relative cursor-pointer overflow-hidden rounded-xl border border-[#131B35] bg-[#0A0F1E] p-5 transition-colors hover:border-[#1D4ED8]/30',
         locked && 'cursor-not-allowed'
       )}
       onClick={() => {
@@ -31,9 +31,9 @@ export function ScriptCard({ script, locked = false, onClick }: ScriptCardProps)
     >
       {/* Lock overlay */}
       {locked && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 backdrop-blur-sm bg-[#0A1628]/60">
-          <Lock className="h-6 w-6 text-[#C9A84C]" />
-          <span className="rounded-full bg-[#C9A84C] px-3 py-1 text-xs font-bold text-white">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 backdrop-blur-sm bg-[#020617]/60">
+          <Lock className="h-6 w-6 text-[#1D4ED8]" />
+          <span className="rounded-full bg-[#1D4ED8] px-3 py-1 text-xs font-bold text-white">
             Premium
           </span>
         </div>
@@ -53,7 +53,7 @@ export function ScriptCard({ script, locked = false, onClick }: ScriptCardProps)
         </div>
 
         {/* Preview */}
-        <p className="mb-3 text-xs leading-relaxed text-[#8BA5BD]">{preview}</p>
+        <p className="mb-3 text-xs leading-relaxed text-[#94A3B8]">{preview}</p>
 
         {/* Effectiveness */}
         <div className="mb-3">
@@ -66,19 +66,19 @@ export function ScriptCard({ script, locked = false, onClick }: ScriptCardProps)
             {script.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-[#1A3050] px-2 py-0.5 text-[10px] text-[#8BA5BD]"
+                className="rounded-full bg-[#131B35] px-2 py-0.5 text-[10px] text-[#94A3B8]"
               >
                 {tag}
               </span>
             ))}
             {script.tags.length > 3 && (
-              <span className="text-[10px] text-[#8BA5BD]">+{script.tags.length - 3}</span>
+              <span className="text-[10px] text-[#94A3B8]">+{script.tags.length - 3}</span>
             )}
           </div>
         )}
 
         {/* Usage count */}
-        <p className="text-[10px] text-[#8BA5BD]">
+        <p className="text-[10px] text-[#94A3B8]">
           {script.global_usage_count} {script.global_usage_count === 1 ? 'uso' : 'usos'}
         </p>
       </div>

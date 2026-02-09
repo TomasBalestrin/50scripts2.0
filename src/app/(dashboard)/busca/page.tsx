@@ -55,7 +55,7 @@ export default function BuscaPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Busque por título, conteúdo ou situação..."
-          className="pl-10 bg-[#0F1D32] border-[#1A3050] text-white h-12 text-lg"
+          className="pl-10 bg-[#0A0F1E] border-[#131B35] text-white h-12 text-lg"
           autoFocus
         />
       </div>
@@ -63,7 +63,7 @@ export default function BuscaPage() {
       {loading && (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 bg-[#0F1D32] rounded-xl animate-pulse" />
+            <div key={i} className="h-24 bg-[#0A0F1E] rounded-xl animate-pulse" />
           ))}
         </div>
       )}
@@ -79,7 +79,7 @@ export default function BuscaPage() {
         {results.map((script) => (
           <Card
             key={script.id}
-            className="bg-[#0F1D32] border-[#1A3050] hover:border-[#363660] transition-colors cursor-pointer"
+            className="bg-[#0A0F1E] border-[#131B35] hover:border-[#1E2A52] transition-colors cursor-pointer"
           >
             <CardContent className="pt-4">
               <div className="flex items-start justify-between gap-3">
@@ -94,7 +94,7 @@ export default function BuscaPage() {
                       <Badge
                         key={tag}
                         variant="secondary"
-                        className="bg-[#1A3050] text-gray-300 text-xs"
+                        className="bg-[#131B35] text-gray-300 text-xs"
                       >
                         {tag}
                       </Badge>
@@ -114,7 +114,7 @@ export default function BuscaPage() {
                     e.stopPropagation();
                     handleCopy(script);
                   }}
-                  className="flex-shrink-0 p-2 rounded-lg bg-[#1A3050] hover:bg-[#C9A84C] transition-colors"
+                  className="flex-shrink-0 p-2 rounded-lg bg-[#131B35] hover:bg-[#1D4ED8] transition-colors"
                 >
                   {copiedId === script.id ? (
                     <Check className="w-5 h-5 text-green-500" />

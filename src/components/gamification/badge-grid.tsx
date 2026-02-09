@@ -96,8 +96,8 @@ export function BadgeGrid({ badges }: BadgeGridProps) {
             whileHover={{ scale: earned ? 1.05 : 1.02 }}
             className={`relative flex flex-col items-center rounded-xl border p-3 sm:p-4 transition-colors ${
               earned
-                ? 'border-[#C9A84C]/30 bg-[#0F1D32]'
-                : 'border-[#1A3050] bg-[#0F1D32]/50'
+                ? 'border-[#1D4ED8]/30 bg-[#0A0F1E]'
+                : 'border-[#131B35] bg-[#0A0F1E]/50'
             }`}
           >
             {/* Badge circle */}
@@ -109,27 +109,27 @@ export function BadgeGrid({ badges }: BadgeGridProps) {
                 style={
                   earned
                     ? {
-                        backgroundColor: '#C9A84C20',
+                        backgroundColor: '#1D4ED820',
                         boxShadow: '0 0 20px rgba(233,69,96,0.3)',
-                        border: '2px solid #C9A84C',
+                        border: '2px solid #1D4ED8',
                       }
                     : {
-                        backgroundColor: '#1A3050',
-                        border: '2px solid #3A3A5C',
+                        backgroundColor: '#131B35',
+                        border: '2px solid #1E2A52',
                       }
                 }
               >
                 <Icon
                   className={`h-6 w-6 sm:h-7 sm:w-7 ${
-                    earned ? 'text-[#C9A84C]' : 'text-[#4A4A6A]'
+                    earned ? 'text-[#1D4ED8]' : 'text-[#475569]'
                   }`}
                 />
               </div>
 
               {/* Lock overlay for unearned */}
               {!earned && (
-                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-[#0A1628]/50">
-                  <Lock className="h-4 w-4 text-[#4A4A6A]" />
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-[#020617]/50">
+                  <Lock className="h-4 w-4 text-[#475569]" />
                 </div>
               )}
 
@@ -156,7 +156,7 @@ export function BadgeGrid({ badges }: BadgeGridProps) {
             {/* Name */}
             <p
               className={`text-center text-[11px] font-semibold leading-tight sm:text-xs ${
-                earned ? 'text-white' : 'text-[#4A4A6A]'
+                earned ? 'text-white' : 'text-[#475569]'
               }`}
             >
               {badge.name}
@@ -165,7 +165,7 @@ export function BadgeGrid({ badges }: BadgeGridProps) {
             {/* Description / requirement */}
             <p
               className={`mt-0.5 text-center text-[9px] leading-tight sm:text-[10px] ${
-                earned ? 'text-[#8BA5BD]' : 'text-[#4A4A6A]'
+                earned ? 'text-[#94A3B8]' : 'text-[#475569]'
               }`}
             >
               {earned && badge.earned_at

@@ -7,17 +7,17 @@ import { ScriptCategory } from '@/types/database';
 
 function SkeletonCard() {
   return (
-    <div className="animate-pulse rounded-xl border border-[#1A3050] bg-[#0F1D32] p-5">
+    <div className="animate-pulse rounded-xl border border-[#131B35] bg-[#0A0F1E] p-5">
       <div className="mb-3 flex items-center gap-3">
-        <div className="h-10 w-10 rounded-lg bg-[#1A3050]" />
+        <div className="h-10 w-10 rounded-lg bg-[#131B35]" />
         <div className="flex-1 space-y-2">
-          <div className="h-4 w-2/3 rounded bg-[#1A3050]" />
-          <div className="h-3 w-1/3 rounded bg-[#1A3050]" />
+          <div className="h-4 w-2/3 rounded bg-[#131B35]" />
+          <div className="h-3 w-1/3 rounded bg-[#131B35]" />
         </div>
       </div>
       <div className="space-y-2">
-        <div className="h-3 w-full rounded bg-[#1A3050]" />
-        <div className="h-3 w-3/4 rounded bg-[#1A3050]" />
+        <div className="h-3 w-full rounded bg-[#131B35]" />
+        <div className="h-3 w-3/4 rounded bg-[#131B35]" />
       </div>
     </div>
   );
@@ -61,11 +61,11 @@ export default function TrilhasPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A1628] p-4 sm:p-6">
+      <div className="min-h-screen bg-[#020617] p-4 sm:p-6">
         <div className="mx-auto max-w-6xl">
           <div className="mb-6 animate-pulse">
-            <div className="mb-2 h-8 w-48 rounded bg-[#0F1D32]" />
-            <div className="h-4 w-72 rounded bg-[#0F1D32]" />
+            <div className="mb-2 h-8 w-48 rounded bg-[#0A0F1E]" />
+            <div className="h-4 w-72 rounded bg-[#0A0F1E]" />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -78,11 +78,11 @@ export default function TrilhasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A1628] p-4 sm:p-6">
+    <div className="min-h-screen bg-[#020617] p-4 sm:p-6">
       <div className="mx-auto max-w-6xl">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white sm:text-3xl">Trilhas</h1>
-          <p className="mt-1 text-sm text-[#8BA5BD]">
+          <p className="mt-1 text-sm text-[#94A3B8]">
             Escolha uma trilha para explorar os scripts de vendas
           </p>
         </div>
@@ -99,7 +99,7 @@ export default function TrilhasPage() {
               variants={cardVariants}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="group cursor-pointer overflow-hidden rounded-xl border border-[#1A3050] bg-[#0F1D32] transition-colors hover:border-[#C9A84C]/30"
+              className="group cursor-pointer overflow-hidden rounded-xl border border-[#131B35] bg-[#0A0F1E] transition-colors hover:border-[#1D4ED8]/30"
               style={{ borderLeftWidth: '4px', borderLeftColor: category.color }}
               onClick={() => router.push(`/trilhas/${category.slug}`)}
             >
@@ -107,17 +107,17 @@ export default function TrilhasPage() {
                 <div className="mb-3 flex items-center gap-3">
                   <span className="text-3xl">{category.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-white group-hover:text-[#C9A84C] transition-colors">
+                    <h3 className="text-base font-semibold text-white group-hover:text-[#1D4ED8] transition-colors">
                       {category.name}
                     </h3>
                     {typeof category.scripts_count === 'number' && (
-                      <span className="inline-block mt-1 rounded-full bg-[#1A3050] px-2 py-0.5 text-[10px] font-medium text-[#8BA5BD]">
+                      <span className="inline-block mt-1 rounded-full bg-[#131B35] px-2 py-0.5 text-[10px] font-medium text-[#94A3B8]">
                         {category.scripts_count} {category.scripts_count === 1 ? 'script' : 'scripts'}
                       </span>
                     )}
                   </div>
                 </div>
-                <p className="text-xs leading-relaxed text-[#8BA5BD] line-clamp-3">
+                <p className="text-xs leading-relaxed text-[#94A3B8] line-clamp-3">
                   {category.description}
                 </p>
               </div>
@@ -127,8 +127,8 @@ export default function TrilhasPage() {
 
         {!loading && categories.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-lg text-[#8BA5BD]">Nenhuma trilha encontrada</p>
-            <p className="mt-1 text-sm text-[#8BA5BD]/70">
+            <p className="text-lg text-[#94A3B8]">Nenhuma trilha encontrada</p>
+            <p className="mt-1 text-sm text-[#94A3B8]/70">
               As trilhas serao adicionadas em breve.
             </p>
           </div>

@@ -137,17 +137,17 @@ export default function AIGeneratorPage() {
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-[#C9A84C]" />
+          <Sparkles className="w-6 h-6 text-[#1D4ED8]" />
           Gerador de Scripts IA
         </h1>
         {creditsRemaining !== null && (
-          <Badge className="bg-[#1A3050] text-white">
+          <Badge className="bg-[#131B35] text-white">
             {creditsRemaining === -1 ? '∞' : creditsRemaining} créditos
           </Badge>
         )}
       </div>
 
-      <Card className="bg-[#0F1D32] border-[#1A3050] mb-6">
+      <Card className="bg-[#0A0F1E] border-[#131B35] mb-6">
         <CardHeader>
           <CardTitle className="text-white text-lg">Configuração</CardTitle>
         </CardHeader>
@@ -155,10 +155,10 @@ export default function AIGeneratorPage() {
           <div>
             <label className="text-sm text-gray-400 mb-2 block">Trilha / Categoria</label>
             <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger className="bg-[#1A3050] border-[#363660] text-white">
+              <SelectTrigger className="bg-[#131B35] border-[#1E2A52] text-white">
                 <SelectValue placeholder="Selecione a trilha" />
               </SelectTrigger>
-              <SelectContent className="bg-[#1A3050] border-[#363660]">
+              <SelectContent className="bg-[#131B35] border-[#1E2A52]">
                 {categories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id} className="text-white">
                     {cat.icon} {cat.name}
@@ -176,7 +176,7 @@ export default function AIGeneratorPage() {
               value={context}
               onChange={(e) => setContext(e.target.value)}
               placeholder="Ex: Preciso abordar um lead que demonstrou interesse em nosso curso de marketing digital mas não respondeu a última mensagem há 3 dias..."
-              className="bg-[#1A3050] border-[#363660] text-white min-h-[100px]"
+              className="bg-[#131B35] border-[#1E2A52] text-white min-h-[100px]"
             />
           </div>
 
@@ -195,8 +195,8 @@ export default function AIGeneratorPage() {
                   onClick={() => setTone(t.value)}
                   className={
                     tone === t.value
-                      ? 'bg-[#C9A84C] text-white'
-                      : 'border-[#363660] text-gray-400 hover:bg-[#1A3050]'
+                      ? 'bg-[#1D4ED8] text-white'
+                      : 'border-[#1E2A52] text-gray-400 hover:bg-[#131B35]'
                   }
                 >
                   {t.label}
@@ -208,7 +208,7 @@ export default function AIGeneratorPage() {
           <Button
             onClick={handleGenerate}
             disabled={generating || !categoryId || context.length < 10}
-            className="w-full bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white h-12"
+            className="w-full bg-[#1D4ED8] hover:bg-[#1D4ED8]/90 text-white h-12"
           >
             {generating ? (
               <>
@@ -230,7 +230,7 @@ export default function AIGeneratorPage() {
         <div className="space-y-4">
           {/* Title & Category */}
           {parsed.title && (
-            <Card className="bg-[#0F1D32] border-[#1A3050]">
+            <Card className="bg-[#0A0F1E] border-[#131B35]">
               <CardContent className="pt-5 pb-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -244,7 +244,7 @@ export default function AIGeneratorPage() {
                       </div>
                     )}
                   </div>
-                  <Badge className="bg-[#C9A84C]/20 text-[#C9A84C] shrink-0">
+                  <Badge className="bg-[#1D4ED8]/20 text-[#1D4ED8] shrink-0">
                     <Sparkles className="w-3 h-3 mr-1" />
                     IA
                   </Badge>
@@ -255,10 +255,10 @@ export default function AIGeneratorPage() {
 
           {/* Context Description */}
           {parsed.context_description && (
-            <Card className="bg-[#0F1D32] border-[#1A3050]">
+            <Card className="bg-[#0A0F1E] border-[#131B35]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-sm flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-[#C9A84C]" />
+                  <FileText className="w-4 h-4 text-[#1D4ED8]" />
                   Quando usar
                 </CardTitle>
               </CardHeader>
@@ -271,11 +271,11 @@ export default function AIGeneratorPage() {
           )}
 
           {/* Script Content with Tone Tabs */}
-          <Card className="bg-[#0F1D32] border-[#1A3050]">
+          <Card className="bg-[#0A0F1E] border-[#131B35]">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-white text-sm flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-[#C9A84C]" />
+                  <MessageSquare className="w-4 h-4 text-[#1D4ED8]" />
                   Script
                 </CardTitle>
               </div>
@@ -293,8 +293,8 @@ export default function AIGeneratorPage() {
                         onClick={() => setActiveTab(t.key)}
                         className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                           activeTab === t.key
-                            ? 'bg-[#C9A84C] text-white'
-                            : 'bg-[#1A3050] text-gray-400 hover:text-white'
+                            ? 'bg-[#1D4ED8] text-white'
+                            : 'bg-[#131B35] text-gray-400 hover:text-white'
                         }`}
                       >
                         {t.label}
@@ -304,7 +304,7 @@ export default function AIGeneratorPage() {
               )}
             </CardHeader>
             <CardContent>
-              <div className="bg-[#1A3050] rounded-lg p-4 mb-3">
+              <div className="bg-[#131B35] rounded-lg p-4 mb-3">
                 <p className="text-gray-200 text-sm leading-relaxed whitespace-pre-wrap">
                   {getActiveContent()}
                 </p>
@@ -313,7 +313,7 @@ export default function AIGeneratorPage() {
                 <Button
                   onClick={() => handleCopy(getActiveContent(), 'script')}
                   size="sm"
-                  className="bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white"
+                  className="bg-[#1D4ED8] hover:bg-[#1D4ED8]/90 text-white"
                 >
                   {copied === 'script' ? (
                     <><Check className="w-3.5 h-3.5 mr-1.5" /> Copiado!</>
@@ -326,7 +326,7 @@ export default function AIGeneratorPage() {
                   disabled={saved}
                   size="sm"
                   variant="outline"
-                  className="border-[#363660] text-white hover:bg-[#1A3050]"
+                  className="border-[#1E2A52] text-white hover:bg-[#131B35]"
                 >
                   {saved ? (
                     <><Check className="w-3.5 h-3.5 mr-1.5" /> Salvo!</>
@@ -339,7 +339,7 @@ export default function AIGeneratorPage() {
                   disabled={generating}
                   size="sm"
                   variant="outline"
-                  className="border-[#363660] text-white hover:bg-[#1A3050]"
+                  className="border-[#1E2A52] text-white hover:bg-[#131B35]"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${generating ? 'animate-spin' : ''}`} />
                 </Button>
@@ -349,10 +349,10 @@ export default function AIGeneratorPage() {
 
           {/* Tags */}
           {parsed.tags && parsed.tags.length > 0 && (
-            <Card className="bg-[#0F1D32] border-[#1A3050]">
+            <Card className="bg-[#0A0F1E] border-[#131B35]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-sm flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-[#C9A84C]" />
+                  <Tag className="w-4 h-4 text-[#1D4ED8]" />
                   Tags
                 </CardTitle>
               </CardHeader>
@@ -361,7 +361,7 @@ export default function AIGeneratorPage() {
                   {parsed.tags.map((tag, i) => (
                     <Badge
                       key={i}
-                      className="bg-[#1A3050] text-gray-300 border border-[#363660]"
+                      className="bg-[#131B35] text-gray-300 border border-[#1E2A52]"
                     >
                       {tag}
                     </Badge>
@@ -373,7 +373,7 @@ export default function AIGeneratorPage() {
 
           {/* Objection Keywords */}
           {parsed.objection_keywords && parsed.objection_keywords.length > 0 && (
-            <Card className="bg-[#0F1D32] border-[#1A3050]">
+            <Card className="bg-[#0A0F1E] border-[#131B35]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-sm flex items-center gap-2">
                   <ShieldAlert className="w-4 h-4 text-amber-400" />
@@ -395,12 +395,12 @@ export default function AIGeneratorPage() {
         </div>
       ) : result ? (
         /* Fallback for plain text or error */
-        <Card className="bg-[#0F1D32] border-[#1A3050]">
+        <Card className="bg-[#0A0F1E] border-[#131B35]">
           <CardHeader>
             <CardTitle className="text-white text-lg">Script Gerado</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-[#1A3050] rounded-lg p-4 mb-4">
+            <div className="bg-[#131B35] rounded-lg p-4 mb-4">
               <p className="whitespace-pre-wrap text-gray-200 text-sm leading-relaxed">
                 {result}
               </p>
@@ -408,7 +408,7 @@ export default function AIGeneratorPage() {
             <div className="flex gap-2">
               <Button
                 onClick={() => handleCopy(result, 'main')}
-                className="flex-1 bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white"
+                className="flex-1 bg-[#1D4ED8] hover:bg-[#1D4ED8]/90 text-white"
               >
                 {copied === 'main' ? (
                   <><Check className="w-4 h-4 mr-2" /> Copiado!</>
@@ -420,7 +420,7 @@ export default function AIGeneratorPage() {
                 onClick={handleSave}
                 disabled={saved}
                 variant="outline"
-                className="border-[#363660] text-white hover:bg-[#1A3050]"
+                className="border-[#1E2A52] text-white hover:bg-[#131B35]"
               >
                 {saved ? (
                   <><Check className="w-4 h-4 mr-2" /> Salvo!</>
@@ -432,7 +432,7 @@ export default function AIGeneratorPage() {
                 onClick={handleGenerate}
                 disabled={generating}
                 variant="outline"
-                className="border-[#363660] text-white hover:bg-[#1A3050]"
+                className="border-[#1E2A52] text-white hover:bg-[#131B35]"
               >
                 <RefreshCw className="w-4 h-4" />
               </Button>

@@ -124,20 +124,20 @@ export default function OnboardingPage() {
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-[#8BA5BD]">
+          <span className="text-sm text-[#94A3B8]">
             Passo {step} de {TOTAL_STEPS}
           </span>
-          <span className="text-sm text-[#8BA5BD]">{Math.round(progress)}%</span>
+          <span className="text-sm text-[#94A3B8]">{Math.round(progress)}%</span>
         </div>
-        <div className="w-full h-2 bg-[#1A3050] rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-[#131B35] rounded-full overflow-hidden">
           <div
-            className="h-full bg-[#C9A84C] rounded-full transition-all duration-500 ease-out"
+            className="h-full bg-[#1D4ED8] rounded-full transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      <Card className="border-[#1A3050] bg-[#0F1D32] shadow-2xl">
+      <Card className="border-[#131B35] bg-[#0A0F1E] shadow-2xl">
         <CardContent className="p-6">
           {/* Step 1: Niche */}
           {step === 1 && (
@@ -146,12 +146,12 @@ export default function OnboardingPage() {
                 <h2 className="text-2xl font-bold text-white">
                   Qual seu nicho?
                 </h2>
-                <p className="text-[#8BA5BD]">
+                <p className="text-[#94A3B8]">
                   Isso nos ajuda a personalizar os scripts para seu mercado
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="niche" className="text-[#8BA5BD]">
+                <Label htmlFor="niche" className="text-[#94A3B8]">
                   Seu nicho de atuação
                 </Label>
                 <Input
@@ -160,7 +160,7 @@ export default function OnboardingPage() {
                   placeholder="Ex: Imobiliário, SaaS, Seguros, Coaching..."
                   value={niche}
                   onChange={(e) => setNiche(e.target.value)}
-                  className="bg-[#0A1628] border-[#1A3050] text-white placeholder:text-[#4A4A6A] focus-visible:ring-[#C9A84C]"
+                  className="bg-[#020617] border-[#131B35] text-white placeholder:text-[#475569] focus-visible:ring-[#1D4ED8]"
                 />
               </div>
             </div>
@@ -173,12 +173,12 @@ export default function OnboardingPage() {
                 <h2 className="text-2xl font-bold text-white">
                   Qual sua maior dificuldade?
                 </h2>
-                <p className="text-[#8BA5BD]">
+                <p className="text-[#94A3B8]">
                   Vamos focar no que mais importa para você
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="difficulty" className="text-[#8BA5BD]">
+                <Label htmlFor="difficulty" className="text-[#94A3B8]">
                   Sua maior dificuldade em vendas
                 </Label>
                 <Input
@@ -187,7 +187,7 @@ export default function OnboardingPage() {
                   placeholder="Ex: Abordagem inicial, contorno de objeções..."
                   value={difficulty}
                   onChange={(e) => setDifficulty(e.target.value)}
-                  className="bg-[#0A1628] border-[#1A3050] text-white placeholder:text-[#4A4A6A] focus-visible:ring-[#C9A84C]"
+                  className="bg-[#020617] border-[#131B35] text-white placeholder:text-[#475569] focus-visible:ring-[#1D4ED8]"
                 />
               </div>
             </div>
@@ -200,7 +200,7 @@ export default function OnboardingPage() {
                 <h2 className="text-2xl font-bold text-white">
                   Qual seu estilo?
                 </h2>
-                <p className="text-[#8BA5BD]">
+                <p className="text-[#94A3B8]">
                   Escolha o tom que mais combina com você
                 </p>
               </div>
@@ -212,14 +212,14 @@ export default function OnboardingPage() {
                     onClick={() => setPreferredTone(option.value)}
                     className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
                       preferredTone === option.value
-                        ? 'border-[#C9A84C] bg-[#C9A84C]/10'
-                        : 'border-[#1A3050] bg-[#0A1628] hover:border-[#4A4A6A]'
+                        ? 'border-[#1D4ED8] bg-[#1D4ED8]/10'
+                        : 'border-[#131B35] bg-[#020617] hover:border-[#475569]'
                     }`}
                   >
                     <h3 className="text-lg font-semibold text-white">
                       {option.label}
                     </h3>
-                    <p className="text-sm text-[#8BA5BD] mt-1">
+                    <p className="text-sm text-[#94A3B8] mt-1">
                       {option.description}
                     </p>
                   </button>
@@ -235,12 +235,12 @@ export default function OnboardingPage() {
                 <h2 className="text-2xl font-bold text-white">
                   Seu Quick Win!
                 </h2>
-                <p className="text-[#8BA5BD]">
+                <p className="text-[#94A3B8]">
                   Aqui está um script recomendado para você começar agora mesmo
                 </p>
               </div>
-              <div className="bg-[#0A1628] border border-[#1A3050] rounded-lg p-4">
-                <p className="text-sm text-[#8BA5BD] mb-2 font-medium">
+              <div className="bg-[#020617] border border-[#131B35] rounded-lg p-4">
+                <p className="text-sm text-[#94A3B8] mb-2 font-medium">
                   Script de Abordagem Inicial
                 </p>
                 <pre className="text-white text-sm whitespace-pre-wrap font-sans leading-relaxed">
@@ -250,7 +250,7 @@ export default function OnboardingPage() {
               <Button
                 type="button"
                 onClick={handleCopy}
-                className="w-full h-14 text-lg font-bold bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white"
+                className="w-full h-14 text-lg font-bold bg-[#1D4ED8] hover:bg-[#1D4ED8]/90 text-white"
               >
                 {copied ? 'COPIADO!' : 'COPIAR'}
               </Button>
@@ -270,7 +270,7 @@ export default function OnboardingPage() {
                 type="button"
                 variant="ghost"
                 onClick={handleBack}
-                className="text-[#8BA5BD] hover:text-white hover:bg-[#1A3050]"
+                className="text-[#94A3B8] hover:text-white hover:bg-[#131B35]"
               >
                 Voltar
               </Button>
@@ -283,7 +283,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={handleNext}
                 disabled={!canAdvance()}
-                className="bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white font-semibold disabled:opacity-40"
+                className="bg-[#1D4ED8] hover:bg-[#1D4ED8]/90 text-white font-semibold disabled:opacity-40"
               >
                 Próximo
               </Button>
@@ -292,7 +292,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={handleComplete}
                 disabled={loading}
-                className="bg-[#4A90D9] hover:bg-[#4A90D9]/90 text-white font-semibold"
+                className="bg-[#3B82F6] hover:bg-[#3B82F6]/90 text-white font-semibold"
               >
                 {loading ? 'Finalizando...' : 'Começar a usar'}
               </Button>

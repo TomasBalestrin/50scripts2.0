@@ -95,7 +95,7 @@ export default function ColecoesPage() {
     return (
       <div className="p-4 md:p-6 space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-32 bg-[#0F1D32] rounded-xl animate-pulse" />
+          <div key={i} className="h-32 bg-[#0A0F1E] rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -105,17 +105,17 @@ export default function ColecoesPage() {
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <FolderHeart className="w-6 h-6 text-[#C9A84C]" />
+          <FolderHeart className="w-6 h-6 text-[#1D4ED8]" />
           Minhas Coleções
         </h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#C9A84C] hover:bg-[#d63d56] text-white">
+            <Button className="bg-[#1D4ED8] hover:bg-[#1E40AF] text-white">
               <Plus className="w-4 h-4 mr-2" />
               Nova Coleção
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-[#0F1D32] border-[#1A3050]">
+          <DialogContent className="bg-[#0A0F1E] border-[#131B35]">
             <DialogHeader>
               <DialogTitle className="text-white">Criar Coleção</DialogTitle>
             </DialogHeader>
@@ -124,13 +124,13 @@ export default function ColecoesPage() {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder='Ex: "Melhores para Saúde"'
-                className="bg-[#1A3050] border-[#363660] text-white"
+                className="bg-[#131B35] border-[#1E2A52] text-white"
                 onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               />
               <Button
                 onClick={handleCreate}
                 disabled={!newName.trim()}
-                className="w-full bg-[#C9A84C] hover:bg-[#d63d56] text-white"
+                className="w-full bg-[#1D4ED8] hover:bg-[#1E40AF] text-white"
               >
                 Criar
               </Button>
@@ -150,7 +150,7 @@ export default function ColecoesPage() {
       ) : (
         <div className="space-y-4">
           {collections.map((collection) => (
-            <Card key={collection.id} className="bg-[#0F1D32] border-[#1A3050]">
+            <Card key={collection.id} className="bg-[#0A0F1E] border-[#131B35]">
               <CardHeader
                 className="cursor-pointer"
                 onClick={() =>
@@ -159,10 +159,10 @@ export default function ColecoesPage() {
               >
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white text-base flex items-center gap-2">
-                    <FolderHeart className="w-4 h-4 text-[#C9A84C]" />
+                    <FolderHeart className="w-4 h-4 text-[#1D4ED8]" />
                     {collection.name}
                   </CardTitle>
-                  <Badge className="bg-[#1A3050] text-gray-400">
+                  <Badge className="bg-[#131B35] text-gray-400">
                     {collection.scripts_count} scripts
                   </Badge>
                 </div>
@@ -179,7 +179,7 @@ export default function ColecoesPage() {
                       {collection.scripts.map((script) => (
                         <div
                           key={script.id}
-                          className="flex items-center gap-3 p-3 bg-[#1A3050] rounded-lg"
+                          className="flex items-center gap-3 p-3 bg-[#131B35] rounded-lg"
                         >
                           <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           <div
@@ -196,7 +196,7 @@ export default function ColecoesPage() {
                           </div>
                           <button
                             onClick={() => handleCopy(script.content, script.id)}
-                            className="p-1.5 rounded hover:bg-[#363660] transition-colors"
+                            className="p-1.5 rounded hover:bg-[#1E2A52] transition-colors"
                           >
                             {copiedId === script.id ? (
                               <Check className="w-4 h-4 text-green-500" />

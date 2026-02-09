@@ -28,7 +28,7 @@ export function XpPopup({ amount, visible, onComplete }: XpPopupProps) {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="flex items-center gap-2 rounded-full bg-[#0F1D32] border border-yellow-400/30 px-5 py-2.5 shadow-2xl"
+            className="flex items-center gap-2 rounded-full bg-[#0A0F1E] border border-yellow-400/30 px-5 py-2.5 shadow-2xl"
             style={{
               boxShadow: '0 0 30px rgba(250,204,21,0.2), 0 4px 20px rgba(0,0,0,0.5)',
             }}

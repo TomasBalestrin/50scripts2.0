@@ -81,7 +81,7 @@ export default function AgendaPage() {
     return (
       <div className="p-4 md:p-6 space-y-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-32 bg-[#0F1D32] rounded-xl animate-pulse" />
+          <div key={i} className="h-32 bg-[#0A0F1E] rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -94,7 +94,7 @@ export default function AgendaPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Calendar className="w-6 h-6 text-[#C9A84C]" />
+            <Calendar className="w-6 h-6 text-[#1D4ED8]" />
             Agenda de Vendas
           </h1>
           <p className="text-sm text-gray-400 mt-1">
@@ -105,7 +105,7 @@ export default function AgendaPage() {
             })}
           </p>
         </div>
-        <Badge className="bg-[#1A3050] text-white">
+        <Badge className="bg-[#131B35] text-white">
           {completedCount}/{blocks.length} concluídos
         </Badge>
       </div>
@@ -114,7 +114,7 @@ export default function AgendaPage() {
         {blocks.map((block) => (
           <Card
             key={block.block}
-            className={`bg-[#0F1D32] border-[#1A3050] transition-all ${
+            className={`bg-[#0A0F1E] border-[#131B35] transition-all ${
               block.item?.completed ? 'opacity-60' : ''
             }`}
           >
@@ -132,14 +132,14 @@ export default function AgendaPage() {
                   onCheckedChange={(checked) =>
                     block.item && handleComplete(block.item.id, checked as boolean)
                   }
-                  className="border-[#1A3050] data-[state=checked]:bg-[#C9A84C]"
+                  className="border-[#131B35] data-[state=checked]:bg-[#1D4ED8]"
                 />
               </div>
             </CardHeader>
 
             {block.item?.suggested_script && (
               <CardContent>
-                <div className="bg-[#1A3050] rounded-lg p-3">
+                <div className="bg-[#131B35] rounded-lg p-3">
                   <p className="text-sm font-medium text-white mb-1">
                     {block.item.suggested_script.title}
                   </p>
@@ -150,14 +150,14 @@ export default function AgendaPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-[#363660] text-gray-300 hover:bg-[#363660] text-xs"
+                      className="border-[#1E2A52] text-gray-300 hover:bg-[#1E2A52] text-xs"
                       onClick={() => router.push(`/scripts/${block.item!.suggested_script!.id}`)}
                     >
                       Ver Script
                     </Button>
                     <Button
                       size="sm"
-                      className="bg-[#C9A84C] hover:bg-[#d63d56] text-white text-xs"
+                      className="bg-[#1D4ED8] hover:bg-[#1E40AF] text-white text-xs"
                       onClick={() =>
                         handleCopy(
                           block.item!.suggested_script!.content,

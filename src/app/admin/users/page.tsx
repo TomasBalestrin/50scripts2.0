@@ -287,7 +287,7 @@ export default function AdminUsersPage() {
             setShowAddPassword(false);
             setShowAddModal(true);
           }}
-          className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
+          className="bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90"
         >
           <Plus className="mr-2 h-4 w-4" />
           Adicionar Usuário
@@ -295,7 +295,7 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Filters */}
-      <Card className="border-[#1A3050] bg-[#0F1D32]">
+      <Card className="border-[#131B35] bg-[#0A0F1E]">
         <CardContent className="flex flex-wrap items-center gap-4 p-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
@@ -306,7 +306,7 @@ export default function AdminUsersPage() {
                 setSearch(e.target.value);
                 setPage(0);
               }}
-              className="border-[#1A3050] bg-[#1A3050] pl-10 text-white placeholder:text-gray-500"
+              className="border-[#131B35] bg-[#131B35] pl-10 text-white placeholder:text-gray-500"
             />
           </div>
           <div className="w-40">
@@ -317,10 +317,10 @@ export default function AdminUsersPage() {
                 setPage(0);
               }}
             >
-              <SelectTrigger className="border-[#1A3050] bg-[#1A3050] text-white">
+              <SelectTrigger className="border-[#131B35] bg-[#131B35] text-white">
                 <SelectValue placeholder="Plano" />
               </SelectTrigger>
-              <SelectContent className="border-[#1A3050] bg-[#0F1D32] text-white">
+              <SelectContent className="border-[#131B35] bg-[#0A0F1E] text-white">
                 <SelectItem value="all">Todos os planos</SelectItem>
                 <SelectItem value="starter">Starter</SelectItem>
                 <SelectItem value="pro">Pro</SelectItem>
@@ -333,17 +333,17 @@ export default function AdminUsersPage() {
       </Card>
 
       {/* Table */}
-      <Card className="border-[#1A3050] bg-[#0F1D32]">
+      <Card className="border-[#131B35] bg-[#0A0F1E]">
         <CardContent className="p-0">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-[#C9A84C]" />
+              <Loader2 className="h-6 w-6 animate-spin text-[#1D4ED8]" />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1A3050] text-left text-gray-400">
+                  <tr className="border-b border-[#131B35] text-left text-gray-400">
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Nome</th>
                     <th className="px-4 py-3">Plano</th>
@@ -359,7 +359,7 @@ export default function AdminUsersPage() {
                   {users.map((user) => (
                     <tr
                       key={user.id}
-                      className="border-b border-[#1A3050]/50 text-white transition-colors hover:bg-[#1A3050]/50"
+                      className="border-b border-[#131B35]/50 text-white transition-colors hover:bg-[#131B35]/50"
                     >
                       <td className="px-4 py-3 font-medium">{user.email}</td>
                       <td className="px-4 py-3 text-gray-300">
@@ -411,7 +411,7 @@ export default function AdminUsersPage() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8 text-gray-400 hover:text-[#4A90D9]"
+                            className="h-8 w-8 text-gray-400 hover:text-[#3B82F6]"
                             title="Editar email/senha"
                             onClick={() => openEditModal(user)}
                           >
@@ -447,7 +447,7 @@ export default function AdminUsersPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-[#1A3050] px-4 py-3">
+            <div className="flex items-center justify-between border-t border-[#131B35] px-4 py-3">
               <p className="text-sm text-gray-400">
                 Mostrando {page * PAGE_SIZE + 1}-
                 {Math.min((page + 1) * PAGE_SIZE, totalCount)} de {totalCount}
@@ -485,12 +485,12 @@ export default function AdminUsersPage() {
         open={!!selectedUser}
         onOpenChange={(open) => !open && setSelectedUser(null)}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto border-[#1A3050] bg-[#0F1D32] text-white">
+        <DialogContent className="max-h-[90vh] overflow-y-auto border-[#131B35] bg-[#0A0F1E] text-white">
           {selectedUser && (
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-white">
-                  <Shield className="h-5 w-5 text-[#C9A84C]" />
+                  <Shield className="h-5 w-5 text-[#1D4ED8]" />
                   Detalhes do Usuário
                 </DialogTitle>
               </DialogHeader>
@@ -590,7 +590,7 @@ export default function AdminUsersPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="space-y-3 border-t border-[#1A3050] pt-4">
+                <div className="space-y-3 border-t border-[#131B35] pt-4">
                   <p className="text-sm font-medium text-gray-400">Ações</p>
 
                   {/* Plan upgrade/downgrade */}
@@ -611,8 +611,8 @@ export default function AdminUsersPage() {
                           }
                           className={
                             selectedUser.plan === plan
-                              ? 'bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90'
-                              : 'border-[#1A3050] text-gray-300 hover:bg-[#1A3050]'
+                              ? 'bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90'
+                              : 'border-[#131B35] text-gray-300 hover:bg-[#131B35]'
                           }
                         >
                           {plan === selectedUser.plan ? (
@@ -639,7 +639,7 @@ export default function AdminUsersPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
+                      className="border-[#131B35] text-gray-300 hover:bg-[#131B35]"
                       disabled={actionLoading}
                       onClick={() => {
                         openEditModal(selectedUser);
@@ -651,7 +651,7 @@ export default function AdminUsersPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
+                      className="border-[#131B35] text-gray-300 hover:bg-[#131B35]"
                       disabled={actionLoading}
                       onClick={() => handleResetPassword(selectedUser.id)}
                     >
@@ -699,10 +699,10 @@ export default function AdminUsersPage() {
 
       {/* ===== Add User Modal ===== */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="border-[#1A3050] bg-[#0F1D32] text-white sm:max-w-md">
+        <DialogContent className="border-[#131B35] bg-[#0A0F1E] text-white sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-white">
-              <UserPlus className="h-5 w-5 text-[#C9A84C]" />
+              <UserPlus className="h-5 w-5 text-[#1D4ED8]" />
               Adicionar Usuário
             </DialogTitle>
           </DialogHeader>
@@ -714,7 +714,7 @@ export default function AdminUsersPage() {
                 placeholder="Nome do usuário"
                 value={addForm.full_name}
                 onChange={(e) => setAddForm({ ...addForm, full_name: e.target.value })}
-                className="border-[#1A3050] bg-[#1A3050] text-white placeholder:text-gray-500"
+                className="border-[#131B35] bg-[#131B35] text-white placeholder:text-gray-500"
               />
             </div>
             <div className="space-y-2">
@@ -724,7 +724,7 @@ export default function AdminUsersPage() {
                 placeholder="email@exemplo.com"
                 value={addForm.email}
                 onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
-                className="border-[#1A3050] bg-[#1A3050] text-white placeholder:text-gray-500"
+                className="border-[#131B35] bg-[#131B35] text-white placeholder:text-gray-500"
               />
             </div>
             <div className="space-y-2">
@@ -735,7 +735,7 @@ export default function AdminUsersPage() {
                   placeholder="Mínimo 6 caracteres"
                   value={addForm.password}
                   onChange={(e) => setAddForm({ ...addForm, password: e.target.value })}
-                  className="border-[#1A3050] bg-[#1A3050] pr-10 text-white placeholder:text-gray-500"
+                  className="border-[#131B35] bg-[#131B35] pr-10 text-white placeholder:text-gray-500"
                 />
                 <button
                   type="button"
@@ -752,10 +752,10 @@ export default function AdminUsersPage() {
                 value={addForm.plan}
                 onValueChange={(val) => setAddForm({ ...addForm, plan: val })}
               >
-                <SelectTrigger className="border-[#1A3050] bg-[#1A3050] text-white">
+                <SelectTrigger className="border-[#131B35] bg-[#131B35] text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-[#1A3050] bg-[#0F1D32] text-white">
+                <SelectContent className="border-[#131B35] bg-[#0A0F1E] text-white">
                   <SelectItem value="starter">Starter</SelectItem>
                   <SelectItem value="pro">Pro</SelectItem>
                   <SelectItem value="premium">Premium</SelectItem>
@@ -780,7 +780,7 @@ export default function AdminUsersPage() {
             <Button
               onClick={handleAddUser}
               disabled={actionLoading}
-              className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
+              className="bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90"
             >
               {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Criar Usuário
@@ -791,10 +791,10 @@ export default function AdminUsersPage() {
 
       {/* ===== Edit User Modal ===== */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="border-[#1A3050] bg-[#0F1D32] text-white sm:max-w-md">
+        <DialogContent className="border-[#131B35] bg-[#0A0F1E] text-white sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-white">
-              <Pencil className="h-5 w-5 text-[#4A90D9]" />
+              <Pencil className="h-5 w-5 text-[#3B82F6]" />
               Editar Usuário
             </DialogTitle>
           </DialogHeader>
@@ -812,7 +812,7 @@ export default function AdminUsersPage() {
                   placeholder="Novo email"
                   value={editForm.email}
                   onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  className="border-[#1A3050] bg-[#1A3050] text-white placeholder:text-gray-500"
+                  className="border-[#131B35] bg-[#131B35] text-white placeholder:text-gray-500"
                 />
               </div>
               <div className="space-y-2">
@@ -823,7 +823,7 @@ export default function AdminUsersPage() {
                     placeholder="Deixe vazio para não alterar"
                     value={editForm.password}
                     onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-                    className="border-[#1A3050] bg-[#1A3050] pr-10 text-white placeholder:text-gray-500"
+                    className="border-[#131B35] bg-[#131B35] pr-10 text-white placeholder:text-gray-500"
                   />
                   <button
                     type="button"
@@ -853,7 +853,7 @@ export default function AdminUsersPage() {
             <Button
               onClick={handleEditUser}
               disabled={actionLoading}
-              className="bg-[#4A90D9] text-white hover:bg-[#4A90D9]/90"
+              className="bg-[#3B82F6] text-white hover:bg-[#3B82F6]/90"
             >
               {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Salvar Alterações
@@ -864,7 +864,7 @@ export default function AdminUsersPage() {
 
       {/* ===== Delete Confirmation Modal ===== */}
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-        <DialogContent className="border-[#1A3050] bg-[#0F1D32] text-white sm:max-w-md">
+        <DialogContent className="border-[#131B35] bg-[#0A0F1E] text-white sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-400">
               <Trash2 className="h-5 w-5" />
