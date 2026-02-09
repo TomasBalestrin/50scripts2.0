@@ -213,10 +213,11 @@ export default function DashboardPage() {
   const userPlan = profile?.plan || dashboardData?.profile?.plan || 'starter';
   const isPro = PLAN_HIERARCHY[userPlan as keyof typeof PLAN_HIERARCHY] >= PLAN_HIERARCHY.pro;
 
-  // Fetch ALL basic data in a single API call (replaces 3 separate calls)
+  // Fetch basic data - try combined endpoint first, fallback to individual ones
   useEffect(() => {
     async function fetchBasicData() {
       try {
+        // Try combined endpoint first (faster)
         const res = await fetch('/api/dashboard/all');
         if (res.ok) {
           const data = await res.json();
@@ -230,6 +231,25 @@ export default function DashboardPage() {
           }
           const scripts = data.recommendations?.scripts ?? [];
           setRecommendations(Array.isArray(scripts) ? scripts : []);
+          return;
+        }
+
+        // Fallback: fetch from individual endpoints
+        const [dashRes, tipRes, recRes] = await Promise.allSettled([
+          fetch('/api/dashboard/basic'),
+          fetch('/api/tips/daily'),
+          fetch('/api/scripts/recommendations'),
+        ]);
+
+        if (dashRes.status === 'fulfilled' && dashRes.value.ok) {
+          setDashboardData(await dashRes.value.json());
+        }
+        if (tipRes.status === 'fulfilled' && tipRes.value.ok) {
+          setTip(await tipRes.value.json());
+        }
+        if (recRes.status === 'fulfilled' && recRes.value.ok) {
+          const data = await recRes.value.json();
+          setRecommendations(Array.isArray(data) ? data : data.scripts ?? []);
         }
       } catch (err) {
         console.error('Error fetching dashboard data:', err);

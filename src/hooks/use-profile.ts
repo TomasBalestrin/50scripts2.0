@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Profile } from '@/types/database';
 
@@ -15,8 +15,6 @@ export function useProfile(userId?: string): UseProfileReturn {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const initialized = useRef(false);
-
   const supabase = createClient();
 
   const fetchProfile = useCallback(async () => {
@@ -50,8 +48,6 @@ export function useProfile(userId?: string): UseProfileReturn {
   }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
     fetchProfile();
   }, [fetchProfile]);
 

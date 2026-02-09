@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { Profile } from '@/types/database';
@@ -18,7 +18,6 @@ export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const initialized = useRef(false);
 
   // Stable reference - createClient() returns singleton
   const supabase = createClient();
@@ -36,10 +35,6 @@ export function useAuth(): UseAuthReturn {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    // Prevent double-initialization in StrictMode
-    if (initialized.current) return;
-    initialized.current = true;
-
     const getUser = async () => {
       try {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
