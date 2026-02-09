@@ -25,7 +25,6 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { createClient } from '@/lib/supabase/client';
 import type { Profile, Plan } from '@/types/database';
 
 const PLAN_COLORS: Record<string, string> = {
@@ -65,36 +64,28 @@ export default function AdminUsersPage() {
   const [deleteUser, setDeleteUser] = useState<Profile | null>(null);
   const [deleteError, setDeleteError] = useState('');
 
-  const supabase = createClient();
-
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('profiles')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+      const params = new URLSearchParams({
+        page: String(page + 1),
+        limit: String(PAGE_SIZE),
+      });
+      if (planFilter !== 'all') params.set('plan', planFilter);
+      if (search.trim()) params.set('search', search.trim());
 
-      if (planFilter !== 'all') {
-        query = query.eq('plan', planFilter);
+      const res = await fetch(`/api/admin/users?${params}`);
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data.users ?? []);
+        setTotalCount(data.total ?? 0);
       }
-
-      if (search.trim()) {
-        query = query.or(
-          `email.ilike.%${search.trim()}%,full_name.ilike.%${search.trim()}%`
-        );
-      }
-
-      const { data, count } = await query;
-      setUsers(data ?? []);
-      setTotalCount(count ?? 0);
     } catch (err) {
       console.error('Erro ao buscar usuários:', err);
     } finally {
       setLoading(false);
     }
-  }, [page, planFilter, search]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [page, planFilter, search]);
 
   useEffect(() => {
     fetchUsers();
@@ -107,10 +98,11 @@ export default function AdminUsersPage() {
   async function handleUpgrade(userId: string, newPlan: Plan) {
     setActionLoading(true);
     try {
-      await supabase
-        .from('profiles')
-        .update({ plan: newPlan, updated_at: new Date().toISOString() })
-        .eq('id', userId);
+      await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: userId, plan: newPlan }),
+      });
 
       await fetchUsers();
       if (selectedUser?.id === userId) {
@@ -124,10 +116,11 @@ export default function AdminUsersPage() {
   async function handleToggleActive(userId: string, isActive: boolean) {
     setActionLoading(true);
     try {
-      await supabase
-        .from('profiles')
-        .update({ is_active: !isActive, updated_at: new Date().toISOString() })
-        .eq('id', userId);
+      await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: userId, is_active: !isActive }),
+      });
 
       await fetchUsers();
       if (selectedUser?.id === userId) {
