@@ -70,50 +70,91 @@ export default function AICopilotPage() {
     setTimeout(() => setCopiedSection(null), 2000);
   };
 
-  // Parse result sections
+  // Parse result sections - handles markdown headers (## or **bold**) and numbered lists
   const parseResult = (text: string) => {
     const sections: Array<{ title: string; content: string; icon: React.ReactNode; copyable: boolean }> = [];
 
-    // Try to extract sections from markdown-style headers
-    const parts = text.split(/\*\*(.*?)\*\*/g);
-    let currentTitle = '';
-    let currentContent = '';
+    const getIcon = (title: string) => {
+      const t = title.toLowerCase();
+      if (t.includes('análise') || t.includes('analise')) return <Target className="w-4 h-4" />;
+      if (t.includes('mensagem') || t.includes('próxima') || t.includes('proxima') || t.includes('sugerid')) return <MessageSquare className="w-4 h-4" />;
+      if (t.includes('alternativa')) return <MessageSquare className="w-4 h-4" />;
+      if (t.includes('gatilho') || t.includes('oportunidade')) return <Lightbulb className="w-4 h-4" />;
+      return <Lightbulb className="w-4 h-4" />;
+    };
 
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i].trim();
-      if (i % 2 === 1) {
-        // This is a bold header
-        if (currentTitle && currentContent) {
-          sections.push({
-            title: currentTitle,
-            content: currentContent.trim(),
-            icon: currentTitle.toLowerCase().includes('análise') ? <Target className="w-4 h-4" /> :
-                  currentTitle.toLowerCase().includes('mensagem') ? <MessageSquare className="w-4 h-4" /> :
-                  currentTitle.toLowerCase().includes('alternativa') ? <MessageSquare className="w-4 h-4" /> :
-                  <Lightbulb className="w-4 h-4" />,
-            copyable: currentTitle.toLowerCase().includes('mensagem') || currentTitle.toLowerCase().includes('alternativa'),
-          });
+    const isCopyable = (title: string) => {
+      const t = title.toLowerCase();
+      return t.includes('mensagem') || t.includes('alternativa') || t.includes('próxima') || t.includes('proxima') || t.includes('sugerid');
+    };
+
+    // Try splitting by markdown ## headers first
+    const headerRegex = /^#{1,3}\s+(.+)$/gm;
+    const headerMatches = [...text.matchAll(headerRegex)];
+
+    if (headerMatches.length > 0) {
+      for (let i = 0; i < headerMatches.length; i++) {
+        const title = headerMatches[i][1].replace(/\*\*/g, '').replace(/:$/, '').trim();
+        const startIdx = headerMatches[i].index! + headerMatches[i][0].length;
+        const endIdx = i < headerMatches.length - 1 ? headerMatches[i + 1].index! : text.length;
+        const content = text.slice(startIdx, endIdx).trim();
+        if (content) {
+          sections.push({ title, content, icon: getIcon(title), copyable: isCopyable(title) });
         }
-        currentTitle = part.replace(':', '');
-        currentContent = '';
-      } else {
-        currentContent += part;
       }
     }
 
-    // Add last section
-    if (currentTitle && currentContent) {
-      sections.push({
-        title: currentTitle,
-        content: currentContent.trim(),
-        icon: currentTitle.toLowerCase().includes('análise') ? <Target className="w-4 h-4" /> :
-              currentTitle.toLowerCase().includes('mensagem') ? <MessageSquare className="w-4 h-4" /> :
-              <Lightbulb className="w-4 h-4" />,
-        copyable: currentTitle.toLowerCase().includes('mensagem') || currentTitle.toLowerCase().includes('alternativa'),
-      });
+    // Fallback: try **bold** headers
+    if (sections.length === 0) {
+      const parts = text.split(/\*\*(.*?)\*\*/g);
+      let currentTitle = '';
+      let currentContent = '';
+
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i].trim();
+        if (i % 2 === 1) {
+          if (currentTitle && currentContent) {
+            sections.push({
+              title: currentTitle,
+              content: currentContent.trim(),
+              icon: getIcon(currentTitle),
+              copyable: isCopyable(currentTitle),
+            });
+          }
+          currentTitle = part.replace(/:$/, '');
+          currentContent = '';
+        } else {
+          currentContent += part;
+        }
+      }
+      if (currentTitle && currentContent) {
+        sections.push({
+          title: currentTitle,
+          content: currentContent.trim(),
+          icon: getIcon(currentTitle),
+          copyable: isCopyable(currentTitle),
+        });
+      }
     }
 
-    // Fallback: if no sections parsed, return full text
+    // Fallback: try numbered sections (1. Title\n content)
+    if (sections.length === 0) {
+      const numberedRegex = /^\d+\.\s*\*?\*?(.+?)\*?\*?\s*[:：]?\s*$/gm;
+      const numberedMatches = [...text.matchAll(numberedRegex)];
+      if (numberedMatches.length > 0) {
+        for (let i = 0; i < numberedMatches.length; i++) {
+          const title = numberedMatches[i][1].trim();
+          const startIdx = numberedMatches[i].index! + numberedMatches[i][0].length;
+          const endIdx = i < numberedMatches.length - 1 ? numberedMatches[i + 1].index! : text.length;
+          const content = text.slice(startIdx, endIdx).trim();
+          if (content) {
+            sections.push({ title, content, icon: getIcon(title), copyable: isCopyable(title) });
+          }
+        }
+      }
+    }
+
+    // Final fallback: show full text as single analysis card
     if (sections.length === 0) {
       sections.push({
         title: 'Análise',
@@ -176,7 +217,7 @@ export default function AICopilotPage() {
           <Button
             onClick={handleAnalyze}
             disabled={analyzing || conversation.length < 10}
-            className="w-full bg-[#C9A84C] hover:bg-[#d63d56] text-white h-12"
+            className="w-full bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white h-12"
           >
             {analyzing ? (
               <>
@@ -206,15 +247,30 @@ export default function AICopilotPage() {
               </CardHeader>
               <CardContent>
                 <div className="bg-[#1A3050] rounded-lg p-4 mb-3">
-                  <pre className="whitespace-pre-wrap text-gray-200 text-sm font-sans leading-relaxed">
-                    {section.content}
-                  </pre>
+                  <div className="text-gray-200 text-sm leading-relaxed space-y-2">
+                    {section.content.split('\n').map((line, j) => {
+                      const trimmed = line.trim();
+                      if (!trimmed) return null;
+                      // Bold text
+                      const formatted = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>');
+                      // Bullet points
+                      if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+                        return (
+                          <div key={j} className="flex gap-2 pl-2">
+                            <span className="text-[#C9A84C] mt-1">•</span>
+                            <span dangerouslySetInnerHTML={{ __html: formatted.replace(/^[-•]\s*/, '') }} />
+                          </div>
+                        );
+                      }
+                      return <p key={j} dangerouslySetInnerHTML={{ __html: formatted }} />;
+                    })}
+                  </div>
                 </div>
                 {section.copyable && (
                   <Button
                     size="sm"
                     onClick={() => handleCopy(section.content, section.title)}
-                    className="bg-[#C9A84C] hover:bg-[#d63d56] text-white"
+                    className="bg-[#C9A84C] hover:bg-[#C9A84C]/90 text-white"
                   >
                     {copiedSection === section.title ? (
                       <><Check className="w-3 h-3 mr-1" /> Copiado!</>

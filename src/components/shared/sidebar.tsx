@@ -18,6 +18,7 @@ import {
   Gift,
   History,
   ShieldCheck,
+  Rocket,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hasAccess } from "@/lib/plans/gate";
@@ -40,14 +41,19 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    label: "Dashboard",
+    label: "Scripts",
+    href: "/trilhas",
+    icon: Route,
+  },
+  {
+    label: "Progresso",
     href: "/",
     icon: LayoutDashboard,
   },
   {
-    label: "Trilhas",
-    href: "/trilhas",
-    icon: Route,
+    label: "Subir de Nível",
+    href: "/upgrade",
+    icon: Rocket,
   },
   {
     label: "Buscar",
@@ -55,17 +61,17 @@ const navItems: NavItem[] = [
     icon: Search,
   },
   {
-    label: "Agenda",
-    href: "/agenda",
-    icon: Calendar,
-    requiredPlan: "pro",
-  },
-  {
     label: "Gamificação",
     href: "/badges",
     icon: Trophy,
     requiredPlan: "pro",
     section: "Pro",
+  },
+  {
+    label: "Agenda",
+    href: "/agenda",
+    icon: Calendar,
+    requiredPlan: "pro",
   },
   {
     label: "Histórico",

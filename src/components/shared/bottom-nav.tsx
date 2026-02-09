@@ -13,10 +13,10 @@ interface BottomNavItem {
 }
 
 const navItems: BottomNavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Trilhas", href: "/trilhas", icon: Route },
+  { label: "Scripts", href: "/trilhas", icon: Route },
+  { label: "Progresso", href: "/", icon: LayoutDashboard },
   // Center slot left empty for FAB overlay
-  { label: "Buscar", href: "/buscar", icon: Search },
+  { label: "Buscar", href: "/busca", icon: Search },
   { label: "Perfil", href: "/perfil", icon: User },
 ];
 
