@@ -121,7 +121,7 @@ export default function ReferralsPage() {
                   size="sm"
                   className="border-[#1E2A52] text-gray-300 hover:bg-[#131B35]"
                   onClick={() => {
-                    const text = `Conheca o Bethel Closer! Use meu codigo ${data.referral_code} para comecar: ${window.location.origin}?ref=${data.referral_code}`;
+                    const text = `Conheca o 50 Scripts! Use meu codigo ${data.referral_code} para comecar: ${window.location.origin}?ref=${data.referral_code}`;
                     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                   }}
                 >

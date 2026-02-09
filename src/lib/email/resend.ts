@@ -16,7 +16,7 @@ function getResend() {
   return new ResendClient(process.env.RESEND_API_KEY);
 }
 
-const FROM_EMAIL = process.env.FROM_EMAIL || 'Bethel Closer <noreply@50scripts.com>';
+const FROM_EMAIL = process.env.FROM_EMAIL || '50 Scripts <noreply@50scripts.com>';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://50scripts.com';
 
 type EmailResult = { success: boolean; error?: string };
@@ -24,7 +24,7 @@ type EmailResult = { success: boolean; error?: string };
 function baseTemplate(content: string): string {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Bethel Closer</title></head>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>50 Scripts</title></head>
 <body style="margin:0;padding:0;background-color:#020617;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#020617;">
 <tr><td align="center" style="padding:40px 16px;">
@@ -34,7 +34,7 @@ function baseTemplate(content: string): string {
 </td></tr>
 <tr><td style="padding:40px;">${content}</td></tr>
 <tr><td style="padding:24px 40px;text-align:center;border-top:1px solid #0A0F1E;">
-<p style="margin:0;font-size:12px;color:#6B7280;">Você está recebendo este email porque é usuário do Bethel Closer.</p>
+<p style="margin:0;font-size:12px;color:#6B7280;">Você está recebendo este email porque é usuário do 50 Scripts.</p>
 </td></tr>
 </table></td></tr></table></body></html>`;
 }
@@ -72,11 +72,11 @@ async function sendEmail(to: string, subject: string, html: string): Promise<Ema
 
 export async function sendWelcomeEmail(to: string, name: string): Promise<EmailResult> {
   const html = baseTemplate(`
-    ${heading(`Bem-vindo ao Bethel Closer, ${name}!`)}
+    ${heading(`Bem-vindo ao 50 Scripts, ${name}!`)}
     ${paragraph('Estamos felizes em ter você conosco. Comece explorando as trilhas de scripts.')}
     ${ctaButton('Acessar Plataforma', APP_URL)}
   `);
-  return sendEmail(to, 'Bem-vindo ao Bethel Closer!', html);
+  return sendEmail(to, 'Bem-vindo ao 50 Scripts!', html);
 }
 
 export async function sendPasswordResetEmail(to: string, resetLink: string): Promise<EmailResult> {
@@ -85,7 +85,7 @@ export async function sendPasswordResetEmail(to: string, resetLink: string): Pro
     ${paragraph('Clique no botão abaixo para criar uma nova senha. O link expira em 24 horas.')}
     ${ctaButton('Redefinir Senha', resetLink)}
   `);
-  return sendEmail(to, 'Redefinir sua senha - Bethel Closer', html);
+  return sendEmail(to, 'Redefinir sua senha - 50 Scripts', html);
 }
 
 export async function sendPlanUpgradeEmail(to: string, name: string, plan: string): Promise<EmailResult> {

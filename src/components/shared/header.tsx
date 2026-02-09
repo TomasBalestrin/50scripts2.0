@@ -47,7 +47,7 @@ function getPageTitle(pathname: string): string {
     }
   }
 
-  return "Bethel Closer";
+  return "50 Scripts";
 }
 
 export function Header({ userName, userAvatar, plan, role }: HeaderProps) {

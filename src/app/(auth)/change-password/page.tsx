@@ -62,7 +62,7 @@ export default function ChangePasswordPage() {
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto">
             <h1 className="text-3xl font-bold">
-              <span className="text-white">Bethel Closer</span>{' '}
+              <span className="text-white">50 Scripts</span>{' '}
               <span className="text-[#1D4ED8]">2.0</span>
             </h1>
           </div>
