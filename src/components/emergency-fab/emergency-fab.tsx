@@ -57,12 +57,12 @@ const emergencyOptions: EmergencyOption[] = [
   },
 ];
 
-// Arc positions for 4 buttons spread above the FAB
+// Vertical positions – options stack straight above the FAB so nothing clips
 const arcPositions = [
-  { x: -90, y: -50 },   // far left
-  { x: -35, y: -95 },   // center-left
-  { x: 35, y: -95 },    // center-right
-  { x: 90, y: -50 },    // far right
+  { x: 0, y: -75 },
+  { x: 0, y: -145 },
+  { x: 0, y: -215 },
+  { x: 0, y: -285 },
 ];
 
 export function EmergencyFAB() {
@@ -147,12 +147,12 @@ export function EmergencyFAB() {
                     damping: 22,
                     delay: index * 0.06,
                   }}
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center"
+                  className="absolute bottom-0 right-0 flex items-center gap-2"
                   style={{ zIndex: 51 }}
                 >
                   {/* Tooltip label */}
                   <span
-                    className="mb-1.5 px-2 py-0.5 text-[10px] font-semibold rounded-md whitespace-nowrap
+                    className="px-2.5 py-1 text-xs font-semibold rounded-lg whitespace-nowrap
                                bg-[#0F1D32] text-white border border-white/10 shadow-lg"
                   >
                     {option.label}
