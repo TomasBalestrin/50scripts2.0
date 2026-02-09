@@ -53,10 +53,10 @@ interface PatternData {
 
 function SkeletonBlock({ className = '' }: { className?: string }) {
   return (
-    <div className={`animate-pulse rounded-xl bg-[#0F1D32] ${className}`}>
+    <div className={`animate-pulse rounded-xl bg-[#0A0F1E] ${className}`}>
       <div className="p-5">
-        <div className="mb-3 h-4 w-1/3 rounded bg-[#1A3050]" />
-        <div className="h-8 w-1/2 rounded bg-[#1A3050]" />
+        <div className="mb-3 h-4 w-1/3 rounded bg-[#131B35]" />
+        <div className="h-8 w-1/2 rounded bg-[#131B35]" />
       </div>
     </div>
   );
@@ -74,9 +74,9 @@ function CustomTooltip({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-[#1A3050] bg-[#0F1D32] px-3 py-2 shadow-lg">
+    <div className="rounded-lg border border-[#131B35] bg-[#0A0F1E] px-3 py-2 shadow-lg">
       <p className="text-xs text-gray-400">{label}</p>
-      <p className="text-sm font-semibold text-[#C9A84C]">
+      <p className="text-sm font-semibold text-[#1D4ED8]">
         {payload[0].value.toFixed(1)}% conversao
       </p>
     </div>
@@ -131,7 +131,7 @@ function PatternsContent() {
         <p className="text-gray-400">Nao foi possivel carregar os dados de padroes.</p>
         <Button
           onClick={() => fetchPatterns()}
-          className="mt-4 bg-[#C9A84C] hover:bg-[#d63d56] text-white"
+          className="mt-4 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white"
         >
           Tentar novamente
         </Button>
@@ -169,7 +169,7 @@ function PatternsContent() {
           size="sm"
           onClick={() => fetchPatterns(true)}
           disabled={refreshing}
-          className="border-[#1A3050] bg-[#0F1D32] text-gray-300 hover:bg-[#1A3050] hover:text-white"
+          className="border-[#131B35] bg-[#0A0F1E] text-gray-300 hover:bg-[#131B35] hover:text-white"
         >
           {refreshing ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -182,7 +182,7 @@ function PatternsContent() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-[#1A3050] bg-[#0F1D32]">
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardContent className="flex items-center gap-3 p-5">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/15">
               <FileText className="h-5 w-5 text-blue-400" />
@@ -196,7 +196,7 @@ function PatternsContent() {
           </CardContent>
         </Card>
 
-        <Card className="border-[#1A3050] bg-[#0F1D32]">
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardContent className="flex items-center gap-3 p-5">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/15">
               <TrendingUp className="h-5 w-5 text-green-400" />
@@ -210,7 +210,7 @@ function PatternsContent() {
           </CardContent>
         </Card>
 
-        <Card className="border-[#1A3050] bg-[#0F1D32]">
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardContent className="flex items-center gap-3 p-5">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/15">
               <DollarSign className="h-5 w-5 text-emerald-400" />
@@ -226,10 +226,10 @@ function PatternsContent() {
           </CardContent>
         </Card>
 
-        <Card className="border-[#1A3050] bg-[#0F1D32]">
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardContent className="flex items-center gap-3 p-5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C9A84C]/15">
-              <Target className="h-5 w-5 text-[#C9A84C]" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1D4ED8]/15">
+              <Target className="h-5 w-5 text-[#1D4ED8]" />
             </div>
             <div>
               <p className="text-2xl font-bold text-white">
@@ -243,10 +243,10 @@ function PatternsContent() {
 
       {/* Best Hours Chart */}
       {activeChartData.length > 0 && (
-        <Card className="border-[#1A3050] bg-[#0F1D32]">
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base text-white">
-              <BarChart3 className="h-4 w-4 text-[#C9A84C]" />
+              <BarChart3 className="h-4 w-4 text-[#1D4ED8]" />
               Melhores horarios de conversao
             </CardTitle>
           </CardHeader>
@@ -256,18 +256,18 @@ function PatternsContent() {
                 <BarChart data={activeChartData}>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="#1A3050"
+                    stroke="#131B35"
                     vertical={false}
                   />
                   <XAxis
                     dataKey="name"
-                    tick={{ fill: '#8BA5BD', fontSize: 11 }}
-                    axisLine={{ stroke: '#1A3050' }}
+                    tick={{ fill: '#94A3B8', fontSize: 11 }}
+                    axisLine={{ stroke: '#131B35' }}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fill: '#8BA5BD', fontSize: 11 }}
-                    axisLine={{ stroke: '#1A3050' }}
+                    tick={{ fill: '#94A3B8', fontSize: 11 }}
+                    axisLine={{ stroke: '#131B35' }}
                     tickLine={false}
                     tickFormatter={(v) => `${v}%`}
                   />
@@ -280,7 +280,7 @@ function PatternsContent() {
                     {activeChartData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={entry.conversao > 50 ? '#C9A84C' : '#4A90D9'}
+                        fill={entry.conversao > 50 ? '#1D4ED8' : '#3B82F6'}
                       />
                     ))}
                   </Bar>
@@ -293,10 +293,10 @@ function PatternsContent() {
 
       {/* Top Converting Scripts */}
       {data.top_converting.length > 0 && (
-        <Card className="border-[#1A3050] bg-[#0F1D32]">
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base text-white">
-              <TrendingUp className="h-4 w-4 text-[#C9A84C]" />
+              <TrendingUp className="h-4 w-4 text-[#1D4ED8]" />
               Scripts que mais convertem
             </CardTitle>
           </CardHeader>
@@ -304,7 +304,7 @@ function PatternsContent() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#1A3050]">
+                  <tr className="border-b border-[#131B35]">
                     <th className="pb-3 text-left text-xs font-medium text-gray-400">
                       Script
                     </th>
@@ -316,7 +316,7 @@ function PatternsContent() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1A3050]/50">
+                <tbody className="divide-y divide-[#131B35]/50">
                   {data.top_converting.map((script, i) => (
                     <tr key={i}>
                       <td className="py-3 text-sm font-medium text-white">
@@ -345,7 +345,7 @@ function PatternsContent() {
 
       {/* AI Insights */}
       {data.insights.length > 0 && (
-        <Card className="border-[#1A3050] bg-[#0F1D32]">
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base text-white">
               <Lightbulb className="h-4 w-4 text-yellow-400" />
@@ -357,9 +357,9 @@ function PatternsContent() {
               {data.insights.map((insight, i) => (
                 <li
                   key={i}
-                  className="flex items-start gap-3 rounded-lg bg-[#1A3050]/40 px-4 py-3"
+                  className="flex items-start gap-3 rounded-lg bg-[#131B35]/40 px-4 py-3"
                 >
-                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#C9A84C]" />
+                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#1D4ED8]" />
                   <p className="text-sm text-gray-300">{insight}</p>
                 </li>
               ))}
@@ -376,11 +376,11 @@ export default function PatternsPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#0A1628] p-4 md:p-6">
+      <div className="min-h-screen bg-[#020617] p-4 md:p-6">
         <div className="mx-auto max-w-5xl space-y-6">
           <div className="animate-pulse">
-            <div className="mb-2 h-8 w-64 rounded bg-[#0F1D32]" />
-            <div className="h-4 w-40 rounded bg-[#0F1D32]" />
+            <div className="mb-2 h-8 w-64 rounded bg-[#0A0F1E]" />
+            <div className="h-4 w-40 rounded bg-[#0A0F1E]" />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
@@ -396,13 +396,13 @@ export default function PatternsPage() {
   const isCopilot = hasAccess(userPlan, 'copilot');
 
   return (
-    <div className="min-h-screen bg-[#0A1628] p-4 md:p-6">
+    <div className="min-h-screen bg-[#020617] p-4 md:p-6">
       <div className="mx-auto max-w-5xl">
         {/* Page Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-bold text-white">
-              <BarChart3 className="h-6 w-6 text-[#C9A84C]" />
+              <BarChart3 className="h-6 w-6 text-[#1D4ED8]" />
               Relatorio de Padroes
             </h1>
             <p className="mt-1 text-sm text-gray-400">

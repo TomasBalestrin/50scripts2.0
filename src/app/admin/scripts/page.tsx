@@ -313,7 +313,7 @@ export default function AdminScriptsPage() {
         <h1 className="text-2xl font-bold text-white">Scripts</h1>
         <Button
           onClick={openCreateDialog}
-          className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
+          className="bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90"
         >
           <Plus className="mr-2 h-4 w-4" />
           Adicionar Script
@@ -321,7 +321,7 @@ export default function AdminScriptsPage() {
       </div>
 
       {/* Search */}
-      <Card className="border-[#1A3050] bg-[#0F1D32]">
+      <Card className="border-[#131B35] bg-[#0A0F1E]">
         <CardContent className="p-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
@@ -332,24 +332,24 @@ export default function AdminScriptsPage() {
                 setSearch(e.target.value);
                 setPage(0);
               }}
-              className="border-[#1A3050] bg-[#1A3050] pl-10 text-white placeholder:text-gray-500"
+              className="border-[#131B35] bg-[#131B35] pl-10 text-white placeholder:text-gray-500"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Table */}
-      <Card className="border-[#1A3050] bg-[#0F1D32]">
+      <Card className="border-[#131B35] bg-[#0A0F1E]">
         <CardContent className="p-0">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-[#C9A84C]" />
+              <Loader2 className="h-6 w-6 animate-spin text-[#1D4ED8]" />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1A3050] text-left text-gray-400">
+                  <tr className="border-b border-[#131B35] text-left text-gray-400">
                     <th className="px-4 py-3">Titulo</th>
                     <th className="px-4 py-3">Categoria</th>
                     <th className="px-4 py-3">Plano Min.</th>
@@ -364,7 +364,7 @@ export default function AdminScriptsPage() {
                   {scripts.map((script) => (
                     <tr
                       key={script.id}
-                      className="border-b border-[#1A3050]/50 text-white"
+                      className="border-b border-[#131B35]/50 text-white"
                     >
                       <td className="max-w-xs truncate px-4 py-3 font-medium">
                         {script.title}
@@ -450,7 +450,7 @@ export default function AdminScriptsPage() {
           )}
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-[#1A3050] px-4 py-3">
+            <div className="flex items-center justify-between border-t border-[#131B35] px-4 py-3">
               <p className="text-sm text-gray-400">
                 Mostrando {page * PAGE_SIZE + 1}-
                 {Math.min((page + 1) * PAGE_SIZE, totalCount)} de {totalCount}
@@ -485,7 +485,7 @@ export default function AdminScriptsPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-[#1A3050] bg-[#0F1D32] text-white">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-[#131B35] bg-[#0A0F1E] text-white">
           <DialogHeader>
             <DialogTitle className="text-white">
               {editingId ? 'Editar Script' : 'Novo Script'}
@@ -500,7 +500,7 @@ export default function AdminScriptsPage() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, title: e.target.value }))
                 }
-                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
+                className="mt-1 border-[#131B35] bg-[#131B35] text-white"
               />
             </div>
 
@@ -514,7 +514,7 @@ export default function AdminScriptsPage() {
                   setForm((f) => ({ ...f, content: e.target.value }))
                 }
                 rows={4}
-                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
+                className="mt-1 border-[#131B35] bg-[#131B35] text-white"
               />
             </div>
 
@@ -529,7 +529,7 @@ export default function AdminScriptsPage() {
                   }))
                 }
                 rows={4}
-                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
+                className="mt-1 border-[#131B35] bg-[#131B35] text-white"
               />
             </div>
 
@@ -544,7 +544,7 @@ export default function AdminScriptsPage() {
                   }))
                 }
                 rows={4}
-                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
+                className="mt-1 border-[#131B35] bg-[#131B35] text-white"
               />
             </div>
 
@@ -559,7 +559,7 @@ export default function AdminScriptsPage() {
                   }))
                 }
                 rows={2}
-                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
+                className="mt-1 border-[#131B35] bg-[#131B35] text-white"
               />
             </div>
 
@@ -572,10 +572,10 @@ export default function AdminScriptsPage() {
                     setForm((f) => ({ ...f, category_id: val }))
                   }
                 >
-                  <SelectTrigger className="mt-1 border-[#1A3050] bg-[#1A3050] text-white">
+                  <SelectTrigger className="mt-1 border-[#131B35] bg-[#131B35] text-white">
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
-                  <SelectContent className="border-[#1A3050] bg-[#0F1D32] text-white">
+                  <SelectContent className="border-[#131B35] bg-[#0A0F1E] text-white">
                     {categories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id}>
                         {cat.icon} {cat.name}
@@ -596,10 +596,10 @@ export default function AdminScriptsPage() {
                     }))
                   }
                 >
-                  <SelectTrigger className="mt-1 border-[#1A3050] bg-[#1A3050] text-white">
+                  <SelectTrigger className="mt-1 border-[#131B35] bg-[#131B35] text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-[#1A3050] bg-[#0F1D32] text-white">
+                  <SelectContent className="border-[#131B35] bg-[#0A0F1E] text-white">
                     <SelectItem value="starter">Starter</SelectItem>
                     <SelectItem value="pro">Pro</SelectItem>
                     <SelectItem value="premium">Premium</SelectItem>
@@ -622,7 +622,7 @@ export default function AdminScriptsPage() {
                   }))
                 }
                 placeholder="caro, sem dinheiro, nao preciso"
-                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white placeholder:text-gray-500"
+                className="mt-1 border-[#131B35] bg-[#131B35] text-white placeholder:text-gray-500"
               />
             </div>
 
@@ -636,7 +636,7 @@ export default function AdminScriptsPage() {
                   setForm((f) => ({ ...f, tags: e.target.value }))
                 }
                 placeholder="vendas, whatsapp, objecao"
-                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white placeholder:text-gray-500"
+                className="mt-1 border-[#131B35] bg-[#131B35] text-white placeholder:text-gray-500"
               />
             </div>
 
@@ -649,7 +649,7 @@ export default function AdminScriptsPage() {
                 </Label>
                 <div className="mt-2 space-y-3">
                   {currentAudioUrl ? (
-                    <div className="flex items-center gap-3 rounded-lg border border-[#1A3050] bg-[#1A3050] p-3">
+                    <div className="flex items-center gap-3 rounded-lg border border-[#131B35] bg-[#131B35] p-3">
                       <audio
                         ref={audioRef}
                         src={currentAudioUrl}
@@ -662,7 +662,7 @@ export default function AdminScriptsPage() {
                         variant="ghost"
                         size="icon"
                         onClick={toggleAudioPlayback}
-                        className="h-10 w-10 rounded-full bg-[#C9A84C]/20 text-[#C9A84C] hover:bg-[#C9A84C]/30 hover:text-[#C9A84C] flex-shrink-0"
+                        className="h-10 w-10 rounded-full bg-[#1D4ED8]/20 text-[#1D4ED8] hover:bg-[#1D4ED8]/30 hover:text-[#1D4ED8] flex-shrink-0"
                       >
                         {audioPlaying ? (
                           <Pause className="h-5 w-5" />
@@ -713,7 +713,7 @@ export default function AdminScriptsPage() {
                       size="sm"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploadingAudio}
-                      className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
+                      className="border-[#131B35] text-gray-300 hover:bg-[#131B35]"
                     >
                       {uploadingAudio ? (
                         <>
@@ -749,14 +749,14 @@ export default function AdminScriptsPage() {
               <Button
                 variant="outline"
                 onClick={() => setDialogOpen(false)}
-                className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
+                className="border-[#131B35] text-gray-300 hover:bg-[#131B35]"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={handleSave}
                 disabled={saving || !form.title.trim() || !form.content.trim()}
-                className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
+                className="bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90"
               >
                 {saving ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -770,7 +770,7 @@ export default function AdminScriptsPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <DialogContent className="border-[#1A3050] bg-[#0F1D32] text-white">
+        <DialogContent className="border-[#131B35] bg-[#0A0F1E] text-white">
           <DialogHeader>
             <DialogTitle className="text-white">Confirmar Exclusao</DialogTitle>
           </DialogHeader>
@@ -782,7 +782,7 @@ export default function AdminScriptsPage() {
             <Button
               variant="outline"
               onClick={() => setDeleteId(null)}
-              className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
+              className="border-[#131B35] text-gray-300 hover:bg-[#131B35]"
             >
               Cancelar
             </Button>

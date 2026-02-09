@@ -16,7 +16,7 @@ function getResend() {
   return new ResendClient(process.env.RESEND_API_KEY);
 }
 
-const FROM_EMAIL = process.env.FROM_EMAIL || '50 Scripts <noreply@50scripts.com>';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'Bethel Closer <noreply@50scripts.com>';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://50scripts.com';
 
 type EmailResult = { success: boolean; error?: string };
@@ -24,25 +24,25 @@ type EmailResult = { success: boolean; error?: string };
 function baseTemplate(content: string): string {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>50 Scripts 2.0</title></head>
-<body style="margin:0;padding:0;background-color:#0F0F14;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#0F0F14;">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Bethel Closer</title></head>
+<body style="margin:0;padding:0;background-color:#020617;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#020617;">
 <tr><td align="center" style="padding:40px 16px;">
-<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;background-color:#0F1D32;border-radius:12px;overflow:hidden;border:1px solid #2A2A3E;">
-<tr><td style="padding:32px 40px 24px;text-align:center;border-bottom:1px solid #2A2A3E;">
-<h1 style="margin:0;font-size:28px;font-weight:800;"><span style="color:#C9A84C;">50</span><span style="color:#FFFFFF;"> Scripts </span><span style="color:#C9A84C;">2.0</span></h1>
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;background-color:#0A0F1E;border-radius:12px;overflow:hidden;border:1px solid #0A0F1E;">
+<tr><td style="padding:32px 40px 24px;text-align:center;border-bottom:1px solid #0A0F1E;">
+<h1 style="margin:0;font-size:28px;font-weight:800;"><span style="color:#1D4ED8;">50</span><span style="color:#FFFFFF;"> Scripts </span><span style="color:#1D4ED8;">2.0</span></h1>
 </td></tr>
 <tr><td style="padding:40px;">${content}</td></tr>
-<tr><td style="padding:24px 40px;text-align:center;border-top:1px solid #2A2A3E;">
-<p style="margin:0;font-size:12px;color:#6B7280;">Você está recebendo este email porque é usuário do 50 Scripts 2.0.</p>
+<tr><td style="padding:24px 40px;text-align:center;border-top:1px solid #0A0F1E;">
+<p style="margin:0;font-size:12px;color:#6B7280;">Você está recebendo este email porque é usuário do Bethel Closer.</p>
 </td></tr>
 </table></td></tr></table></body></html>`;
 }
 
 function ctaButton(text: string, href: string): string {
   return `<table role="presentation" cellspacing="0" cellpadding="0" style="margin:32px auto 0;">
-<tr><td align="center" style="border-radius:8px;background-color:#C9A84C;">
-<a href="${href}" target="_blank" style="display:inline-block;padding:14px 32px;font-size:16px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:8px;background-color:#C9A84C;">${text}</a>
+<tr><td align="center" style="border-radius:8px;background-color:#1D4ED8;">
+<a href="${href}" target="_blank" style="display:inline-block;padding:14px 32px;font-size:16px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:8px;background-color:#1D4ED8;">${text}</a>
 </td></tr></table>`;
 }
 
@@ -72,11 +72,11 @@ async function sendEmail(to: string, subject: string, html: string): Promise<Ema
 
 export async function sendWelcomeEmail(to: string, name: string): Promise<EmailResult> {
   const html = baseTemplate(`
-    ${heading(`Bem-vindo ao 50 Scripts 2.0, ${name}!`)}
+    ${heading(`Bem-vindo ao Bethel Closer, ${name}!`)}
     ${paragraph('Estamos felizes em ter você conosco. Comece explorando as trilhas de scripts.')}
     ${ctaButton('Acessar Plataforma', APP_URL)}
   `);
-  return sendEmail(to, 'Bem-vindo ao 50 Scripts 2.0!', html);
+  return sendEmail(to, 'Bem-vindo ao Bethel Closer!', html);
 }
 
 export async function sendPasswordResetEmail(to: string, resetLink: string): Promise<EmailResult> {
@@ -85,7 +85,7 @@ export async function sendPasswordResetEmail(to: string, resetLink: string): Pro
     ${paragraph('Clique no botão abaixo para criar uma nova senha. O link expira em 24 horas.')}
     ${ctaButton('Redefinir Senha', resetLink)}
   `);
-  return sendEmail(to, 'Redefinir sua senha - 50 Scripts 2.0', html);
+  return sendEmail(to, 'Redefinir sua senha - Bethel Closer', html);
 }
 
 export async function sendPlanUpgradeEmail(to: string, name: string, plan: string): Promise<EmailResult> {

@@ -153,7 +153,7 @@ export function EmergencyFAB() {
                   {/* Tooltip label */}
                   <span
                     className="px-2.5 py-1 text-xs font-semibold rounded-lg whitespace-nowrap
-                               bg-[#0F1D32] text-white border border-white/10 shadow-lg"
+                               bg-[#0A0F1E] text-white border border-white/10 shadow-lg"
                   >
                     {option.label}
                   </span>
@@ -196,17 +196,17 @@ export function EmergencyFAB() {
           onClick={toggleExpand}
           whileTap={{ scale: 0.9 }}
           className="relative flex items-center justify-center w-14 h-14 rounded-full
-                     shadow-2xl shadow-[#C9A84C]/30 z-50 focus:outline-none focus-visible:ring-2
-                     focus-visible:ring-[#C9A84C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A1628]"
+                     shadow-2xl shadow-[#1D4ED8]/30 z-50 focus:outline-none focus-visible:ring-2
+                     focus-visible:ring-[#1D4ED8] focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]"
           style={{
-            background: 'linear-gradient(135deg, #C9A84C 0%, #c7374e 100%)',
+            background: 'linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)',
           }}
           aria-label={isExpanded ? 'Fechar menu de emergência' : 'Script de emergência'}
           aria-expanded={isExpanded}
         >
           {/* Pulse ring animation */}
           {!isExpanded && (
-            <span className="absolute inset-0 rounded-full animate-ping bg-[#C9A84C]/40" />
+            <span className="absolute inset-0 rounded-full animate-ping bg-[#1D4ED8]/40" />
           )}
 
           <AnimatePresence mode="wait" initial={false}>

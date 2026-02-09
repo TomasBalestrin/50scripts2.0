@@ -152,7 +152,7 @@ export default function PipelinePage() {
       <div className="p-4 md:p-6">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {STAGES.map((s) => (
-            <div key={s.key} className="h-96 bg-[#0F1D32] rounded-xl animate-pulse" />
+            <div key={s.key} className="h-96 bg-[#0A0F1E] rounded-xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -163,17 +163,17 @@ export default function PipelinePage() {
     <div className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Kanban className="w-6 h-6 text-[#C9A84C]" />
+          <Kanban className="w-6 h-6 text-[#1D4ED8]" />
           Pipeline de Leads
         </h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#C9A84C] hover:bg-[#d63d56] text-white">
+            <Button className="bg-[#1D4ED8] hover:bg-[#1E40AF] text-white">
               <Plus className="w-4 h-4 mr-2" />
               Novo Lead
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-[#0F1D32] border-[#1A3050]">
+          <DialogContent className="bg-[#0A0F1E] border-[#131B35]">
             <DialogHeader>
               <DialogTitle className="text-white">Adicionar Lead</DialogTitle>
             </DialogHeader>
@@ -182,24 +182,24 @@ export default function PipelinePage() {
                 value={newLeadName}
                 onChange={(e) => setNewLeadName(e.target.value)}
                 placeholder="Nome do lead"
-                className="bg-[#1A3050] border-[#363660] text-white"
+                className="bg-[#131B35] border-[#1E2A52] text-white"
               />
               <Input
                 value={newLeadPhone}
                 onChange={(e) => setNewLeadPhone(e.target.value)}
                 placeholder="WhatsApp (opcional)"
-                className="bg-[#1A3050] border-[#363660] text-white"
+                className="bg-[#131B35] border-[#1E2A52] text-white"
               />
               <Input
                 value={newLeadValue}
                 onChange={(e) => setNewLeadValue(e.target.value)}
                 placeholder="Valor esperado R$ (opcional)"
                 type="number"
-                className="bg-[#1A3050] border-[#363660] text-white"
+                className="bg-[#131B35] border-[#1E2A52] text-white"
               />
               <Button
                 onClick={handleAddLead}
-                className="w-full bg-[#C9A84C] hover:bg-[#d63d56] text-white"
+                className="w-full bg-[#1D4ED8] hover:bg-[#1E40AF] text-white"
               >
                 Adicionar
               </Button>
@@ -210,13 +210,13 @@ export default function PipelinePage() {
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <Card className="bg-[#0F1D32] border-[#1A3050]">
+        <Card className="bg-[#0A0F1E] border-[#131B35]">
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold text-white">{leads.length}</p>
             <p className="text-xs text-gray-400">Total Leads</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#0F1D32] border-[#1A3050]">
+        <Card className="bg-[#0A0F1E] border-[#131B35]">
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold text-green-500">
               R$ {leads
@@ -227,7 +227,7 @@ export default function PipelinePage() {
             <p className="text-xs text-gray-400">Fechados</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#0F1D32] border-[#1A3050]">
+        <Card className="bg-[#0A0F1E] border-[#131B35]">
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold text-yellow-500">
               R$ {leads
@@ -258,7 +258,7 @@ export default function PipelinePage() {
                   <span className="text-sm font-semibold text-white truncate">
                     {stage.label}
                   </span>
-                  <Badge className="bg-[#1A3050] text-gray-400 text-xs ml-auto shrink-0">
+                  <Badge className="bg-[#131B35] text-gray-400 text-xs ml-auto shrink-0">
                     {stageLeads.length}
                   </Badge>
                 </div>
@@ -280,7 +280,7 @@ export default function PipelinePage() {
                       {...provided.droppableProps}
                       className={`space-y-2 min-h-[100px] rounded-lg p-1 transition-colors ${
                         snapshot.isDraggingOver
-                          ? 'bg-[#1A3050]/60 ring-1 ring-[#C9A84C]/30'
+                          ? 'bg-[#131B35]/60 ring-1 ring-[#1D4ED8]/30'
                           : 'bg-transparent'
                       }`}
                     >
@@ -301,13 +301,13 @@ export default function PipelinePage() {
                                 ref={dragProvided.innerRef}
                                 {...dragProvided.draggableProps}
                                 className={`transition-shadow ${
-                                  dragSnapshot.isDragging ? 'shadow-xl shadow-[#C9A84C]/20' : ''
+                                  dragSnapshot.isDragging ? 'shadow-xl shadow-[#1D4ED8]/20' : ''
                                 }`}
                               >
                                 <Card
-                                  className={`bg-[#0F1D32] border-[#1A3050] hover:border-[#363660] cursor-pointer transition-colors ${
+                                  className={`bg-[#0A0F1E] border-[#131B35] hover:border-[#1E2A52] cursor-pointer transition-colors ${
                                     dragSnapshot.isDragging
-                                      ? 'border-[#C9A84C]/50 rotate-[2deg]'
+                                      ? 'border-[#1D4ED8]/50 rotate-[2deg]'
                                       : ''
                                   }`}
                                   onClick={() => router.push(`/pipeline/${lead.id}`)}

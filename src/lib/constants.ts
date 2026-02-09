@@ -73,17 +73,18 @@ export const REFERRAL_REWARDS = {
 } as const;
 
 export const COLORS = {
-  primary: '#0F1D32',
-  secondary: '#C9A84C',
-  accent: '#4A90D9',
-  background: '#0A1628',
-  surface: '#0F1D32',
-  surfaceLight: '#1A3050',
+  primary: '#0A0F1E',
+  secondary: '#1D4ED8',
+  accent: '#3B82F6',
+  background: '#020617',
+  surface: '#0A0F1E',
+  surfaceLight: '#131B35',
   text: '#FFFFFF',
-  textMuted: '#8BA5BD',
+  textMuted: '#94A3B8',
   success: '#10B981',
   warning: '#F59E0B',
   error: '#EF4444',
+  info: '#3B82F6',
 } as const;
 
 export const DEFAULT_PASSWORD = 'Script@123';

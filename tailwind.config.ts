@@ -9,6 +9,10 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+  		fontFamily: {
+  			sans: ['Inter', 'system-ui', 'sans-serif'],
+  			heading: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+  		},
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -49,13 +53,32 @@ const config: Config = {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
-  			}
+  			},
+  			// Bethel Closer semantic colors
+  			navy: {
+  				950: '#020617',
+  				900: '#0A0F1E',
+  				800: '#131B35',
+  				700: '#1E2A52',
+  				600: '#2A3B6B',
+  			},
+  			royal: {
+  				900: '#0A0F5C',
+  				800: '#1E40AF',
+  				700: '#1D4ED8',
+  				600: '#2563EB',
+  				500: '#3B82F6',
+  				400: '#60A5FA',
+  			},
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		boxShadow: {
+  			'card': '0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2)',
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate")],

@@ -166,7 +166,7 @@ export default function AdminTipsPage() {
         <h1 className="text-2xl font-bold text-white">Dicas</h1>
         <Button
           onClick={openCreateDialog}
-          className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
+          className="bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90"
         >
           <Plus className="mr-2 h-4 w-4" />
           Adicionar Dica
@@ -174,17 +174,17 @@ export default function AdminTipsPage() {
       </div>
 
       {/* Table */}
-      <Card className="border-[#1A3050] bg-[#0F1D32]">
+      <Card className="border-[#131B35] bg-[#0A0F1E]">
         <CardContent className="p-0">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-[#C9A84C]" />
+              <Loader2 className="h-6 w-6 animate-spin text-[#1D4ED8]" />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1A3050] text-left text-gray-400">
+                  <tr className="border-b border-[#131B35] text-left text-gray-400">
                     <th className="px-4 py-3">Conteúdo</th>
                     <th className="px-4 py-3">Categoria</th>
                     <th className="px-4 py-3">Ativo</th>
@@ -195,7 +195,7 @@ export default function AdminTipsPage() {
                   {tips.map((tip) => (
                     <tr
                       key={tip.id}
-                      className="border-b border-[#1A3050]/50 text-white"
+                      className="border-b border-[#131B35]/50 text-white"
                     >
                       <td className="max-w-md truncate px-4 py-3">
                         {tip.content}
@@ -267,7 +267,7 @@ export default function AdminTipsPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="border-[#1A3050] bg-[#0F1D32] text-white">
+        <DialogContent className="border-[#131B35] bg-[#0A0F1E] text-white">
           <DialogHeader>
             <DialogTitle className="text-white">
               {editingId ? 'Editar Dica' : 'Nova Dica'}
@@ -283,7 +283,7 @@ export default function AdminTipsPage() {
                   setForm((f) => ({ ...f, content: e.target.value }))
                 }
                 rows={4}
-                className="mt-1 border-[#1A3050] bg-[#1A3050] text-white"
+                className="mt-1 border-[#131B35] bg-[#131B35] text-white"
                 placeholder="Digite a dica de microlearning..."
               />
             </div>
@@ -296,10 +296,10 @@ export default function AdminTipsPage() {
                   setForm((f) => ({ ...f, category: val }))
                 }
               >
-                <SelectTrigger className="mt-1 border-[#1A3050] bg-[#1A3050] text-white">
+                <SelectTrigger className="mt-1 border-[#131B35] bg-[#131B35] text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-[#1A3050] bg-[#0F1D32] text-white">
+                <SelectContent className="border-[#131B35] bg-[#0A0F1E] text-white">
                   {TIP_CATEGORIES.map((cat) => (
                     <SelectItem key={cat.value} value={cat.value}>
                       {cat.label}
@@ -323,14 +323,14 @@ export default function AdminTipsPage() {
               <Button
                 variant="outline"
                 onClick={() => setDialogOpen(false)}
-                className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
+                className="border-[#131B35] text-gray-300 hover:bg-[#131B35]"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={handleSave}
                 disabled={saving || !form.content.trim()}
-                className="bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
+                className="bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90"
               >
                 {saving ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -347,7 +347,7 @@ export default function AdminTipsPage() {
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
       >
-        <DialogContent className="border-[#1A3050] bg-[#0F1D32] text-white">
+        <DialogContent className="border-[#131B35] bg-[#0A0F1E] text-white">
           <DialogHeader>
             <DialogTitle className="text-white">
               Confirmar Exclusão
@@ -360,7 +360,7 @@ export default function AdminTipsPage() {
             <Button
               variant="outline"
               onClick={() => setDeleteId(null)}
-              className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
+              className="border-[#131B35] text-gray-300 hover:bg-[#131B35]"
             >
               Cancelar
             </Button>

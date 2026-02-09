@@ -321,7 +321,7 @@ export default function LeadDetailPage() {
   if (loading) {
     return (
       <div className="p-4 md:p-6 flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 text-[#C9A84C] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#1D4ED8] animate-spin" />
       </div>
     );
   }
@@ -338,7 +338,7 @@ export default function LeadDetailPage() {
           <Button
             onClick={() => router.push('/pipeline')}
             variant="outline"
-            className="border-[#1A3050] text-gray-400 hover:text-white hover:bg-[#1A3050]"
+            className="border-[#131B35] text-gray-400 hover:text-white hover:bg-[#131B35]"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar ao Pipeline
@@ -362,7 +362,7 @@ export default function LeadDetailPage() {
         <Button
           onClick={() => router.push('/pipeline')}
           variant="ghost"
-          className="text-gray-400 hover:text-white hover:bg-[#1A3050]"
+          className="text-gray-400 hover:text-white hover:bg-[#131B35]"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar ao Pipeline
@@ -378,7 +378,7 @@ export default function LeadDetailPage() {
               Excluir Lead
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-[#0F1D32] border-[#1A3050]">
+          <DialogContent className="bg-[#0A0F1E] border-[#131B35]">
             <DialogHeader>
               <DialogTitle className="text-white">Confirmar Exclusao</DialogTitle>
             </DialogHeader>
@@ -391,7 +391,7 @@ export default function LeadDetailPage() {
                 <Button
                   variant="outline"
                   onClick={() => setDeleteDialogOpen(false)}
-                  className="border-[#1A3050] text-gray-400 hover:text-white hover:bg-[#1A3050]"
+                  className="border-[#131B35] text-gray-400 hover:text-white hover:bg-[#131B35]"
                 >
                   Cancelar
                 </Button>
@@ -414,7 +414,7 @@ export default function LeadDetailPage() {
       </div>
 
       {/* Lead Header */}
-      <Card className="bg-[#0F1D32] border-[#1A3050] mb-6">
+      <Card className="bg-[#0A0F1E] border-[#131B35] mb-6">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
             <div className="space-y-3">
@@ -459,12 +459,12 @@ export default function LeadDetailPage() {
             <div className="w-full md:w-56 shrink-0">
               <label className="text-xs text-gray-500 mb-1 block">Mudar Estagio</label>
               <Select value={lead.stage} onValueChange={handleStageChange}>
-                <SelectTrigger className="bg-[#1A3050] border-[#363660] text-white h-10">
+                <SelectTrigger className="bg-[#131B35] border-[#1E2A52] text-white h-10">
                   <SelectValue placeholder="Selecione o estagio" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1A3050] border-[#363660]">
+                <SelectContent className="bg-[#131B35] border-[#1E2A52]">
                   {STAGES.map((s) => (
-                    <SelectItem key={s.key} value={s.key} className="text-white hover:bg-[#363660]">
+                    <SelectItem key={s.key} value={s.key} className="text-white hover:bg-[#1E2A52]">
                       <div className="flex items-center gap-2">
                         <div
                           className="w-2 h-2 rounded-full shrink-0"
@@ -491,10 +491,10 @@ export default function LeadDetailPage() {
         {/* Left Column: Conversation + Notes */}
         <div className="lg:col-span-2 space-y-6">
           {/* Conversation History */}
-          <Card className="bg-[#0F1D32] border-[#1A3050]">
+          <Card className="bg-[#0A0F1E] border-[#131B35]">
             <CardHeader className="pb-3">
               <CardTitle className="text-white text-lg flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-[#C9A84C]" />
+                <MessageSquare className="w-5 h-5 text-[#1D4ED8]" />
                 Historico de Conversa
               </CardTitle>
             </CardHeader>
@@ -516,15 +516,15 @@ export default function LeadDetailPage() {
                         }`}
                       >
                         {snippet.speaker === 'lead' && (
-                          <div className="w-7 h-7 rounded-full bg-[#1A3050] flex items-center justify-center shrink-0 mt-1">
+                          <div className="w-7 h-7 rounded-full bg-[#131B35] flex items-center justify-center shrink-0 mt-1">
                             <Users className="w-3.5 h-3.5 text-gray-400" />
                           </div>
                         )}
                         <div
                           className={`max-w-[75%] rounded-lg px-3 py-2 ${
                             snippet.speaker === 'user'
-                              ? 'bg-[#C9A84C]/20 border border-[#C9A84C]/30'
-                              : 'bg-[#1A3050] border border-[#363660]'
+                              ? 'bg-[#1D4ED8]/20 border border-[#1D4ED8]/30'
+                              : 'bg-[#131B35] border border-[#1E2A52]'
                           }`}
                         >
                           <p className="text-sm text-white break-words">{snippet.snippet_text}</p>
@@ -534,8 +534,8 @@ export default function LeadDetailPage() {
                           </p>
                         </div>
                         {snippet.speaker === 'user' && (
-                          <div className="w-7 h-7 rounded-full bg-[#C9A84C]/20 flex items-center justify-center shrink-0 mt-1">
-                            <User className="w-3.5 h-3.5 text-[#C9A84C]" />
+                          <div className="w-7 h-7 rounded-full bg-[#1D4ED8]/20 flex items-center justify-center shrink-0 mt-1">
+                            <User className="w-3.5 h-3.5 text-[#1D4ED8]" />
                           </div>
                         )}
                       </div>
@@ -544,7 +544,7 @@ export default function LeadDetailPage() {
                 )}
               </ScrollArea>
 
-              <Separator className="bg-[#1A3050] mb-4" />
+              <Separator className="bg-[#131B35] mb-4" />
 
               {/* Add new snippet form */}
               <div className="space-y-3">
@@ -556,8 +556,8 @@ export default function LeadDetailPage() {
                       onClick={() => setSnippetSpeaker('user')}
                       className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                         snippetSpeaker === 'user'
-                          ? 'bg-[#C9A84C] text-white'
-                          : 'bg-[#1A3050] text-gray-400 hover:text-white'
+                          ? 'bg-[#1D4ED8] text-white'
+                          : 'bg-[#131B35] text-gray-400 hover:text-white'
                       }`}
                     >
                       Voce
@@ -568,7 +568,7 @@ export default function LeadDetailPage() {
                       className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                         snippetSpeaker === 'lead'
                           ? 'bg-[#3B82F6] text-white'
-                          : 'bg-[#1A3050] text-gray-400 hover:text-white'
+                          : 'bg-[#131B35] text-gray-400 hover:text-white'
                       }`}
                     >
                       Lead
@@ -580,7 +580,7 @@ export default function LeadDetailPage() {
                     value={snippetText}
                     onChange={(e) => setSnippetText(e.target.value)}
                     placeholder="Digite o trecho da conversa..."
-                    className="bg-[#1A3050] border-[#363660] text-white flex-1"
+                    className="bg-[#131B35] border-[#1E2A52] text-white flex-1"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -591,7 +591,7 @@ export default function LeadDetailPage() {
                   <Button
                     onClick={handleAddSnippet}
                     disabled={sendingSnippet || !snippetText.trim()}
-                    className="bg-[#C9A84C] hover:bg-[#d63d56] text-white shrink-0"
+                    className="bg-[#1D4ED8] hover:bg-[#1E40AF] text-white shrink-0"
                   >
                     {sendingSnippet ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -605,10 +605,10 @@ export default function LeadDetailPage() {
           </Card>
 
           {/* Notes */}
-          <Card className="bg-[#0F1D32] border-[#1A3050]">
+          <Card className="bg-[#0A0F1E] border-[#131B35]">
             <CardHeader className="pb-3">
               <CardTitle className="text-white text-lg flex items-center gap-2">
-                <StickyNote className="w-5 h-5 text-[#C9A84C]" />
+                <StickyNote className="w-5 h-5 text-[#1D4ED8]" />
                 Notas
                 {notesSaving && (
                   <span className="text-xs text-gray-500 font-normal flex items-center gap-1 ml-2">
@@ -624,7 +624,7 @@ export default function LeadDetailPage() {
                 onBlur={handleNotesBlur}
                 placeholder="Adicione notas sobre este lead..."
                 rows={5}
-                className="bg-[#1A3050] border-[#363660] text-white resize-none"
+                className="bg-[#131B35] border-[#1E2A52] text-white resize-none"
               />
               <p className="text-xs text-gray-500 mt-2">
                 As notas sao salvas automaticamente ao sair do campo.
@@ -636,10 +636,10 @@ export default function LeadDetailPage() {
         {/* Right Column: Follow-up, Script Usage, Recommendations */}
         <div className="space-y-6">
           {/* Follow-up Scheduling */}
-          <Card className="bg-[#0F1D32] border-[#1A3050]">
+          <Card className="bg-[#0A0F1E] border-[#131B35]">
             <CardHeader className="pb-3">
               <CardTitle className="text-white text-lg flex items-center gap-2">
-                <CalendarClock className="w-5 h-5 text-[#C9A84C]" />
+                <CalendarClock className="w-5 h-5 text-[#1D4ED8]" />
                 Follow-up
               </CardTitle>
             </CardHeader>
@@ -653,13 +653,13 @@ export default function LeadDetailPage() {
                     type="datetime-local"
                     value={followupDate}
                     onChange={(e) => setFollowupDate(e.target.value)}
-                    className="bg-[#1A3050] border-[#363660] text-white [color-scheme:dark]"
+                    className="bg-[#131B35] border-[#1E2A52] text-white [color-scheme:dark]"
                   />
                 </div>
                 <Button
                   onClick={handleFollowupSave}
                   disabled={followupSaving}
-                  className="w-full bg-[#C9A84C] hover:bg-[#d63d56] text-white"
+                  className="w-full bg-[#1D4ED8] hover:bg-[#1E40AF] text-white"
                   size="sm"
                 >
                   {followupSaving ? (
@@ -684,7 +684,7 @@ export default function LeadDetailPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full text-gray-500 hover:text-white hover:bg-[#1A3050] text-xs"
+                    className="w-full text-gray-500 hover:text-white hover:bg-[#131B35] text-xs"
                     onClick={async () => {
                       setFollowupDate('');
                       setFollowupSaving(true);
@@ -712,10 +712,10 @@ export default function LeadDetailPage() {
           </Card>
 
           {/* Script Usage History */}
-          <Card className="bg-[#0F1D32] border-[#1A3050]">
+          <Card className="bg-[#0A0F1E] border-[#131B35]">
             <CardHeader className="pb-3">
               <CardTitle className="text-white text-lg flex items-center gap-2">
-                <FileText className="w-5 h-5 text-[#C9A84C]" />
+                <FileText className="w-5 h-5 text-[#1D4ED8]" />
                 Scripts Utilizados
               </CardTitle>
             </CardHeader>
@@ -737,7 +737,7 @@ export default function LeadDetailPage() {
                     {scriptUsages.map((usage) => (
                       <div
                         key={usage.id}
-                        className="bg-[#1A3050] rounded-lg p-3 border border-[#363660]"
+                        className="bg-[#131B35] rounded-lg p-3 border border-[#1E2A52]"
                       >
                         <p className="text-sm text-white font-medium truncate">
                           {usage.scripts?.title || 'Script removido'}
@@ -771,10 +771,10 @@ export default function LeadDetailPage() {
           </Card>
 
           {/* Suggested Scripts */}
-          <Card className="bg-[#0F1D32] border-[#1A3050]">
+          <Card className="bg-[#0A0F1E] border-[#131B35]">
             <CardHeader className="pb-3">
               <CardTitle className="text-white text-lg flex items-center gap-2">
-                <Lightbulb className="w-5 h-5 text-[#C9A84C]" />
+                <Lightbulb className="w-5 h-5 text-[#1D4ED8]" />
                 Scripts Sugeridos
               </CardTitle>
             </CardHeader>
@@ -796,10 +796,10 @@ export default function LeadDetailPage() {
                     {recommendations.map((script) => (
                       <div
                         key={script.id}
-                        className={`bg-[#1A3050] rounded-lg p-3 border border-[#363660] transition-colors ${
+                        className={`bg-[#131B35] rounded-lg p-3 border border-[#1E2A52] transition-colors ${
                           script.is_locked
                             ? 'opacity-60'
-                            : 'cursor-pointer hover:border-[#C9A84C]/40'
+                            : 'cursor-pointer hover:border-[#1D4ED8]/40'
                         }`}
                         onClick={() => {
                           if (!script.is_locked) {
@@ -829,7 +829,7 @@ export default function LeadDetailPage() {
                             </span>
                           )}
                           {script.category && (
-                            <Badge className="bg-[#0F1D32] text-gray-400 text-xs">
+                            <Badge className="bg-[#0A0F1E] text-gray-400 text-xs">
                               {script.category.name}
                             </Badge>
                           )}

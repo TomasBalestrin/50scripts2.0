@@ -144,9 +144,9 @@ export function ObjectionSearch() {
             value={query}
             onChange={(e) => handleInputChange(e.target.value)}
             placeholder='O lead disse que...'
-            className="w-full h-12 pl-11 pr-4 rounded-xl bg-[#1A3050] border border-white/10
+            className="w-full h-12 pl-11 pr-4 rounded-xl bg-[#131B35] border border-white/10
                        text-white placeholder-white/40 text-sm focus:outline-none focus:ring-2
-                       focus:ring-[#C9A84C]/50 focus:border-[#C9A84C]/50 transition-all"
+                       focus:ring-[#1D4ED8]/50 focus:border-[#1D4ED8]/50 transition-all"
             aria-label="Buscar objeção"
           />
         </div>
@@ -167,7 +167,7 @@ export function ObjectionSearch() {
               {Array.from({ length: 3 }, (_, i) => (
                 <div
                   key={i}
-                  className="p-4 rounded-xl bg-[#1A3050] border border-white/5 animate-pulse"
+                  className="p-4 rounded-xl bg-[#131B35] border border-white/5 animate-pulse"
                 >
                   <div className="h-4 w-2/3 bg-white/10 rounded mb-3" />
                   <div className="space-y-2">
@@ -200,8 +200,8 @@ export function ObjectionSearch() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="group p-4 rounded-xl bg-[#1A3050] border border-white/5
-                             hover:border-[#C9A84C]/20 transition-colors"
+                  className="group p-4 rounded-xl bg-[#131B35] border border-white/5
+                             hover:border-[#1D4ED8]/20 transition-colors"
                 >
                   {/* Title */}
                   <h3 className="text-sm font-semibold text-white leading-tight mb-2">
@@ -226,12 +226,12 @@ export function ObjectionSearch() {
                       onClick={() => handleCopy(script.id, script.content)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs
                                  font-semibold transition-all duration-200
-                                 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]"
+                                 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1D4ED8]"
                       style={{
                         background:
                           copiedId === script.id
                             ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
-                            : 'linear-gradient(135deg, #C9A84C 0%, #c7374e 100%)',
+                            : 'linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)',
                         color: 'white',
                       }}
                     >
@@ -262,7 +262,7 @@ export function ObjectionSearch() {
               exit={{ opacity: 0 }}
               className="flex flex-col items-center justify-center py-12 px-4 text-center"
             >
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#1A3050] mb-4">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#131B35] mb-4">
                 <AlertCircle size={24} className="text-white/30" />
               </div>
               <p className="text-sm text-white/50 font-medium">

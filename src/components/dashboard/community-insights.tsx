@@ -39,11 +39,11 @@ export function CommunityInsights() {
 
   if (loading) {
     return (
-      <Card className="bg-[#0F1D32] border-[#1A3050]">
+      <Card className="bg-[#0A0F1E] border-[#131B35]">
         <CardContent className="pt-6">
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-12 bg-[#1A3050] rounded-lg animate-pulse" />
+              <div key={i} className="h-12 bg-[#131B35] rounded-lg animate-pulse" />
             ))}
           </div>
         </CardContent>
@@ -54,10 +54,10 @@ export function CommunityInsights() {
   if (!data) return null;
 
   return (
-    <Card className="bg-[#0F1D32] border-[#1A3050]">
+    <Card className="bg-[#0A0F1E] border-[#131B35]">
       <CardHeader className="pb-3">
         <CardTitle className="text-white text-base flex items-center gap-2">
-          <Users className="w-5 h-5 text-[#C9A84C]" />
+          <Users className="w-5 h-5 text-[#1D4ED8]" />
           Métricas da Comunidade
         </CardTitle>
         <p className="text-xs text-gray-400">
@@ -71,7 +71,7 @@ export function CommunityInsights() {
             {data.insights.slice(0, 3).map((insight, i) => (
               <div
                 key={i}
-                className="flex items-start gap-2 p-2 bg-[#1A3050] rounded-lg"
+                className="flex items-start gap-2 p-2 bg-[#131B35] rounded-lg"
               >
                 <TrendingUp className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-gray-300">{insight}</p>
@@ -111,9 +111,9 @@ export function CommunityInsights() {
         </div>
 
         {/* Average conversion */}
-        <div className="pt-2 border-t border-[#1A3050] text-center">
+        <div className="pt-2 border-t border-[#131B35] text-center">
           <p className="text-xs text-gray-400">Taxa média de conversão</p>
-          <p className="text-lg font-bold text-[#C9A84C]">
+          <p className="text-lg font-bold text-[#1D4ED8]">
             {data.avg_conversion_rate.toFixed(1)}%
           </p>
         </div>

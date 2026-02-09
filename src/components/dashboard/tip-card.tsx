@@ -46,7 +46,7 @@ export function TipCard({ tip }: TipCardProps) {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-          className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#C9A84C] to-[#4A90D9] p-5"
+          className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#1D4ED8] to-[#3B82F6] p-5"
         >
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20">

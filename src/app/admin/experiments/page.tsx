@@ -266,7 +266,7 @@ export default function AdminExperimentsPage() {
         <Button
           size="sm"
           variant="outline"
-          className="border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
+          className="border-[#131B35] text-gray-300 hover:bg-[#131B35]"
           onClick={() => fetchExperiments()}
           disabled={loading}
         >
@@ -277,10 +277,10 @@ export default function AdminExperimentsPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-[#1A3050] bg-[#0F1D32]">
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardContent className="flex items-center gap-4 p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#C9A84C]/10">
-              <FlaskConical className="h-5 w-5 text-[#C9A84C]" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#1D4ED8]/10">
+              <FlaskConical className="h-5 w-5 text-[#1D4ED8]" />
             </div>
             <div>
               <p className="text-2xl font-bold text-white">{totalExperiments}</p>
@@ -288,7 +288,7 @@ export default function AdminExperimentsPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-[#1A3050] bg-[#0F1D32]">
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
               <CheckCircle className="h-5 w-5 text-green-500" />
@@ -299,7 +299,7 @@ export default function AdminExperimentsPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-[#1A3050] bg-[#0F1D32]">
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
               <TrendingUp className="h-5 w-5 text-blue-500" />
@@ -310,7 +310,7 @@ export default function AdminExperimentsPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-[#1A3050] bg-[#0F1D32]">
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10">
               <Users className="h-5 w-5 text-purple-500" />
@@ -324,20 +324,20 @@ export default function AdminExperimentsPage() {
       </div>
 
       {/* Experiments table */}
-      <Card className="border-[#1A3050] bg-[#0F1D32]">
-        <CardHeader className="border-b border-[#1A3050] pb-4">
+      <Card className="border-[#131B35] bg-[#0A0F1E]">
+        <CardHeader className="border-b border-[#131B35] pb-4">
           <CardTitle className="text-lg text-white">Feature Flags</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-[#C9A84C]" />
+              <Loader2 className="h-6 w-6 animate-spin text-[#1D4ED8]" />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#1A3050] text-left text-gray-400">
+                  <tr className="border-b border-[#131B35] text-left text-gray-400">
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Chave</th>
                     <th className="px-4 py-3">Descricao</th>
@@ -359,7 +359,7 @@ export default function AdminExperimentsPage() {
                     return (
                       <tr
                         key={exp.flag.id}
-                        className="cursor-pointer border-b border-[#1A3050]/50 text-white transition-colors hover:bg-[#1A3050]/50"
+                        className="cursor-pointer border-b border-[#131B35]/50 text-white transition-colors hover:bg-[#131B35]/50"
                         onClick={() => setSelectedExperiment(exp)}
                       >
                         {/* Toggle */}
@@ -372,8 +372,8 @@ export default function AdminExperimentsPage() {
                             disabled={actionLoading === exp.flag.id}
                             className={
                               exp.flag.enabled
-                                ? 'bg-[#C9A84C]'
-                                : 'bg-[#1A3050]'
+                                ? 'bg-[#1D4ED8]'
+                                : 'bg-[#131B35]'
                             }
                             onClick={(e) => e.stopPropagation()}
                           />
@@ -382,7 +382,7 @@ export default function AdminExperimentsPage() {
                         {/* Key */}
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <code className="rounded bg-[#1A3050] px-2 py-0.5 font-mono text-xs text-[#C9A84C]">
+                            <code className="rounded bg-[#131B35] px-2 py-0.5 font-mono text-xs text-[#1D4ED8]">
                               {exp.flag.key}
                             </code>
                             {isAB && (
@@ -401,9 +401,9 @@ export default function AdminExperimentsPage() {
                         {/* Rollout percentage */}
                         <td className="px-4 py-3 text-center">
                           <div className="flex items-center justify-center gap-2">
-                            <div className="h-2 w-16 overflow-hidden rounded-full bg-[#1A3050]">
+                            <div className="h-2 w-16 overflow-hidden rounded-full bg-[#131B35]">
                               <div
-                                className="h-full rounded-full bg-[#C9A84C] transition-all"
+                                className="h-full rounded-full bg-[#1D4ED8] transition-all"
                                 style={{
                                   width: `${exp.flag.rollout_percentage}%`,
                                 }}
@@ -421,7 +421,7 @@ export default function AdminExperimentsPage() {
                         </td>
 
                         {/* Treatment count */}
-                        <td className="px-4 py-3 text-center font-mono text-[#C9A84C]">
+                        <td className="px-4 py-3 text-center font-mono text-[#1D4ED8]">
                           {exp.treatmentCount}
                         </td>
 
@@ -472,8 +472,8 @@ export default function AdminExperimentsPage() {
           e.flag.rollout_percentage < 100 &&
           e.controlCount + e.treatmentCount > 0
       ).length > 0 && (
-        <Card className="border-[#1A3050] bg-[#0F1D32]">
-          <CardHeader className="border-b border-[#1A3050] pb-4">
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
+          <CardHeader className="border-b border-[#131B35] pb-4">
             <CardTitle className="text-lg text-white">
               Distribuicao de Atribuicoes — Testes A/B Ativos
             </CardTitle>
@@ -496,7 +496,7 @@ export default function AdminExperimentsPage() {
                   }))}
                 margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#1A3050" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#131B35" />
                 <XAxis
                   dataKey="name"
                   stroke="#6b7280"
@@ -508,14 +508,14 @@ export default function AdminExperimentsPage() {
                 />
                 <RechartsTooltip
                   contentStyle={{
-                    backgroundColor: '#0F1D32',
-                    border: '1px solid #1A3050',
+                    backgroundColor: '#0A0F1E',
+                    border: '1px solid #131B35',
                     borderRadius: '8px',
                     color: '#fff',
                   }}
                 />
                 <Bar dataKey="Controle" fill="#6b7280" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Tratamento" fill="#C9A84C" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Tratamento" fill="#1D4ED8" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -527,12 +527,12 @@ export default function AdminExperimentsPage() {
         open={!!selectedExperiment}
         onOpenChange={(open) => !open && setSelectedExperiment(null)}
       >
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-[#1A3050] bg-[#0A1628] text-white">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-[#131B35] bg-[#020617] text-white">
           {selectedExperiment && (
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-white">
-                  <FlaskConical className="h-5 w-5 text-[#C9A84C]" />
+                  <FlaskConical className="h-5 w-5 text-[#1D4ED8]" />
                   Detalhes do Experimento
                 </DialogTitle>
               </DialogHeader>
@@ -542,7 +542,7 @@ export default function AdminExperimentsPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-gray-400">Chave</p>
-                    <code className="rounded bg-[#1A3050] px-2 py-1 font-mono text-xs text-[#C9A84C]">
+                    <code className="rounded bg-[#131B35] px-2 py-1 font-mono text-xs text-[#1D4ED8]">
                       {selectedExperiment.flag.key}
                     </code>
                   </div>
@@ -579,12 +579,12 @@ export default function AdminExperimentsPage() {
                 </div>
 
                 {/* Rollout percentage slider */}
-                <div className="space-y-3 rounded-lg border border-[#1A3050] bg-[#0F1D32] p-4">
+                <div className="space-y-3 rounded-lg border border-[#131B35] bg-[#0A0F1E] p-4">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium text-gray-300">
                       Porcentagem de Rollout
                     </p>
-                    <span className="font-mono text-lg font-bold text-[#C9A84C]">
+                    <span className="font-mono text-lg font-bold text-[#1D4ED8]">
                       {editingPercentage[selectedExperiment.flag.id] ?? selectedExperiment.flag.rollout_percentage}%
                     </span>
                   </div>
@@ -600,7 +600,7 @@ export default function AdminExperimentsPage() {
                         [selectedExperiment.flag.id]: parseInt(e.target.value, 10),
                       }))
                     }
-                    className="h-2 w-full cursor-pointer appearance-none rounded-full bg-[#1A3050] accent-[#C9A84C]"
+                    className="h-2 w-full cursor-pointer appearance-none rounded-full bg-[#131B35] accent-[#1D4ED8]"
                   />
                   <div className="flex justify-between text-[10px] text-gray-500">
                     <span>0% — Todos em controle</span>
@@ -610,7 +610,7 @@ export default function AdminExperimentsPage() {
                     selectedExperiment.flag.rollout_percentage && (
                     <Button
                       size="sm"
-                      className="w-full bg-[#C9A84C] text-white hover:bg-[#C9A84C]/90"
+                      className="w-full bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90"
                       disabled={actionLoading === selectedExperiment.flag.id}
                       onClick={() =>
                         handleUpdatePercentage(selectedExperiment.flag.id)
@@ -625,7 +625,7 @@ export default function AdminExperimentsPage() {
                 </div>
 
                 {/* Assignment distribution */}
-                <div className="space-y-3 rounded-lg border border-[#1A3050] bg-[#0F1D32] p-4">
+                <div className="space-y-3 rounded-lg border border-[#131B35] bg-[#0A0F1E] p-4">
                   <p className="text-sm font-medium text-gray-300">
                     Distribuicao de Usuarios
                   </p>
@@ -633,7 +633,7 @@ export default function AdminExperimentsPage() {
                     <div className="space-y-4">
                       {/* Stats row */}
                       <div className="grid grid-cols-3 gap-3 text-center">
-                        <div className="rounded-lg bg-[#1A3050] p-3">
+                        <div className="rounded-lg bg-[#131B35] p-3">
                           <p className="text-xl font-bold text-gray-300">
                             {selectedExperiment.controlCount}
                           </p>
@@ -641,15 +641,15 @@ export default function AdminExperimentsPage() {
                             Controle
                           </p>
                         </div>
-                        <div className="rounded-lg bg-[#1A3050] p-3">
-                          <p className="text-xl font-bold text-[#C9A84C]">
+                        <div className="rounded-lg bg-[#131B35] p-3">
+                          <p className="text-xl font-bold text-[#1D4ED8]">
                             {selectedExperiment.treatmentCount}
                           </p>
                           <p className="text-[10px] uppercase tracking-wider text-gray-500">
                             Tratamento
                           </p>
                         </div>
-                        <div className="rounded-lg bg-[#1A3050] p-3">
+                        <div className="rounded-lg bg-[#131B35] p-3">
                           <p className="text-xl font-bold text-white">
                             {selectedExperiment.controlCount + selectedExperiment.treatmentCount}
                           </p>
@@ -681,7 +681,7 @@ export default function AdminExperimentsPage() {
                             paddingAngle={2}
                           >
                             <Cell fill="#6b7280" />
-                            <Cell fill="#C9A84C" />
+                            <Cell fill="#1D4ED8" />
                           </Pie>
                           <Legend
                             formatter={(value) => (
@@ -690,8 +690,8 @@ export default function AdminExperimentsPage() {
                           />
                           <RechartsTooltip
                             contentStyle={{
-                              backgroundColor: '#0F1D32',
-                              border: '1px solid #1A3050',
+                              backgroundColor: '#0A0F1E',
+                              border: '1px solid #131B35',
                               borderRadius: '8px',
                               color: '#fff',
                             }}
@@ -714,7 +714,7 @@ export default function AdminExperimentsPage() {
                             }}
                           />
                           <div
-                            className="bg-[#C9A84C] transition-all"
+                            className="bg-[#1D4ED8] transition-all"
                             style={{
                               width: `${
                                 (selectedExperiment.treatmentCount /
@@ -761,7 +761,7 @@ export default function AdminExperimentsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="space-y-3 border-t border-[#1A3050] pt-4">
+                <div className="space-y-3 border-t border-[#131B35] pt-4">
                   <p className="text-sm font-medium text-gray-400">Acoes</p>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -831,7 +831,7 @@ export default function AdminExperimentsPage() {
         open={!!confirmReset}
         onOpenChange={(open) => !open && setConfirmReset(null)}
       >
-        <DialogContent className="border-[#1A3050] bg-[#0A1628] text-white">
+        <DialogContent className="border-[#131B35] bg-[#020617] text-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-amber-400">
               <AlertTriangle className="h-5 w-5" />
@@ -851,7 +851,7 @@ export default function AdminExperimentsPage() {
               <Button
                 size="sm"
                 variant="outline"
-                className="flex-1 border-[#1A3050] text-gray-300 hover:bg-[#1A3050]"
+                className="flex-1 border-[#131B35] text-gray-300 hover:bg-[#131B35]"
                 onClick={() => setConfirmReset(null)}
               >
                 Cancelar
