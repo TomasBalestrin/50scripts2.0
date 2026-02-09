@@ -233,8 +233,8 @@ export default function UpgradePage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {(['starter', 'pro', 'premium', 'copilot'] as Plan[]).map((plan) => {
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {(['pro', 'premium', 'copilot'] as Plan[]).map((plan) => {
           const isCurrentPlan = currentPlan === plan;
           const isUpgrade = PLAN_HIERARCHY[plan] > PLAN_HIERARCHY[currentPlan];
           const isDowngrade = PLAN_HIERARCHY[plan] < PLAN_HIERARCHY[currentPlan];
@@ -273,7 +273,7 @@ export default function UpgradePage() {
                 <CardTitle className="text-white text-xl">{PLAN_LABELS[plan]}</CardTitle>
                 <p className="text-2xl font-bold text-white mt-2">{PLAN_PRICES[plan]}</p>
                 <p className="text-xs text-gray-400">
-                  {plan === 'starter' ? 'Pagamento unico' : 'Cobrado mensalmente'}
+                  Cobrado mensalmente
                 </p>
               </CardHeader>
 

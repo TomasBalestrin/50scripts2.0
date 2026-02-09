@@ -15,10 +15,10 @@ export const PLAN_LABELS: Record<Plan, string> = {
 };
 
 export const PLAN_PRICES: Record<Plan, string> = {
-  starter: 'R$ 29,90',
+  starter: 'Grátis',
   pro: 'R$ 19,90/mês',
-  premium: 'R$ 49,90/mês',
-  copilot: 'R$ 97,90/mês',
+  premium: 'R$ 39,90/mês',
+  copilot: 'R$ 99,90/mês',
 };
 
 export const PLAN_COLORS: Record<Plan, string> = {
