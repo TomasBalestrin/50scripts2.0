@@ -86,7 +86,7 @@ export function ShareCard({
               className="text-lg font-bold tracking-wider"
               style={{ color: '#1D4ED8' }}
             >
-              Bethel Closer
+              50 Scripts
             </span>
           </div>
           <div

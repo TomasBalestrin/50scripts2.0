@@ -130,14 +130,14 @@ export function Sidebar({ plan, role, userName, userAvatar }: SidebarProps) {
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 px-6">
         <Image
-          src="/logo-bethel-closer.svg"
-          alt="Bethel Closer"
+          src="/logo.png"
+          alt="50 Scripts"
           width={36}
           height={36}
           className="rounded-lg"
         />
         <span className="text-lg font-heading font-bold text-white">
-          Bethel Closer
+          50 Scripts
         </span>
       </div>
 

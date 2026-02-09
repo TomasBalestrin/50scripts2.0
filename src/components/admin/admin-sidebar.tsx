@@ -48,7 +48,7 @@ export function AdminSidebar() {
           <FileText className="h-5 w-5 text-white" />
         </div>
         <div>
-          <h1 className="text-base font-bold text-white">Bethel Closer</h1>
+          <h1 className="text-base font-bold text-white">50 Scripts</h1>
           <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
             Painel Admin
           </p>

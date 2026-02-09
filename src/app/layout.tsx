@@ -3,17 +3,17 @@ import "./globals.css";
 import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
 
 export const metadata: Metadata = {
-  title: "Bethel Closer",
-  description: "Profissionalizando o empreendedorismo através da Educação e Tecnologia",
+  title: "50 Scripts",
+  description: "Sistema Inteligente de Scripts Persuasivos para WhatsApp",
   manifest: "/manifest.json",
   icons: {
-    icon: "/logo-bethel-closer.svg",
-    apple: "/logo-bethel-closer.svg",
+    icon: "/logo.png",
+    apple: "/logo.png",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Bethel Closer",
+    title: "50 Scripts",
   },
 };
 
