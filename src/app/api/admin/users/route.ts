@@ -155,18 +155,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update profile with additional fields
+    // Ensure profile exists (trigger may not exist or may be slow)
     if (authData.user) {
-      const updates: Record<string, unknown> = {
-        updated_at: new Date().toISOString(),
-      };
-      if (full_name) updates.full_name = full_name;
-      if (plan) updates.plan = plan;
+      const now = new Date().toISOString();
+      const referralCode = authData.user.id.slice(0, 8).toUpperCase();
 
       await adminClient
         .from('profiles')
-        .update(updates)
-        .eq('id', authData.user.id);
+        .upsert({
+          id: authData.user.id,
+          email,
+          full_name: full_name || '',
+          plan: plan || 'starter',
+          role: 'user',
+          is_active: true,
+          niche: null,
+          preferred_tone: 'casual',
+          onboarding_completed: false,
+          xp_points: 0,
+          level: 'iniciante',
+          current_streak: 0,
+          longest_streak: 0,
+          ai_credits_remaining: 10,
+          ai_credits_monthly: 10,
+          saved_variables: {},
+          push_subscription: null,
+          notification_prefs: {},
+          referral_code: referralCode,
+          referred_by: null,
+          webhook_source: null,
+          password_changed: false,
+          last_login_at: null,
+          created_at: now,
+          updated_at: now,
+        }, { onConflict: 'id' });
     }
 
     return NextResponse.json({ user: authData.user }, { status: 201 });
