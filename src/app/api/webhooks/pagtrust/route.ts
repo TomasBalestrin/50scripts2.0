@@ -6,42 +6,57 @@ import {
   logWebhookEvent,
 } from '@/lib/webhooks/shared';
 
-const SOURCE = 'hotmart';
+const SOURCE = 'pagtrust';
 
-const HOTMART_PRODUCT_MAP: Record<string, string> = {
-  [process.env.HOTMART_PRODUCT_PRO || '']: 'pro',
-  [process.env.HOTMART_PRODUCT_PREMIUM || '']: 'premium',
-  [process.env.HOTMART_PRODUCT_COPILOT || '']: 'copilot',
+const PAGTRUST_PRODUCT_MAP: Record<string, string> = {
+  [process.env.PAGTRUST_PRODUCT_PRO || '']: 'pro',
+  [process.env.PAGTRUST_PRODUCT_PREMIUM || '']: 'premium',
+  [process.env.PAGTRUST_PRODUCT_COPILOT || '']: 'copilot',
 };
 
 /**
- * Hotmart Webhook
+ * PagTrust Webhook
  *
- * Formato JSON esperado (padrão Hotmart):
+ * Formato JSON esperado (similar ao padrão Hotmart):
  * {
- *   "event": "PURCHASE_COMPLETE" | "PURCHASE_CANCELED" | "PURCHASE_REFUNDED" | "SUBSCRIPTION_CANCELLATION" | ...,
+ *   "event": "PAYMENT_APPROVED" | "PAYMENT_REFUNDED" | "PAYMENT_CHARGEBACK" | "SUBSCRIPTION_CANCELED" | "PAYMENT_EXPIRED",
  *   "data": {
- *     "buyer": { "email": "...", "name": "..." },
- *     "product": { "id": 123456 },
- *     "subscription": { "product": { "id": 123456 } }
+ *     "buyer": {
+ *       "email": "joao@email.com",
+ *       "name": "João Silva"
+ *     },
+ *     "product": {
+ *       "id": "xxx",
+ *       "name": "50 Scripts Plus"
+ *     },
+ *     "transaction": {
+ *       "id": "xxx",
+ *       "status": "approved" | "refunded" | "chargeback"
+ *     },
+ *     "subscription": {
+ *       "id": "xxx",
+ *       "status": "active" | "canceled",
+ *       "product": { "id": "xxx" }
+ *     }
  *   }
  * }
  *
- * Autenticação: Header X-Hotmart-Hottok
- * Env vars: HOTMART_HOTTOK, HOTMART_PRODUCT_PRO, HOTMART_PRODUCT_PREMIUM, HOTMART_PRODUCT_COPILOT
+ * Autenticação: Header X-PagTrust-Token
+ * Env vars: PAGTRUST_TOKEN, PAGTRUST_PRODUCT_PRO, PAGTRUST_PRODUCT_PREMIUM, PAGTRUST_PRODUCT_COPILOT
  */
 export async function POST(request: NextRequest) {
   try {
-    // 1. Verify Hottok header
-    if (!verifyToken(request.headers.get('X-Hotmart-Hottok'), process.env.HOTMART_HOTTOK)) {
+    // 1. Verify token
+    if (!verifyToken(request.headers.get('X-PagTrust-Token'), process.env.PAGTRUST_TOKEN)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Parse request body
+    // 2. Parse request body (formato similar ao Hotmart)
     const body = await request.json();
     const event = body.event;
     const buyerData = body.data?.buyer || {};
     const productId = body.data?.product?.id?.toString() || body.data?.subscription?.product?.id?.toString() || '';
+    const transactionId = body.data?.transaction?.id || '';
     const buyerEmail = buyerData.email || '';
     const buyerName = buyerData.name || '';
 
@@ -51,23 +66,24 @@ export async function POST(request: NextRequest) {
 
     // 3. Handle events
     switch (event) {
-      case 'PURCHASE_COMPLETE': {
+      case 'PAYMENT_APPROVED': {
         if (!buyerEmail) {
-          await logWebhookEvent(SOURCE, 'purchase_complete', body, 'error', undefined, 'Missing buyer email');
+          await logWebhookEvent(SOURCE, 'payment_approved', body, 'error', undefined, 'Missing buyer email');
           return NextResponse.json({ error: 'Missing buyer email' }, { status: 400 });
         }
 
-        const plan = HOTMART_PRODUCT_MAP[productId] || 'pro';
+        const plan = PAGTRUST_PRODUCT_MAP[productId] || 'pro';
         const result = await handlePurchase(buyerEmail, buyerName, plan, SOURCE, {
           product_id: productId,
+          transaction_id: transactionId,
         });
 
         return NextResponse.json({ success: true, user_id: result.userId, plan: result.plan });
       }
 
-      case 'PURCHASE_CANCELED':
-      case 'PURCHASE_REFUNDED':
-      case 'SUBSCRIPTION_CANCELLATION': {
+      case 'PAYMENT_REFUNDED':
+      case 'PAYMENT_CHARGEBACK':
+      case 'SUBSCRIPTION_CANCELED': {
         if (!buyerEmail) {
           await logWebhookEvent(SOURCE, event.toLowerCase(), body, 'error', undefined, 'Missing buyer email');
           return NextResponse.json({ error: 'Missing buyer email' }, { status: 400 });
@@ -76,6 +92,7 @@ export async function POST(request: NextRequest) {
         try {
           const result = await handleCancellation(buyerEmail, SOURCE, event.toLowerCase(), {
             product_id: productId,
+            transaction_id: transactionId,
           });
           return NextResponse.json({ success: true, user_id: result.userId });
         } catch (err) {
@@ -86,12 +103,12 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      case 'PURCHASE_DELAYED':
-      case 'PURCHASE_PROTEST': {
+      case 'PAYMENT_EXPIRED':
+      case 'PAYMENT_PENDING': {
         await logWebhookEvent(SOURCE, event.toLowerCase(), {
           email: buyerEmail,
           product_id: productId,
-          buyer_name: buyerName,
+          transaction_id: transactionId,
         }, 'warning');
 
         return NextResponse.json({ received: true, event });
@@ -103,7 +120,7 @@ export async function POST(request: NextRequest) {
       }
     }
   } catch (error) {
-    console.error('[webhook/hotmart] Error:', error);
+    console.error('[webhook/pagtrust] Error:', error);
 
     try {
       await logWebhookEvent(SOURCE, 'processing_error', {}, 'error', undefined,
