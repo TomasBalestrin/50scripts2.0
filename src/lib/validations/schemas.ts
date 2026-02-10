@@ -28,7 +28,7 @@ export const scriptUsageSchema = z.object({
 export const scriptRatingSchema = z.object({
   effectiveness_rating: z.number().min(1).max(5),
   resulted_in_sale: z.boolean().optional(),
-  sale_value: z.number().positive().optional(),
+  sale_value: z.number().positive().max(1_000_000).optional(), // Cap at R$1M to prevent abuse
   feedback_note: z.string().max(500).optional(),
 });
 

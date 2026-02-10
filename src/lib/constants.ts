@@ -87,7 +87,7 @@ export const COLORS = {
   info: '#3B82F6',
 } as const;
 
-export const DEFAULT_PASSWORD = 'Script@123';
+// Generated passwords use crypto.randomBytes - see generateSecurePassword() in lib/auth-utils.ts
 
 export const EMERGENCY_TYPES = ['approach', 'objection', 'followup', 'close'] as const;
 

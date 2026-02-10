@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/server';
+import { generateSecurePassword } from '@/lib/auth-utils';
 
 const HOTMART_PRODUCT_MAP: Record<string, string> = {
   [process.env.HOTMART_PRODUCT_PRO || '']: 'pro',
@@ -74,7 +75,7 @@ async function findOrCreateUser(
   // Create new auth user
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email,
-    password: process.env.DEFAULT_USER_PASSWORD || 'Script@123',
+    password: generateSecurePassword(),
     email_confirm: true,
   });
 

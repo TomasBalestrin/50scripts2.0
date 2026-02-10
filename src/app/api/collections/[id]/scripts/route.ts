@@ -57,6 +57,18 @@ export async function DELETE(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Verify ownership before deleting
+  const { data: collection } = await supabase
+    .from('user_collections')
+    .select('id')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single();
+
+  if (!collection) {
+    return NextResponse.json({ error: 'Coleção não encontrada' }, { status: 404 });
+  }
+
   const { script_id } = await request.json();
 
   await supabase

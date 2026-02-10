@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   // Prevent self-referral
   const { data: currentProfile } = await supabase
     .from('profiles')
-    .select('id, referral_code, referred_by')
+    .select('id, referral_code, referred_by, created_at')
     .eq('id', user.id)
     .single();
 
@@ -47,6 +47,29 @@ export async function POST(request: NextRequest) {
   if (currentProfile.referred_by) {
     return NextResponse.json(
       { error: 'Você já utilizou um código de indicação' },
+      { status: 400 }
+    );
+  }
+
+  // Anti-fraud: account must be at least 24h old to apply referral
+  const accountAge = Date.now() - new Date(currentProfile.created_at).getTime();
+  const MIN_ACCOUNT_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+  if (accountAge < MIN_ACCOUNT_AGE_MS) {
+    return NextResponse.json(
+      { error: 'Sua conta precisa ter pelo menos 24 horas para usar um código de indicação' },
+      { status: 400 }
+    );
+  }
+
+  // Anti-fraud: account must have used at least 1 script
+  const { count: usageCount } = await supabase
+    .from('script_usage')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id);
+
+  if (!usageCount || usageCount < 1) {
+    return NextResponse.json(
+      { error: 'Use pelo menos 1 script antes de aplicar um código de indicação' },
       { status: 400 }
     );
   }

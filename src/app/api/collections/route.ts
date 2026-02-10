@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { hasAccess } from '@/lib/plans/gate';
+import { hasValidAccess } from '@/lib/plans/gate';
 import { cachedJson } from '@/lib/api-cache';
 
 export async function GET() {
@@ -13,11 +13,11 @@ export async function GET() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan')
+    .select('plan, plan_expires_at')
     .eq('id', user.id)
     .single();
 
-  if (!profile || !hasAccess(profile.plan, 'premium')) {
+  if (!profile || !hasValidAccess(profile.plan, 'premium', profile.plan_expires_at)) {
     return NextResponse.json({ error: 'Plano Premium necessário' }, { status: 403 });
   }
 

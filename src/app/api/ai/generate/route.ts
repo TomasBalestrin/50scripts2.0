@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { hasAccess } from '@/lib/plans/gate';
+import { hasValidAccess } from '@/lib/plans/gate';
 import { aiGenerateSchema } from '@/lib/validations/schemas';
 import { chatCompletion } from '@/lib/ai/openai';
 import { rateLimit } from '@/lib/rate-limit';
@@ -24,11 +24,11 @@ export async function POST(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan, ai_credits_remaining, ai_credits_monthly, niche, preferred_tone')
+    .select('plan, plan_expires_at, ai_credits_remaining, ai_credits_monthly, niche, preferred_tone')
     .eq('id', user.id)
     .single();
 
-  if (!profile || !hasAccess(profile.plan, 'premium')) {
+  if (!profile || !hasValidAccess(profile.plan, 'premium', profile.plan_expires_at)) {
     return NextResponse.json({ error: 'Plano Premium necessário' }, { status: 403 });
   }
 

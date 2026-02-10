@@ -50,7 +50,7 @@ const defaultConfig: AppConfig = {
     premium: 15,
     copilot: -1,
   },
-  default_password: 'Script@123',
+  default_password: '(gerada automaticamente)',
   feature_flags: {
     enable_semantic_search: false,
     enable_audio: false,
