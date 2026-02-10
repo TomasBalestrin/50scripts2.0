@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       case 'order_paid':
       case 'paid': {
         if (!customerEmail) {
-          await logWebhookEvent(SOURCE, 'order_paid', body, 'error', undefined, 'Missing customer email');
+          await logWebhookEvent(SOURCE, 'purchase', body, 'error', '', undefined, 'Missing customer email');
           return NextResponse.json({ error: 'Missing customer email' }, { status: 400 });
         }
 
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       case 'subscription_canceled':
       case 'canceled': {
         if (!customerEmail) {
-          await logWebhookEvent(SOURCE, event, body, 'error', undefined, 'Missing customer email');
+          await logWebhookEvent(SOURCE, 'cancel', body, 'error', '', undefined, 'Missing customer email');
           return NextResponse.json({ error: 'Missing customer email' }, { status: 400 });
         }
 
@@ -90,16 +90,15 @@ export async function POST(request: NextRequest) {
       case 'waiting_payment':
       case 'expired': {
         await logWebhookEvent(SOURCE, event, {
-          email: customerEmail,
           product_id: productId,
           order_id: body.order_id,
-        }, 'warning');
+        }, 'warning', customerEmail);
 
         return NextResponse.json({ received: true, event });
       }
 
       default: {
-        await logWebhookEvent(SOURCE, event, body, 'unhandled');
+        await logWebhookEvent(SOURCE, event, body, 'ignored', customerEmail);
         return NextResponse.json({ received: true, event });
       }
     }
@@ -107,7 +106,7 @@ export async function POST(request: NextRequest) {
     console.error('[webhook/kiwify] Error:', error);
 
     try {
-      await logWebhookEvent(SOURCE, 'processing_error', {}, 'error', undefined,
+      await logWebhookEvent(SOURCE, 'purchase', {}, 'error', '', undefined,
         error instanceof Error ? error.message : 'Unknown error');
     } catch { /* silent */ }
 

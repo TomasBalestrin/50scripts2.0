@@ -54,8 +54,10 @@ export async function POST(request: NextRequest) {
       if (authError.message?.toLowerCase().includes('already') ||
           authError.message?.toLowerCase().includes('duplicate')) {
         await supabase.from('webhook_logs').insert({
-          event_type: 'access_grant',
+          source: source || 'access-grant',
+          event_type: 'purchase',
           payload: { email, name, source, referral_code },
+          email_extracted: email,
           status: 'duplicate',
           error_message: authError.message,
         });
@@ -105,10 +107,13 @@ export async function POST(request: NextRequest) {
 
     // 8. Log to webhook_logs
     await supabase.from('webhook_logs').insert({
-      event_type: 'access_grant',
+      source: source || 'access-grant',
+      event_type: 'purchase',
       payload: { email, name, source, referral_code },
+      email_extracted: email,
       status: 'success',
       user_id: userId,
+      user_created: true,
     });
 
     return NextResponse.json(
@@ -122,8 +127,10 @@ export async function POST(request: NextRequest) {
     try {
       const supabase = await createAdminClient();
       await supabase.from('webhook_logs').insert({
-        event_type: 'access_grant',
-        payload: null,
+        source: 'access-grant',
+        event_type: 'purchase',
+        payload: {},
+        email_extracted: '',
         status: 'error',
         error_message: error instanceof Error ? error.message : 'Unknown error',
       });
