@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { cachedJson } from '@/lib/api-cache';
 
 const CHALLENGE_TYPES = [
   { type: 'use_scripts', target: 5, label: 'Use 5 scripts hoje', xp: 50 },
@@ -88,5 +89,5 @@ export async function GET() {
     challenge = { ...challenge, current_count: currentCount, completed };
   }
 
-  return NextResponse.json({ challenge });
+  return cachedJson({ challenge }, { maxAge: 60, staleWhileRevalidate: 120 });
 }

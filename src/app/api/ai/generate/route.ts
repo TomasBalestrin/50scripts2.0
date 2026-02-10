@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { hasAccess } from '@/lib/plans/gate';
 import { aiGenerateSchema } from '@/lib/validations/schemas';
 import { chatCompletion } from '@/lib/ai/openai';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -10,6 +11,15 @@ export async function POST(request: NextRequest) {
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Rate limit: 10 requests per minute per user
+  const limited = rateLimit(user.id, 'ai-generate', { maxRequests: 10, windowMs: 60_000 });
+  if (limited) {
+    return NextResponse.json(
+      { error: 'Muitas requisições. Tente novamente em alguns segundos.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(limited.retryAfterMs / 1000)) } }
+    );
   }
 
   const { data: profile } = await supabase
@@ -35,29 +45,27 @@ export async function POST(request: NextRequest) {
 
   const { category_id, context, tone } = parsed.data;
 
-  // Get category info
-  const { data: category } = await supabase
-    .from('script_categories')
-    .select('name, slug')
-    .eq('id', category_id)
-    .single();
-
-  // Get user's top scripts for context enrichment
-  const { data: topScripts } = await supabase
-    .from('script_usage')
-    .select('script:scripts(title, content, global_effectiveness)')
-    .eq('user_id', user.id)
-    .not('effectiveness_rating', 'is', null)
-    .order('effectiveness_rating', { ascending: false })
-    .limit(5);
-
-  // Get active AI prompt template
-  const { data: promptTemplate } = await supabase
-    .from('ai_prompts')
-    .select('*')
-    .eq('type', 'generation')
-    .eq('is_active', true)
-    .single();
+  // Get category, top scripts, and prompt template in parallel
+  const [{ data: category }, { data: topScripts }, { data: promptTemplate }] = await Promise.all([
+    supabase
+      .from('script_categories')
+      .select('name, slug')
+      .eq('id', category_id)
+      .single(),
+    supabase
+      .from('script_usage')
+      .select('script:scripts(title, content, global_effectiveness)')
+      .eq('user_id', user.id)
+      .not('effectiveness_rating', 'is', null)
+      .order('effectiveness_rating', { ascending: false })
+      .limit(5),
+    supabase
+      .from('ai_prompts')
+      .select('*')
+      .eq('type', 'generation')
+      .eq('is_active', true)
+      .single(),
+  ]);
 
   const userTone = tone || profile.preferred_tone || 'casual';
   const topScriptsContext = topScripts

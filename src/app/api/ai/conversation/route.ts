@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { hasAccess } from '@/lib/plans/gate';
 import { aiConversationSchema } from '@/lib/validations/schemas';
 import { chatCompletion } from '@/lib/ai/openai';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -10,6 +11,15 @@ export async function POST(request: NextRequest) {
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Rate limit: 10 requests per minute per user
+  const limited = rateLimit(user.id, 'ai-conversation', { maxRequests: 10, windowMs: 60_000 });
+  if (limited) {
+    return NextResponse.json(
+      { error: 'Muitas requisições. Tente novamente em alguns segundos.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(limited.retryAfterMs / 1000)) } }
+    );
   }
 
   const { data: profile } = await supabase
@@ -30,36 +40,43 @@ export async function POST(request: NextRequest) {
 
   const { conversation, lead_id } = parsed.data;
 
-  // Get lead context if provided
-  let leadContext = '';
-  if (lead_id) {
-    const { data: lead } = await supabase
-      .from('leads')
-      .select('name, stage, expected_value, conversation_history, notes')
-      .eq('id', lead_id)
+  // Fetch lead context, top scripts, and prompt template in parallel
+  const [leadResult, topScriptsResult, promptResult] = await Promise.all([
+    lead_id
+      ? supabase
+          .from('leads')
+          .select('name, stage, expected_value, conversation_history, notes')
+          .eq('id', lead_id)
+          .eq('user_id', user.id)
+          .single()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from('script_usage')
+      .select('script:scripts(title, global_effectiveness)')
       .eq('user_id', user.id)
-      .single();
+      .not('effectiveness_rating', 'is', null)
+      .order('effectiveness_rating', { ascending: false })
+      .limit(3),
+    supabase
+      .from('ai_prompts')
+      .select('*')
+      .eq('type', 'conversation')
+      .eq('is_active', true)
+      .single(),
+  ]);
 
-    if (lead) {
-      leadContext = `
+  let leadContext = '';
+  const lead = leadResult.data;
+  if (lead) {
+    leadContext = `
 Lead: ${lead.name}
 Estágio: ${lead.stage}
 Valor esperado: R$ ${lead.expected_value || 'não definido'}
 Notas: ${lead.notes || 'nenhuma'}
 Histórico anterior: ${JSON.stringify(lead.conversation_history || []).slice(0, 500)}`;
-    }
   }
 
-  // Get user's top scripts for context
-  const { data: topScripts } = await supabase
-    .from('script_usage')
-    .select('script:scripts(title, global_effectiveness)')
-    .eq('user_id', user.id)
-    .not('effectiveness_rating', 'is', null)
-    .order('effectiveness_rating', { ascending: false })
-    .limit(3);
-
-  const topScriptsText = topScripts
+  const topScriptsText = topScriptsResult.data
     ?.map((s: Record<string, unknown>) => {
       const script = s.script as { title: string; global_effectiveness: number } | null;
       return script ? `- ${script.title} (${script.global_effectiveness}/5)` : '';
@@ -67,13 +84,7 @@ Histórico anterior: ${JSON.stringify(lead.conversation_history || []).slice(0, 
     .filter(Boolean)
     .join('\n') || 'Sem histórico';
 
-  // Get active conversation prompt
-  const { data: promptTemplate } = await supabase
-    .from('ai_prompts')
-    .select('*')
-    .eq('type', 'conversation')
-    .eq('is_active', true)
-    .single();
+  const promptTemplate = promptResult.data;
 
   const systemPrompt = promptTemplate?.system_prompt ||
     `Você é um copiloto de vendas expert em WhatsApp. Analise a conversa fornecida e ajude o vendedor.

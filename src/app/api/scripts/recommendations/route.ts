@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { hasAccess } from '@/lib/plans/gate';
+import { cachedJson } from '@/lib/api-cache';
 import type { Plan } from '@/types/database';
 
 const TIME_CATEGORY_MAP: Record<string, string> = {
@@ -31,26 +32,25 @@ export async function GET() {
       return NextResponse.json({ scripts: [] });
     }
 
-    // 2. Get user profile
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('plan, niche')
-      .eq('id', user.id)
-      .single();
-
-    const userPlan: Plan = (profile?.plan as Plan) ?? 'starter';
-
-    // 3. Determine recommended category based on time of day
+    // 2. Get user profile + category in parallel
     const timeOfDay = getTimeOfDay();
     const categorySlug = TIME_CATEGORY_MAP[timeOfDay];
 
-    // 4. Get the category
-    const { data: category } = await supabase
-      .from('script_categories')
-      .select('id, name, slug, icon, color')
-      .eq('slug', categorySlug)
-      .eq('is_active', true)
-      .single();
+    const [{ data: profile }, { data: category }] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('plan, niche')
+        .eq('id', user.id)
+        .single(),
+      supabase
+        .from('script_categories')
+        .select('id, name, slug, icon, color')
+        .eq('slug', categorySlug)
+        .eq('is_active', true)
+        .single(),
+    ]);
+
+    const userPlan: Plan = (profile?.plan as Plan) ?? 'starter';
 
     if (!category) {
       // Fallback: try to get any active category
@@ -74,14 +74,14 @@ export async function GET() {
         .order('global_effectiveness', { ascending: false })
         .limit(5);
 
-      return NextResponse.json({
+      return cachedJson({
         time_of_day: timeOfDay,
         suggested_category: anyCategory,
         scripts: (scripts ?? []).map((s) => ({
           ...s,
           is_locked: !hasAccess(userPlan, s.min_plan as Plan),
         })),
-      });
+      }, { maxAge: 300, staleWhileRevalidate: 600 });
     }
 
     // 5. Get top 5 scripts from suggested category
@@ -93,7 +93,7 @@ export async function GET() {
       .order('global_effectiveness', { ascending: false })
       .limit(5);
 
-    return NextResponse.json({
+    return cachedJson({
       time_of_day: timeOfDay,
       suggested_category: category,
       niche: profile?.niche ?? null,
@@ -101,7 +101,7 @@ export async function GET() {
         ...s,
         is_locked: !hasAccess(userPlan, s.min_plan as Plan),
       })),
-    });
+    }, { maxAge: 300, staleWhileRevalidate: 600 });
   } catch (error) {
     console.error('[scripts/recommendations] Error:', error);
     return NextResponse.json({ scripts: [] });

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { hasAccess } from '@/lib/plans/gate';
 import { leadSchema } from '@/lib/validations/schemas';
+import { cachedJson } from '@/lib/api-cache';
 
 export async function GET() {
   const supabase = await createClient();
@@ -27,7 +28,7 @@ export async function GET() {
     .eq('user_id', user.id)
     .order('updated_at', { ascending: false });
 
-  return NextResponse.json({ leads: leads || [] });
+  return cachedJson({ leads: leads || [] });
 }
 
 export async function POST(request: NextRequest) {
