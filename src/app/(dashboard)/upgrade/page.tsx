@@ -39,7 +39,6 @@ const PLAN_FEATURES: Record<Plan, string[]> = {
     'Busca Semantica de Objecoes',
     'Audios Modelo',
     'Cards de Resultado',
-    'Sistema de Referral',
     'Colecoes Pessoais',
   ],
   copilot: [

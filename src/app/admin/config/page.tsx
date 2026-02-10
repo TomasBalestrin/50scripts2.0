@@ -10,7 +10,6 @@ import {
   Bot,
   Key,
   ToggleLeft,
-  Gift,
   CheckCircle,
   Webhook,
   Copy,
@@ -698,124 +697,6 @@ export default function AdminConfigPage() {
                 }))
               }
             />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Referral Rewards */}
-      <Card className="border-[#131B35] bg-[#0A0F1E]">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base text-white">
-            <Gift className="h-5 w-5 text-[#1D4ED8]" />
-            Recompensas de Indicação
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* 1 referral */}
-            <div className="flex items-center gap-4 rounded-lg border border-[#131B35] bg-[#131B35]/50 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1D4ED8]/10 text-sm font-bold text-[#1D4ED8]">
-                1
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-white">
-                  1 indicação convertida
-                </p>
-                <p className="text-xs text-gray-500">
-                  Tipo: Créditos IA
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Label className="text-xs text-gray-400">Créditos:</Label>
-                <Input
-                  type="number"
-                  value={config.referral_rewards['1'].value}
-                  onChange={(e) =>
-                    setConfig((c) => ({
-                      ...c,
-                      referral_rewards: {
-                        ...c.referral_rewards,
-                        '1': {
-                          ...c.referral_rewards['1'],
-                          value: parseInt(e.target.value) || 0,
-                        },
-                      },
-                    }))
-                  }
-                  className="w-20 border-[#131B35] bg-[#020617] text-white"
-                />
-              </div>
-            </div>
-
-            {/* 3 referrals */}
-            <div className="flex items-center gap-4 rounded-lg border border-[#131B35] bg-[#131B35]/50 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1D4ED8]/10 text-sm font-bold text-[#1D4ED8]">
-                3
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-white">
-                  3 indicações convertidas
-                </p>
-                <p className="text-xs text-gray-500">
-                  Tipo: Mês Plus grátis
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Label className="text-xs text-gray-400">Meses:</Label>
-                <Input
-                  type="number"
-                  value={config.referral_rewards['3'].value}
-                  onChange={(e) =>
-                    setConfig((c) => ({
-                      ...c,
-                      referral_rewards: {
-                        ...c.referral_rewards,
-                        '3': {
-                          ...c.referral_rewards['3'],
-                          value: parseInt(e.target.value) || 0,
-                        },
-                      },
-                    }))
-                  }
-                  className="w-20 border-[#131B35] bg-[#020617] text-white"
-                />
-              </div>
-            </div>
-
-            {/* 10 referrals */}
-            <div className="flex items-center gap-4 rounded-lg border border-[#131B35] bg-[#131B35]/50 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1D4ED8]/10 text-sm font-bold text-[#1D4ED8]">
-                10
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-white">
-                  10 indicações convertidas
-                </p>
-                <p className="text-xs text-gray-500">
-                  Tipo: Mês Pro grátis
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Label className="text-xs text-gray-400">Meses:</Label>
-                <Input
-                  type="number"
-                  value={config.referral_rewards['10'].value}
-                  onChange={(e) =>
-                    setConfig((c) => ({
-                      ...c,
-                      referral_rewards: {
-                        ...c.referral_rewards,
-                        '10': {
-                          ...c.referral_rewards['10'],
-                          value: parseInt(e.target.value) || 0,
-                        },
-                      },
-                    }))
-                  }
-                  className="w-20 border-[#131B35] bg-[#020617] text-white"
-                />
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>
