@@ -48,6 +48,15 @@ interface AppConfig {
   };
 }
 
+interface PlatformConfigData {
+  token: string;
+  products: {
+    pro: string;
+    premium: string;
+    copilot: string;
+  };
+}
+
 interface WebhookEndpoint {
   name: string;
   path: string;
@@ -112,6 +121,12 @@ export default function AdminConfigPage() {
   const [webhookStatus, setWebhookStatus] = useState<WebhookStatus | null>(null);
   const [webhookStatusLoading, setWebhookStatusLoading] = useState(true);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [platformConfigs, setPlatformConfigs] = useState<Record<string, PlatformConfigData>>({
+    hotmart: { token: '', products: { pro: '', premium: '', copilot: '' } },
+    kiwify: { token: '', products: { pro: '', premium: '', copilot: '' } },
+    pagtrust: { token: '', products: { pro: '', premium: '', copilot: '' } },
+  });
+  const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
 
   const supabase = createClient();
 
@@ -127,6 +142,9 @@ export default function AdminConfigPage() {
           'default_password',
           'feature_flags',
           'referral_rewards',
+          'platform_hotmart',
+          'platform_kiwify',
+          'platform_pagtrust',
         ]);
 
       if (data && data.length > 0) {
@@ -154,6 +172,23 @@ export default function AdminConfigPage() {
             (configMap.referral_rewards as AppConfig['referral_rewards']) ??
             defaultConfig.referral_rewards,
         });
+
+        // Load platform configs
+        const platforms: Record<string, PlatformConfigData> = { ...platformConfigs };
+        for (const pid of ['hotmart', 'kiwify', 'pagtrust']) {
+          const val = configMap[`platform_${pid}`] as PlatformConfigData | undefined;
+          if (val) {
+            platforms[pid] = {
+              token: val.token || '',
+              products: {
+                pro: val.products?.pro || '',
+                premium: val.products?.premium || '',
+                copilot: val.products?.copilot || '',
+              },
+            };
+          }
+        }
+        setPlatformConfigs(platforms);
       }
     } catch (err) {
       console.error('Erro ao carregar configurações:', err);
@@ -185,19 +220,18 @@ export default function AdminConfigPage() {
   async function handleSave() {
     setSaving(true);
     try {
-      const entries = [
-        {
-          key: 'webhook_secret',
-          value: { value: config.webhook_secret },
-        },
+      const entries: Array<{ key: string; value: unknown }> = [
+        { key: 'webhook_secret', value: { value: config.webhook_secret } },
         { key: 'ai_credits', value: config.ai_credits },
-        {
-          key: 'default_password',
-          value: { value: config.default_password },
-        },
+        { key: 'default_password', value: { value: config.default_password } },
         { key: 'feature_flags', value: config.feature_flags },
         { key: 'referral_rewards', value: config.referral_rewards },
       ];
+
+      // Save platform configs
+      for (const [pid, pConfig] of Object.entries(platformConfigs)) {
+        entries.push({ key: `platform_${pid}`, value: pConfig });
+      }
 
       for (const entry of entries) {
         await supabase
@@ -326,35 +360,60 @@ export default function AdminConfigPage() {
                     </div>
                   </div>
 
-                  {/* Auth token status */}
-                  <div className="flex items-center justify-between rounded-lg border border-[#131B35] bg-[#131B35]/50 px-4 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <Shield className="h-3.5 w-3.5 text-gray-500" />
-                      <span className="text-xs text-gray-400">Header:</span>
-                      <code className="text-xs text-gray-300">{platform.auth.header}</code>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <code className="text-[10px] text-gray-500">{platform.auth.envVar}</code>
-                      <CircleDot className={`h-3 w-3 ${platform.auth.configured ? 'text-green-400' : 'text-red-400'}`} />
+                  {/* Token de autenticação */}
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-gray-400">
+                      Token de Autenticação
+                      <code className="ml-1.5 text-[10px] text-gray-600">({platform.auth.header})</code>
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type={showTokens[platform.id] ? 'text' : 'password'}
+                        value={platformConfigs[platform.id]?.token || ''}
+                        onChange={(e) =>
+                          setPlatformConfigs((prev) => ({
+                            ...prev,
+                            [platform.id]: { ...prev[platform.id], token: e.target.value },
+                          }))
+                        }
+                        placeholder={`Token ${platform.name}...`}
+                        className="border-[#131B35] bg-[#131B35] pr-10 text-white placeholder:text-gray-600"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                        onClick={() => setShowTokens((prev) => ({ ...prev, [platform.id]: !prev[platform.id] }))}
+                      >
+                        {showTokens[platform.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
                     </div>
                   </div>
 
-                  {/* Product mapping */}
+                  {/* IDs de Produto */}
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-gray-400">Mapeamento de Produtos</label>
-                    <div className="space-y-1.5">
-                      {Object.entries(platform.products).map(([, prod]) => (
-                        <div
-                          key={prod.envVar}
-                          className="flex items-center justify-between rounded-md border border-[#131B35] bg-[#131B35]/50 px-3 py-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-white">{prod.label}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <code className="text-[10px] text-gray-500">{prod.envVar}</code>
-                            <CircleDot className={`h-3 w-3 ${prod.configured ? 'text-green-400' : 'text-red-400'}`} />
-                          </div>
+                    <label className="mb-1.5 block text-xs font-medium text-gray-400">IDs dos Produtos</label>
+                    <div className="space-y-2">
+                      {Object.entries(platform.products).map(([planKey, prod]) => (
+                        <div key={prod.envVar} className="flex items-center gap-3">
+                          <span className="w-28 shrink-0 text-xs font-medium text-white">{prod.label}</span>
+                          <Input
+                            type="text"
+                            value={platformConfigs[platform.id]?.products?.[planKey as keyof PlatformConfigData['products']] || ''}
+                            onChange={(e) =>
+                              setPlatformConfigs((prev) => ({
+                                ...prev,
+                                [platform.id]: {
+                                  ...prev[platform.id],
+                                  products: {
+                                    ...prev[platform.id].products,
+                                    [planKey]: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                            placeholder={`ID do produto ${prod.label}`}
+                            className="border-[#131B35] bg-[#131B35] text-white placeholder:text-gray-600 text-xs"
+                          />
                         </div>
                       ))}
                     </div>

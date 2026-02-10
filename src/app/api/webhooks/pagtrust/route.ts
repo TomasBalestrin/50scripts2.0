@@ -5,53 +5,34 @@ import {
   handleCancellation,
   logWebhookEvent,
 } from '@/lib/webhooks/shared';
+import { getPlatformConfig, buildProductMap } from '@/lib/webhooks/platform-config';
 
 const SOURCE = 'pagtrust';
-
-const PAGTRUST_PRODUCT_MAP: Record<string, string> = {
-  [process.env.PAGTRUST_PRODUCT_PRO || '']: 'pro',
-  [process.env.PAGTRUST_PRODUCT_PREMIUM || '']: 'premium',
-  [process.env.PAGTRUST_PRODUCT_COPILOT || '']: 'copilot',
-};
 
 /**
  * PagTrust Webhook
  *
  * Formato JSON esperado (similar ao padrão Hotmart):
  * {
- *   "event": "PAYMENT_APPROVED" | "PAYMENT_REFUNDED" | "PAYMENT_CHARGEBACK" | "SUBSCRIPTION_CANCELED" | "PAYMENT_EXPIRED",
+ *   "event": "PAYMENT_APPROVED" | "PAYMENT_REFUNDED" | "PAYMENT_CHARGEBACK" | "SUBSCRIPTION_CANCELED",
  *   "data": {
- *     "buyer": {
- *       "email": "joao@email.com",
- *       "name": "João Silva"
- *     },
- *     "product": {
- *       "id": "xxx",
- *       "name": "50 Scripts Plus"
- *     },
- *     "transaction": {
- *       "id": "xxx",
- *       "status": "approved" | "refunded" | "chargeback"
- *     },
- *     "subscription": {
- *       "id": "xxx",
- *       "status": "active" | "canceled",
- *       "product": { "id": "xxx" }
- *     }
+ *     "buyer": { "email": "...", "name": "..." },
+ *     "product": { "id": "xxx", "name": "..." },
+ *     "transaction": { "id": "xxx", "status": "approved" | "refunded" },
+ *     "subscription": { "id": "xxx", "product": { "id": "xxx" } }
  *   }
  * }
  *
  * Autenticação: Header X-PagTrust-Token
- * Env vars: PAGTRUST_TOKEN, PAGTRUST_PRODUCT_PRO, PAGTRUST_PRODUCT_PREMIUM, PAGTRUST_PRODUCT_COPILOT
  */
 export async function POST(request: NextRequest) {
   try {
-    // 1. Verify token
-    if (!verifyToken(request.headers.get('X-PagTrust-Token'), process.env.PAGTRUST_TOKEN)) {
+    const config = await getPlatformConfig(SOURCE);
+
+    if (!verifyToken(request.headers.get('X-PagTrust-Token'), config.token)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Parse request body (formato similar ao Hotmart)
     const body = await request.json();
     const event = body.event;
     const buyerData = body.data?.buyer || {};
@@ -64,7 +45,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing event type' }, { status: 400 });
     }
 
-    // 3. Handle events
+    const productMap = buildProductMap(config);
+
     switch (event) {
       case 'PAYMENT_APPROVED': {
         if (!buyerEmail) {
@@ -72,7 +54,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Missing buyer email' }, { status: 400 });
         }
 
-        const plan = PAGTRUST_PRODUCT_MAP[productId] || 'pro';
+        const plan = productMap[productId] || 'pro';
         const result = await handlePurchase(buyerEmail, buyerName, plan, SOURCE, {
           product_id: productId,
           transaction_id: transactionId,

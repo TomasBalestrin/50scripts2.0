@@ -5,49 +5,33 @@ import {
   handleCancellation,
   logWebhookEvent,
 } from '@/lib/webhooks/shared';
+import { getPlatformConfig, buildProductMap } from '@/lib/webhooks/platform-config';
 
 const SOURCE = 'kiwify';
-
-const KIWIFY_PRODUCT_MAP: Record<string, string> = {
-  [process.env.KIWIFY_PRODUCT_PRO || '']: 'pro',
-  [process.env.KIWIFY_PRODUCT_PREMIUM || '']: 'premium',
-  [process.env.KIWIFY_PRODUCT_COPILOT || '']: 'copilot',
-};
 
 /**
  * Kiwify Webhook
  *
  * Formato JSON esperado (padrão Kiwify):
  * {
+ *   "webhook_event_type": "order_paid" | "order_refunded" | "subscription_canceled" | "chargeback",
  *   "order_id": "xxx",
- *   "order_status": "paid" | "refunded" | "chargedback" | "waiting_payment" | "expired",
- *   "product": {
- *     "product_id": "xxx",
- *     "product_name": "50 Scripts Plus"
- *   },
- *   "Customer": {
- *     "full_name": "João Silva",
- *     "email": "joao@email.com"
- *   },
- *   "Subscription": {
- *     "id": "xxx",
- *     "status": "active" | "canceled" | "past_due",
- *     "plan": { "id": "xxx", "name": "..." }
- *   },
- *   "webhook_event_type": "order_paid" | "order_refunded" | "subscription_canceled" | "chargeback"
+ *   "order_status": "paid" | "refunded" | "chargedback",
+ *   "product": { "product_id": "xxx", "product_name": "..." },
+ *   "Customer": { "full_name": "...", "email": "..." },
+ *   "Subscription": { "id": "xxx", "status": "active" | "canceled", "plan": { "id": "xxx" } }
  * }
  *
  * Autenticação: Header X-Kiwify-Token
- * Env vars: KIWIFY_TOKEN, KIWIFY_PRODUCT_PRO, KIWIFY_PRODUCT_PREMIUM, KIWIFY_PRODUCT_COPILOT
  */
 export async function POST(request: NextRequest) {
   try {
-    // 1. Verify token
-    if (!verifyToken(request.headers.get('X-Kiwify-Token'), process.env.KIWIFY_TOKEN)) {
+    const config = await getPlatformConfig(SOURCE);
+
+    if (!verifyToken(request.headers.get('X-Kiwify-Token'), config.token)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Parse request body
     const body = await request.json();
     const event = body.webhook_event_type || body.order_status;
     const customerData = body.Customer || {};
@@ -59,7 +43,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing event type' }, { status: 400 });
     }
 
-    // 3. Handle events
+    const productMap = buildProductMap(config);
+
     switch (event) {
       case 'order_paid':
       case 'paid': {
@@ -68,7 +53,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Missing customer email' }, { status: 400 });
         }
 
-        const plan = KIWIFY_PRODUCT_MAP[productId] || 'pro';
+        const plan = productMap[productId] || 'pro';
         const result = await handlePurchase(customerEmail, customerName, plan, SOURCE, {
           product_id: productId,
           order_id: body.order_id,
