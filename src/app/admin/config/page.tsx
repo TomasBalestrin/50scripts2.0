@@ -195,7 +195,8 @@ export default function AdminConfigPage() {
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchWebhookStatus = useCallback(async () => {
     setWebhookStatusLoading(true);
@@ -233,18 +234,17 @@ export default function AdminConfigPage() {
         entries.push({ key: `platform_${pid}`, value: pConfig });
       }
 
-      for (const entry of entries) {
-        await supabase
-          .from('app_config')
-          .upsert(
-            {
-              key: entry.key,
-              value: entry.value,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'key' }
-          );
-      }
+      const now = new Date().toISOString();
+      await Promise.all(
+        entries.map((entry) =>
+          supabase
+            .from('app_config')
+            .upsert(
+              { key: entry.key, value: entry.value, updated_at: now },
+              { onConflict: 'key' }
+            )
+        )
+      );
 
       setToast('Configurações salvas com sucesso!');
       setTimeout(() => setToast(null), 3000);

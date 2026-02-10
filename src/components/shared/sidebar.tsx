@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -121,14 +122,13 @@ export function Sidebar({ plan, role, userName, userAvatar }: SidebarProps) {
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-[#131B35]/50 bg-[#0A0F1E] lg:flex">
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 px-6">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src="/logo.png"
           alt="50 Scripts"
           width={36}
           height={36}
           className="rounded-lg"
-          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          priority
         />
         <span className="text-lg font-heading font-bold text-white">
           50 Scripts
@@ -232,9 +232,11 @@ export function Sidebar({ plan, role, userName, userAvatar }: SidebarProps) {
           )}
         >
           {userAvatar ? (
-            <img
+            <Image
               src={userAvatar}
               alt={userName || "Avatar"}
+              width={28}
+              height={28}
               className="h-7 w-7 rounded-full object-cover"
             />
           ) : (

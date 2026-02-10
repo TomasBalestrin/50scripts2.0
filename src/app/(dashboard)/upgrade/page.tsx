@@ -72,7 +72,6 @@ export default function UpgradePage() {
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const supabase = createClient();
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -95,6 +94,7 @@ export default function UpgradePage() {
 
   useEffect(() => {
     async function load() {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const { data } = await supabase
@@ -106,7 +106,7 @@ export default function UpgradePage() {
       setLoading(false);
     }
     load();
-  }, [supabase]);
+  }, []);
 
   // Auto-dismiss message after 8 seconds
   useEffect(() => {

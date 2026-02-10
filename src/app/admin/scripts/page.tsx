@@ -79,6 +79,8 @@ export default function AdminScriptsPage() {
   const [categories, setCategories] = useState<ScriptCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -108,7 +110,8 @@ export default function AdminScriptsPage() {
       .eq('is_active', true)
       .order('display_order');
     setCategories(data ?? []);
-  }, [supabase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchScripts = useCallback(async () => {
     setLoading(true);
@@ -122,8 +125,8 @@ export default function AdminScriptsPage() {
         .order('created_at', { ascending: false })
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
-      if (search.trim()) {
-        query = query.ilike('title', `%${search.trim()}%`);
+      if (debouncedSearch.trim()) {
+        query = query.ilike('title', `%${debouncedSearch.trim()}%`);
       }
 
       const { data, count } = await query;
@@ -132,7 +135,17 @@ export default function AdminScriptsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, supabase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, debouncedSearch]);
+
+  // Debounce search (400ms)
+  useEffect(() => {
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(0);
+    }, 400);
+    return () => clearTimeout(searchTimerRef.current);
+  }, [search]);
 
   useEffect(() => {
     fetchCategories();

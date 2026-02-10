@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Search,
   ChevronLeft,
@@ -64,7 +64,28 @@ export default function AdminUsersPage() {
   const [deleteUser, setDeleteUser] = useState<Profile | null>(null);
   const [deleteError, setDeleteError] = useState('');
 
+  // Action toast
+  const [actionToast, setActionToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  function showToast(type: 'success' | 'error', text: string) {
+    setActionToast({ type, text });
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setActionToast(null), 4000);
+  }
+
   const [fetchError, setFetchError] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  // Debounce search input (400ms)
+  useEffect(() => {
+    searchTimer.current = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(0);
+    }, 400);
+    return () => clearTimeout(searchTimer.current);
+  }, [search]);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -75,7 +96,7 @@ export default function AdminUsersPage() {
         limit: String(PAGE_SIZE),
       });
       if (planFilter !== 'all') params.set('plan', planFilter);
-      if (search.trim()) params.set('search', search.trim());
+      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
 
       const res = await fetch(`/api/admin/users?${params}`);
       const data = await res.json();
@@ -94,7 +115,7 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, planFilter, search]);
+  }, [page, planFilter, debouncedSearch]);
 
   useEffect(() => {
     fetchUsers();
@@ -107,15 +128,21 @@ export default function AdminUsersPage() {
   async function handleUpgrade(userId: string, newPlan: Plan) {
     setActionLoading(true);
     try {
-      await fetch('/api/admin/users', {
+      const res = await fetch('/api/admin/users', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: userId, plan: newPlan }),
       });
 
-      await fetchUsers();
-      if (selectedUser?.id === userId) {
-        setSelectedUser((prev) => (prev ? { ...prev, plan: newPlan } : null));
+      if (res.ok) {
+        // Update local state immediately
+        setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, plan: newPlan } : u));
+        if (selectedUser?.id === userId) {
+          setSelectedUser((prev) => (prev ? { ...prev, plan: newPlan } : null));
+        }
+        showToast('success', `Plano alterado para ${newPlan}`);
+      } else {
+        showToast('error', 'Erro ao alterar plano');
       }
     } finally {
       setActionLoading(false);
@@ -125,17 +152,20 @@ export default function AdminUsersPage() {
   async function handleToggleActive(userId: string, isActive: boolean) {
     setActionLoading(true);
     try {
-      await fetch('/api/admin/users', {
+      const res = await fetch('/api/admin/users', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: userId, is_active: !isActive }),
       });
 
-      await fetchUsers();
-      if (selectedUser?.id === userId) {
-        setSelectedUser((prev) =>
-          prev ? { ...prev, is_active: !isActive } : null
-        );
+      if (res.ok) {
+        setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, is_active: !isActive } : u));
+        if (selectedUser?.id === userId) {
+          setSelectedUser((prev) => prev ? { ...prev, is_active: !isActive } : null);
+        }
+        showToast('success', isActive ? 'Usuário desativado' : 'Usuário ativado');
+      } else {
+        showToast('error', 'Erro ao alterar status');
       }
     } finally {
       setActionLoading(false);
@@ -150,7 +180,7 @@ export default function AdminUsersPage() {
       });
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || 'Erro ao resetar senha');
+        showToast('error', data.error || 'Erro ao resetar senha');
         return;
       }
 
@@ -159,7 +189,7 @@ export default function AdminUsersPage() {
           prev ? { ...prev, password_changed: false } : null
         );
       }
-      alert('Senha resetada para a padrão. O usuário precisará trocar na próxima vez que entrar.');
+      showToast('success', 'Senha resetada para a padrão.');
     } finally {
       setActionLoading(false);
     }
@@ -287,6 +317,16 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
+      {/* Action toast */}
+      {actionToast && (
+        <div className={`fixed top-4 right-4 z-50 rounded-lg px-4 py-3 text-sm shadow-lg transition-all ${
+          actionToast.type === 'success'
+            ? 'bg-green-900/90 text-green-200 border border-green-700'
+            : 'bg-red-900/90 text-red-200 border border-red-700'
+        }`}>
+          {actionToast.text}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Usuários</h1>
         <Button
@@ -311,10 +351,7 @@ export default function AdminUsersPage() {
             <Input
               placeholder="Buscar por e-mail ou nome..."
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(0);
-              }}
+              onChange={(e) => setSearch(e.target.value)}
               className="border-[#131B35] bg-[#131B35] pl-10 text-white placeholder:text-gray-500"
             />
           </div>
