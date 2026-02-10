@@ -5,21 +5,16 @@ import {
   handleCancellation,
   logWebhookEvent,
 } from '@/lib/webhooks/shared';
+import { getPlatformConfig, buildProductMap } from '@/lib/webhooks/platform-config';
 
 const SOURCE = 'hotmart';
-
-const HOTMART_PRODUCT_MAP: Record<string, string> = {
-  [process.env.HOTMART_PRODUCT_PRO || '']: 'pro',
-  [process.env.HOTMART_PRODUCT_PREMIUM || '']: 'premium',
-  [process.env.HOTMART_PRODUCT_COPILOT || '']: 'copilot',
-};
 
 /**
  * Hotmart Webhook
  *
  * Formato JSON esperado (padrão Hotmart):
  * {
- *   "event": "PURCHASE_COMPLETE" | "PURCHASE_CANCELED" | "PURCHASE_REFUNDED" | "SUBSCRIPTION_CANCELLATION" | ...,
+ *   "event": "PURCHASE_COMPLETE" | "PURCHASE_CANCELED" | "PURCHASE_REFUNDED" | "SUBSCRIPTION_CANCELLATION",
  *   "data": {
  *     "buyer": { "email": "...", "name": "..." },
  *     "product": { "id": 123456 },
@@ -28,16 +23,18 @@ const HOTMART_PRODUCT_MAP: Record<string, string> = {
  * }
  *
  * Autenticação: Header X-Hotmart-Hottok
- * Env vars: HOTMART_HOTTOK, HOTMART_PRODUCT_PRO, HOTMART_PRODUCT_PREMIUM, HOTMART_PRODUCT_COPILOT
  */
 export async function POST(request: NextRequest) {
   try {
-    // 1. Verify Hottok header
-    if (!verifyToken(request.headers.get('X-Hotmart-Hottok'), process.env.HOTMART_HOTTOK)) {
+    // 1. Load config from DB (fallback env vars)
+    const config = await getPlatformConfig(SOURCE);
+
+    // 2. Verify Hottok header
+    if (!verifyToken(request.headers.get('X-Hotmart-Hottok'), config.token)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Parse request body
+    // 3. Parse request body
     const body = await request.json();
     const event = body.event;
     const buyerData = body.data?.buyer || {};
@@ -49,7 +46,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing event type' }, { status: 400 });
     }
 
-    // 3. Handle events
+    const productMap = buildProductMap(config);
+
+    // 4. Handle events
     switch (event) {
       case 'PURCHASE_COMPLETE': {
         if (!buyerEmail) {
@@ -57,7 +56,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Missing buyer email' }, { status: 400 });
         }
 
-        const plan = HOTMART_PRODUCT_MAP[productId] || 'pro';
+        const plan = productMap[productId] || 'pro';
         const result = await handlePurchase(buyerEmail, buyerName, plan, SOURCE, {
           product_id: productId,
         });

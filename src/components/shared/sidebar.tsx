@@ -15,7 +15,6 @@ import {
   Brain,
   Bot,
   Trophy,
-  Gift,
   History,
   ShieldCheck,
   Rocket,
@@ -96,12 +95,6 @@ const navItems: NavItem[] = [
     label: "Coleções",
     href: "/colecoes",
     icon: FolderHeart,
-    requiredPlan: "premium",
-  },
-  {
-    label: "Indicações",
-    href: "/referrals",
-    icon: Gift,
     requiredPlan: "premium",
   },
   {
