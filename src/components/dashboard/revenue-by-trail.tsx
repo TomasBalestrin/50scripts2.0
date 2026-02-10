@@ -52,6 +52,12 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
   );
 }
 
+// Stable references to avoid re-renders
+const BAR_CHART_MARGIN = { top: 5, right: 20, left: 0, bottom: 5 };
+const BAR_AXIS_TICK = { fill: '#94A3B8', fontSize: 11 };
+const BAR_CURSOR = { fill: '#131B35' };
+const BAR_RADIUS: [number, number, number, number] = [0, 6, 6, 0];
+
 export function RevenueByTrail({ data }: RevenueByTrailProps) {
   return (
     <div className="rounded-xl border border-[#131B35] bg-[#0A0F1E] p-5">
@@ -64,11 +70,7 @@ export function RevenueByTrail({ data }: RevenueByTrailProps) {
       ) : (
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              layout="vertical"
-              margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-            >
+            <BarChart data={data} layout="vertical" margin={BAR_CHART_MARGIN}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="#131B35"
@@ -78,7 +80,7 @@ export function RevenueByTrail({ data }: RevenueByTrailProps) {
                 type="number"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94A3B8', fontSize: 11 }}
+                tick={BAR_AXIS_TICK}
                 tickFormatter={formatCurrency}
               />
               <YAxis
@@ -86,11 +88,11 @@ export function RevenueByTrail({ data }: RevenueByTrailProps) {
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94A3B8', fontSize: 11 }}
+                tick={BAR_AXIS_TICK}
                 width={110}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#131B35' }} />
-              <Bar dataKey="revenue" radius={[0, 6, 6, 0]} barSize={24}>
+              <Tooltip content={<CustomTooltip />} cursor={BAR_CURSOR} />
+              <Bar dataKey="revenue" radius={BAR_RADIUS} barSize={24}>
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} fillOpacity={0.85} />
                 ))}

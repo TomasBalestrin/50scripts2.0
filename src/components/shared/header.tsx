@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/client";
 import { Bell, Settings, User, Shield, LogOut } from "lucide-react";
 import {
   DropdownMenu,
@@ -128,10 +128,7 @@ export function Header({ userName, userAvatar, plan, role }: HeaderProps) {
             <DropdownMenuItem
               className="cursor-pointer text-[#1D4ED8] focus:bg-[#131B35] focus:text-[#1D4ED8]"
               onClick={async () => {
-                const supabase = createBrowserClient(
-                  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-                );
+                const supabase = createClient();
                 await supabase.auth.signOut();
                 router.push("/login");
               }}

@@ -129,7 +129,7 @@ export async function GET() {
   // Sort by priority score
   scoredLeads.sort((a, b) => b.priority_score - a.priority_score);
 
-  // Get suggested scripts for top leads
+  // Get suggested scripts for top leads - batch queries instead of N+1
   const topLeads = scoredLeads.slice(0, 10);
   const stageToCategory: Record<string, string> = {
     novo: 'abordagem-inicial',
@@ -138,43 +138,52 @@ export async function GET() {
     proposta: 'fechamento',
   };
 
-  const enrichedLeads = await Promise.all(
-    topLeads.map(async (lead) => {
-      const categorySlug = stageToCategory[lead.stage] || 'follow-up';
-      const { data: category } = await supabase
-        .from('script_categories')
-        .select('id')
-        .eq('slug', categorySlug)
-        .single();
+  // Load all needed categories and scripts in 2 queries
+  const neededSlugs = [...new Set(topLeads.map((l) => stageToCategory[l.stage] || 'follow-up'))];
+  const { data: allCategories } = await supabase
+    .from('script_categories')
+    .select('id, slug')
+    .in('slug', neededSlugs);
 
-      let suggestedScript = null;
-      if (category) {
-        const { data: scripts } = await supabase
-          .from('scripts')
-          .select('id, title, content')
-          .eq('category_id', category.id)
-          .eq('is_active', true)
-          .order('global_effectiveness', { ascending: false })
-          .limit(1);
+  const categoryBySlug = new Map((allCategories ?? []).map((c: { id: string; slug: string }) => [c.slug, c.id]));
+  const categoryIds = [...new Set(categoryBySlug.values())];
 
-        suggestedScript = scripts?.[0] || null;
+  let topScriptByCategory = new Map<string, { id: string; title: string; content: string }>();
+  if (categoryIds.length > 0) {
+    const { data: scripts } = await supabase
+      .from('scripts')
+      .select('id, title, content, category_id')
+      .in('category_id', categoryIds)
+      .eq('is_active', true)
+      .order('global_effectiveness', { ascending: false });
+
+    // Pick top script per category
+    (scripts ?? []).forEach((s: { id: string; title: string; content: string; category_id: string }) => {
+      if (!topScriptByCategory.has(s.category_id)) {
+        topScriptByCategory.set(s.category_id, { id: s.id, title: s.title, content: s.content });
       }
+    });
+  }
 
-      return {
-        id: lead.id,
-        name: lead.name,
-        phone: lead.phone,
-        stage: lead.stage,
-        expected_value: lead.expected_value,
-        next_followup_at: lead.next_followup_at,
-        last_contact_at: lead.last_contact_at,
-        priority_score: lead.priority_score,
-        closing_probability: lead.closing_probability,
-        reasons: lead.reasons,
-        suggested_script: suggestedScript,
-      };
-    })
-  );
+  const enrichedLeads = topLeads.map((lead) => {
+    const categorySlug = stageToCategory[lead.stage] || 'follow-up';
+    const categoryId = categoryBySlug.get(categorySlug);
+    const suggestedScript = categoryId ? topScriptByCategory.get(categoryId) ?? null : null;
+
+    return {
+      id: lead.id,
+      name: lead.name,
+      phone: lead.phone,
+      stage: lead.stage,
+      expected_value: lead.expected_value,
+      next_followup_at: lead.next_followup_at,
+      last_contact_at: lead.last_contact_at,
+      priority_score: lead.priority_score,
+      closing_probability: lead.closing_probability,
+      reasons: lead.reasons,
+      suggested_script: suggestedScript,
+    };
+  });
 
   return NextResponse.json({
     leads: enrichedLeads,

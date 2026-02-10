@@ -64,43 +64,55 @@ export async function GET() {
       .sort((a, b) => (b.usage_count as number) - (a.usage_count as number));
     }
 
-    // 4. Calculate trail progress (used scripts per category / total scripts in category)
-    const { data: categories } = await supabase
-      .from('script_categories')
-      .select('id, name, slug, icon, color')
-      .eq('is_active', true)
-      .order('display_order', { ascending: true });
+    // 4. Calculate trail progress - 3 parallel queries instead of N+1
+    const [
+      { data: categories },
+      { data: allActiveScripts },
+      { data: allUserUsage },
+    ] = await Promise.all([
+      supabase
+        .from('script_categories')
+        .select('id, name, slug, icon, color')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true }),
+      supabase
+        .from('scripts')
+        .select('id, category_id')
+        .eq('is_active', true),
+      supabase
+        .from('script_usage')
+        .select('script_id, scripts!inner(category_id)')
+        .eq('user_id', userId),
+    ]);
 
-    const trailProgress = await Promise.all(
-      (categories ?? []).map(async (category) => {
-        // Total active scripts in this category
-        const { count: totalInCategory } = await supabase
-          .from('scripts')
-          .select('*', { count: 'exact', head: true })
-          .eq('category_id', category.id)
-          .eq('is_active', true);
+    // Count total scripts per category in memory
+    const totalPerCategory: Record<string, number> = {};
+    (allActiveScripts ?? []).forEach((s: { id: string; category_id: string }) => {
+      totalPerCategory[s.category_id] = (totalPerCategory[s.category_id] || 0) + 1;
+    });
 
-        // Distinct scripts used by this user in this category
-        const { data: usedInCategory } = await supabase
-          .from('script_usage')
-          .select('script_id, scripts!inner(category_id)')
-          .eq('user_id', userId)
-          .eq('scripts.category_id', category.id);
+    // Count unique used scripts per category in memory
+    const usedPerCategory: Record<string, Set<string>> = {};
+    (allUserUsage ?? []).forEach((r: { script_id: string; scripts: { category_id: string } | { category_id: string }[] }) => {
+      const catId = Array.isArray(r.scripts) ? r.scripts[0]?.category_id : r.scripts?.category_id;
+      if (catId) {
+        if (!usedPerCategory[catId]) usedPerCategory[catId] = new Set();
+        usedPerCategory[catId].add(r.script_id);
+      }
+    });
 
-        const uniqueUsed = new Set(
-          (usedInCategory ?? []).map((r) => r.script_id)
-        ).size;
-
-        return {
-          category,
-          used: uniqueUsed,
-          total: totalInCategory ?? 0,
-          progress: totalInCategory
-            ? Math.round((uniqueUsed / totalInCategory) * 100)
-            : 0,
-        };
-      })
-    );
+    const trailProgress = (categories ?? []).map((category) => {
+      const totalInCategory = totalPerCategory[category.id] || 0;
+      const uniqueUsed = usedPerCategory[category.id]?.size || 0;
+      return {
+        category,
+        used: uniqueUsed,
+        total: totalInCategory,
+        progress: totalInCategory
+          ? Math.round((uniqueUsed / totalInCategory) * 100)
+          : 0,
+      };
+    });
 
     return NextResponse.json({
       profile: {

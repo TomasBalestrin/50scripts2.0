@@ -15,17 +15,25 @@ import {
   Users,
   Lightbulb,
 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import dynamic from 'next/dynamic';
 import { Script, ScriptCategory, MicrolearningTip } from '@/types/database';
 import { PLAN_HIERARCHY, LEVEL_LABELS } from '@/lib/constants';
 import { TipCard } from '@/components/dashboard/tip-card';
 import { TrailProgress } from '@/components/dashboard/trail-progress';
 import { StarRating } from '@/components/scripts/star-rating';
 import { RevenueCard } from '@/components/dashboard/revenue-card';
-import { RevenueChart } from '@/components/dashboard/revenue-chart';
-import { RevenueByTrail } from '@/components/dashboard/revenue-by-trail';
-import { RevenueByScript } from '@/components/dashboard/revenue-by-script';
 import type { Level } from '@/types/database';
+
+// Lazy-load heavy recharts components - only downloaded for Pro+ users
+const RevenueChart = dynamic(() => import('@/components/dashboard/revenue-chart').then(m => ({ default: m.RevenueChart })), {
+  loading: () => <SkeletonChart />,
+});
+const RevenueByTrail = dynamic(() => import('@/components/dashboard/revenue-by-trail').then(m => ({ default: m.RevenueByTrail })), {
+  loading: () => <SkeletonChart />,
+});
+const RevenueByScript = dynamic(() => import('@/components/dashboard/revenue-by-script').then(m => ({ default: m.RevenueByScript })), {
+  loading: () => <SkeletonChart />,
+});
 
 // ---------------------------------------------------------------------------
 // Types
@@ -194,7 +202,6 @@ const itemVariants = {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { profile, loading: authLoading } = useAuth();
 
   // State for all data sources
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
@@ -210,7 +217,7 @@ export default function DashboardPage() {
   const [proDataLoading, setProDataLoading] = useState(true);
 
   // Determine plan level
-  const userPlan = profile?.plan || dashboardData?.profile?.plan || 'starter';
+  const userPlan = dashboardData?.profile?.plan || 'starter';
   const isPro = PLAN_HIERARCHY[userPlan as keyof typeof PLAN_HIERARCHY] >= PLAN_HIERARCHY.pro;
 
   // Fetch basic data - try combined endpoint first, fallback to individual ones
@@ -313,7 +320,7 @@ export default function DashboardPage() {
   }, [isPro]);
 
   // Loading state
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-[#020617] p-6">
         <div className="mx-auto max-w-6xl space-y-6">
@@ -338,7 +345,7 @@ export default function DashboardPage() {
     );
   }
 
-  const userName = profile?.full_name?.split(' ')[0] || dashboardData?.profile?.full_name?.split(' ')[0] || 'Vendedor';
+  const userName = dashboardData?.profile?.full_name?.split(' ')[0] || 'Vendedor';
   const greeting = getGreeting();
   const isStarter = !isPro;
   const suggestedTrail = dashboardData?.trails?.find((t) => t.used < t.total);
