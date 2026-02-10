@@ -2,60 +2,85 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/server';
 
-async function getClient() {
-  // Try service role client first (bypasses RLS completely)
-  // Falls back to authenticated admin client (relies on RLS admin policies)
-  try {
-    const adminClient = await createAdminClient();
-    // Quick test to ensure service role key is valid
-    const { error } = await adminClient.from('profiles').select('id').limit(1);
-    if (!error) return adminClient;
-  } catch {
-    // Service role key invalid or missing
-  }
-  // Fallback: use the authenticated client from getAdminUser
-  const { supabase } = await getAdminUser();
-  return supabase;
-}
-
 export async function GET(request: NextRequest) {
   try {
-    const { error, supabase: authClient } = await getAdminUser();
+    const { error, supabase } = await getAdminUser();
     if (error) return error;
 
     const { searchParams } = request.nextUrl;
     const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') ?? '20', 10)));
-    const plan = searchParams.get('plan');
-    const search = searchParams.get('search');
-
+    const plan = searchParams.get('plan') || null;
+    const search = searchParams.get('search') || null;
     const offset = (page - 1) * limit;
 
-    // Use admin client (service role) or fallback to authenticated client
-    const client = await getClient() || authClient;
+    // Strategy 1: Try RPC function (SECURITY DEFINER - bypasses RLS)
+    try {
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('admin_list_profiles', {
+        p_plan: plan,
+        p_search: search,
+        p_limit: limit,
+        p_offset: offset,
+      });
 
-    let query = client!
+      if (!rpcError && rpcResult) {
+        return NextResponse.json({
+          users: rpcResult.users ?? [],
+          total: rpcResult.total ?? 0,
+          page,
+        });
+      }
+      // RPC not available, fall through to next strategy
+      console.log('[admin/users] RPC not available, trying service role client:', rpcError?.message);
+    } catch {
+      // RPC function doesn't exist yet
+    }
+
+    // Strategy 2: Try service role client (bypasses RLS completely)
+    try {
+      const adminClient = await createAdminClient();
+      const testResult = await adminClient.from('profiles').select('id').limit(1);
+      if (!testResult.error) {
+        let query = adminClient
+          .from('profiles')
+          .select('*', { count: 'exact' })
+          .order('created_at', { ascending: false });
+
+        if (plan) query = query.eq('plan', plan);
+        if (search) query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
+        query = query.range(offset, offset + limit - 1);
+
+        const { data: users, error: queryError, count } = await query;
+
+        if (!queryError) {
+          return NextResponse.json({
+            users: users ?? [],
+            total: count ?? 0,
+            page,
+          });
+        }
+        console.log('[admin/users] Service role query failed:', queryError.message);
+      }
+    } catch {
+      // Service role key invalid or missing
+    }
+
+    // Strategy 3: Direct query with authenticated client (relies on RLS admin policies)
+    let query = supabase
       .from('profiles')
       .select('*', { count: 'exact' })
       .order('created_at', { ascending: false });
 
-    if (plan) {
-      query = query.eq('plan', plan);
-    }
-
-    if (search) {
-      query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
-    }
-
-    // Apply range AFTER filters for correct pagination
+    if (plan) query = query.eq('plan', plan);
+    if (search) query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
     query = query.range(offset, offset + limit - 1);
 
     const { data: users, error: queryError, count } = await query;
 
     if (queryError) {
-      console.error('[admin/users] Error fetching users:', queryError);
+      console.error('[admin/users] All strategies failed. Last error:', queryError);
       return NextResponse.json(
-        { error: 'Failed to fetch users' },
+        { error: 'Failed to fetch users. Run migration 005_admin_rpc_functions.sql or set SUPABASE_SERVICE_ROLE_KEY.' },
         { status: 500 }
       );
     }
@@ -76,7 +101,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { error, supabase: authClient } = await getAdminUser();
+    const { error, supabase } = await getAdminUser();
     if (error) return error;
 
     const body = await request.json();
@@ -98,20 +123,49 @@ export async function PATCH(request: NextRequest) {
     if (plan !== undefined) updates.plan = plan;
     if (is_active !== undefined) updates.is_active = is_active;
     if (role !== undefined) updates.role = role;
-    updates.updated_at = new Date().toISOString();
 
-    if (Object.keys(updates).length === 1) {
+    if (Object.keys(updates).length === 0) {
       return NextResponse.json(
         { error: 'No fields to update' },
         { status: 400 }
       );
     }
 
-    const client = await getClient() || authClient;
+    // Strategy 1: Try RPC function
+    try {
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('admin_update_profile', {
+        p_user_id: id,
+        p_updates: updates,
+      });
 
-    const { data: profile, error: updateError } = await client!
+      if (!rpcError && rpcResult) {
+        return NextResponse.json({ profile: rpcResult });
+      }
+    } catch {
+      // RPC not available
+    }
+
+    // Strategy 2: Try service role client
+    try {
+      const adminClient = await createAdminClient();
+      const { data: profile, error: updateError } = await adminClient
+        .from('profiles')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (!updateError) {
+        return NextResponse.json({ profile });
+      }
+    } catch {
+      // Service role key invalid
+    }
+
+    // Strategy 3: Authenticated client
+    const { data: profile, error: updateError } = await supabase
       .from('profiles')
-      .update(updates)
+      .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
@@ -136,7 +190,7 @@ export async function PATCH(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { error } = await getAdminUser();
+    const { error, supabase } = await getAdminUser();
     if (error) return error;
 
     const body = await request.json();
@@ -154,9 +208,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Create auth user - requires service role key
     const adminClient = await createAdminClient();
-
-    // Create auth user
     const { data: authData, error: createError } =
       await adminClient.auth.admin.createUser({
         email,
@@ -177,44 +230,58 @@ export async function POST(request: NextRequest) {
       const now = new Date().toISOString();
       const referralCode = authData.user.id.slice(0, 8).toUpperCase();
 
-      const client = await getClient() || adminClient;
+      const profileData = {
+        id: authData.user.id,
+        email,
+        full_name: full_name || '',
+        plan: plan || 'starter',
+        role: 'user',
+        is_active: true,
+        niche: null,
+        preferred_tone: 'casual',
+        onboarding_completed: false,
+        xp_points: 0,
+        level: 'iniciante',
+        current_streak: 0,
+        longest_streak: 0,
+        ai_credits_remaining: 10,
+        ai_credits_monthly: 10,
+        saved_variables: {},
+        push_subscription: null,
+        notification_prefs: {},
+        referral_code: referralCode,
+        referred_by: null,
+        webhook_source: null,
+        password_changed: false,
+        last_login_at: null,
+        created_at: now,
+        updated_at: now,
+      };
 
-      const { error: upsertError } = await client
-        .from('profiles')
-        .upsert({
-          id: authData.user.id,
-          email,
-          full_name: full_name || '',
-          plan: plan || 'starter',
-          role: 'user',
-          is_active: true,
-          niche: null,
-          preferred_tone: 'casual',
-          onboarding_completed: false,
-          xp_points: 0,
-          level: 'iniciante',
-          current_streak: 0,
-          longest_streak: 0,
-          ai_credits_remaining: 10,
-          ai_credits_monthly: 10,
-          saved_variables: {},
-          push_subscription: null,
-          notification_prefs: {},
-          referral_code: referralCode,
-          referred_by: null,
-          webhook_source: null,
-          password_changed: false,
-          last_login_at: null,
-          created_at: now,
-          updated_at: now,
-        }, { onConflict: 'id' });
+      // Strategy 1: Try RPC function
+      let profileCreated = false;
+      try {
+        const { error: rpcError } = await supabase.rpc('admin_upsert_profile', {
+          p_profile: profileData,
+        });
+        if (!rpcError) profileCreated = true;
+      } catch {
+        // RPC not available
+      }
 
-      if (upsertError) {
-        console.error('[admin/users] Error upserting profile:', upsertError);
-        return NextResponse.json(
-          { error: `User created but profile failed: ${upsertError.message}` },
-          { status: 500 }
-        );
+      // Strategy 2: Try service role client (direct upsert)
+      if (!profileCreated) {
+        const { error: upsertError } = await adminClient
+          .from('profiles')
+          .upsert(profileData, { onConflict: 'id' });
+
+        if (upsertError) {
+          console.error('[admin/users] Error upserting profile:', upsertError);
+          return NextResponse.json(
+            { error: `User created but profile failed: ${upsertError.message}` },
+            { status: 500 }
+          );
+        }
       }
     }
 

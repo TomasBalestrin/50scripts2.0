@@ -64,8 +64,11 @@ export default function AdminUsersPage() {
   const [deleteUser, setDeleteUser] = useState<Profile | null>(null);
   const [deleteError, setDeleteError] = useState('');
 
+  const [fetchError, setFetchError] = useState('');
+
   const fetchUsers = useCallback(async () => {
     setLoading(true);
+    setFetchError('');
     try {
       const params = new URLSearchParams({
         page: String(page + 1),
@@ -75,13 +78,19 @@ export default function AdminUsersPage() {
       if (search.trim()) params.set('search', search.trim());
 
       const res = await fetch(`/api/admin/users?${params}`);
+      const data = await res.json();
       if (res.ok) {
-        const data = await res.json();
         setUsers(data.users ?? []);
         setTotalCount(data.total ?? 0);
+      } else {
+        console.error('API error:', data);
+        setFetchError(data.error || 'Erro ao buscar usuários');
+        setUsers([]);
+        setTotalCount(0);
       }
     } catch (err) {
       console.error('Erro ao buscar usuários:', err);
+      setFetchError('Erro de conexão ao buscar usuários');
     } finally {
       setLoading(false);
     }
@@ -335,6 +344,14 @@ export default function AdminUsersPage() {
       {/* Table */}
       <Card className="border-[#131B35] bg-[#0A0F1E]">
         <CardContent className="p-0">
+          {fetchError && (
+            <div className="border-b border-red-800/50 bg-red-900/20 px-4 py-3 text-sm text-red-400">
+              <p className="font-medium">Erro: {fetchError}</p>
+              <p className="mt-1 text-xs text-red-500">
+                Execute a migration 005_admin_rpc_functions.sql no Supabase SQL Editor ou configure SUPABASE_SERVICE_ROLE_KEY nas variáveis de ambiente.
+              </p>
+            </div>
+          )}
           {loading ? (
             <div className="flex h-64 items-center justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-[#1D4ED8]" />
