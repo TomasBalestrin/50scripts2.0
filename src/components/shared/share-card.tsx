@@ -3,7 +3,6 @@
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2, Share2 } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import { QRCode } from '@/components/shared/qr-code';
 
 interface ShareCardProps {
@@ -36,6 +35,7 @@ export function ShareCard({
     setExporting(true);
 
     try {
+      const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
         scale: 2,

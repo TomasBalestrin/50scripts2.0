@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { generateSecurePassword } from '@/lib/auth-utils';
 
 /**
  * POST /api/setup/admin
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new auth user
-    const userPassword = password || process.env.DEFAULT_USER_PASSWORD || 'Script@123';
+    const userPassword = password || generateSecurePassword();
 
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,

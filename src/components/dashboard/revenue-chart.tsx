@@ -43,16 +43,19 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   );
 }
 
+// Stable references to avoid re-renders
+const CHART_MARGIN = { top: 5, right: 10, left: 0, bottom: 0 };
+const AXIS_TICK = { fill: '#94A3B8', fontSize: 12 };
+const DOT_STYLE = { fill: '#1D4ED8', strokeWidth: 0, r: 3 };
+const ACTIVE_DOT_STYLE = { fill: '#1D4ED8', strokeWidth: 2, stroke: '#fff', r: 5 };
+
 export function RevenueChart({ data }: RevenueChartProps) {
   return (
     <div className="rounded-xl border border-[#131B35] bg-[#0A0F1E] p-5">
       <h3 className="mb-4 text-sm font-semibold text-white">Receita Semanal</h3>
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={data}
-            margin={{ top: 5, right: 10, left: 0, bottom: 0 }}
-          >
+          <AreaChart data={data} margin={CHART_MARGIN}>
             <defs>
               <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#1D4ED8" stopOpacity={0.4} />
@@ -69,13 +72,13 @@ export function RevenueChart({ data }: RevenueChartProps) {
               dataKey="week"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#94A3B8', fontSize: 12 }}
+              tick={AXIS_TICK}
               dy={8}
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#94A3B8', fontSize: 12 }}
+              tick={AXIS_TICK}
               tickFormatter={formatCurrency}
               width={65}
             />
@@ -86,8 +89,8 @@ export function RevenueChart({ data }: RevenueChartProps) {
               stroke="#1D4ED8"
               strokeWidth={2.5}
               fill="url(#revenueGradient)"
-              dot={{ fill: '#1D4ED8', strokeWidth: 0, r: 3 }}
-              activeDot={{ fill: '#1D4ED8', strokeWidth: 2, stroke: '#fff', r: 5 }}
+              dot={DOT_STYLE}
+              activeDot={ACTIVE_DOT_STYLE}
             />
           </AreaChart>
         </ResponsiveContainer>

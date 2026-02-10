@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { scriptRatingSchema } from '@/lib/validations/schemas';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(
   request: NextRequest,
@@ -16,6 +17,15 @@ export async function POST(
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
+      );
+    }
+
+    // Rate limit: 30 ratings per minute to prevent XP farming
+    const limited = rateLimit(user.id, 'script-rate', { maxRequests: 30, windowMs: 60_000 });
+    if (limited) {
+      return NextResponse.json(
+        { error: 'Muitas avaliações. Tente novamente em alguns segundos.' },
+        { status: 429 }
       );
     }
 

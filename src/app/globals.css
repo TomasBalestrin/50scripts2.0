@@ -135,6 +135,12 @@
   display: none;
 }
 
+/* Tip card progress bar animation */
+@keyframes tipProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
 /* Shadow tokens */
 .shadow-card {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);

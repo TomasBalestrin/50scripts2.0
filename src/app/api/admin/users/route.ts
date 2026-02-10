@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
       const now = new Date().toISOString();
       const referralCode = authData.user.id.slice(0, 8).toUpperCase();
 
-      await adminClient
+      const { error: upsertError } = await adminClient
         .from('profiles')
         .upsert({
           id: authData.user.id,
@@ -189,6 +189,14 @@ export async function POST(request: NextRequest) {
           created_at: now,
           updated_at: now,
         }, { onConflict: 'id' });
+
+      if (upsertError) {
+        console.error('[admin/users] Error upserting profile:', upsertError);
+        return NextResponse.json(
+          { error: `User created but profile failed: ${upsertError.message}` },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json({ user: authData.user }, { status: 201 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lightbulb, X } from 'lucide-react';
 
@@ -8,36 +8,26 @@ interface TipCardProps {
   tip: { content: string; category?: string };
 }
 
+const TIP_DURATION = 15000; // 15 seconds
+
 export function TipCard({ tip }: TipCardProps) {
   const [visible, setVisible] = useState(true);
-  const [progress, setProgress] = useState(100);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const startTimeRef = useRef(Date.now());
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    const duration = 15000;
-    startTimeRef.current = Date.now();
-
-    timerRef.current = setInterval(() => {
-      const elapsed = Date.now() - startTimeRef.current;
-      const remaining = Math.max(0, 100 - (elapsed / duration) * 100);
-      setProgress(remaining);
-
-      if (remaining <= 0) {
-        setVisible(false);
-        if (timerRef.current) clearInterval(timerRef.current);
-      }
-    }, 50);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+  const handleDismiss = useCallback(() => {
+    setVisible(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
   }, []);
 
-  const handleDismiss = () => {
-    setVisible(false);
-    if (timerRef.current) clearInterval(timerRef.current);
-  };
+  useEffect(() => {
+    timerRef.current = setTimeout(() => {
+      setVisible(false);
+    }, TIP_DURATION);
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   return (
     <AnimatePresence>
@@ -69,12 +59,13 @@ export function TipCard({ tip }: TipCardProps) {
             </button>
           </div>
 
-          {/* Progress bar */}
+          {/* Progress bar - pure CSS animation instead of setInterval */}
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
-            <motion.div
+            <div
               className="h-full bg-white/40"
-              style={{ width: `${progress}%` }}
-              transition={{ duration: 0.05 }}
+              style={{
+                animation: `tipProgress ${TIP_DURATION}ms linear forwards`,
+              }}
             />
           </div>
         </motion.div>

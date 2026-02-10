@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/admin/auth';
+import { cachedJson } from '@/lib/api-cache';
 
 export async function GET() {
   try {
@@ -9,7 +10,8 @@ export async function GET() {
     const { data: tips, error: queryError } = await supabase
       .from('microlearning_tips')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(200);
 
     if (queryError) {
       console.error('[admin/tips] Error fetching tips:', queryError);
@@ -19,7 +21,7 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ tips: tips ?? [] });
+    return cachedJson({ tips: tips ?? [] }, { maxAge: 300, staleWhileRevalidate: 600 });
   } catch (err) {
     console.error('[admin/tips] Unexpected error:', err);
     return NextResponse.json(

@@ -491,16 +491,23 @@ export default function AICopilotPage() {
                     {section.content.split('\n').map((line, j) => {
                       const trimmed = line.trim();
                       if (!trimmed) return null;
-                      const formatted = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>');
+                      const renderBoldText = (text: string) => {
+                        const parts = text.split(/\*\*(.*?)\*\*/g);
+                        return parts.map((part, k) =>
+                          k % 2 === 1
+                            ? <strong key={k} className="text-white">{part}</strong>
+                            : <span key={k}>{part}</span>
+                        );
+                      };
                       if (trimmed.startsWith('- ') || trimmed.startsWith('\u2022 ')) {
                         return (
                           <div key={j} className="flex gap-2 pl-2">
                             <span className="text-[#1D4ED8] mt-1">&bull;</span>
-                            <span dangerouslySetInnerHTML={{ __html: formatted.replace(/^[-\u2022]\s*/, '') }} />
+                            <span>{renderBoldText(trimmed.replace(/^[-\u2022]\s*/, ''))}</span>
                           </div>
                         );
                       }
-                      return <p key={j} dangerouslySetInnerHTML={{ __html: formatted }} />;
+                      return <p key={j}>{renderBoldText(trimmed)}</p>;
                     })}
                   </div>
                 </div>

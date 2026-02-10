@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/admin/auth';
+import { cachedJson } from '@/lib/api-cache';
 
 export async function GET() {
   try {
@@ -9,7 +10,8 @@ export async function GET() {
     const { data: prompts, error: queryError } = await supabase
       .from('ai_prompts')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100);
 
     if (queryError) {
       console.error('[admin/prompts] Error fetching prompts:', queryError);
@@ -19,7 +21,7 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ prompts: prompts ?? [] });
+    return cachedJson({ prompts: prompts ?? [] }, { maxAge: 600, staleWhileRevalidate: 1200 });
   } catch (err) {
     console.error('[admin/prompts] Unexpected error:', err);
     return NextResponse.json(

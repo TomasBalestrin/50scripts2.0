@@ -113,6 +113,13 @@ export default function LoginPage() {
             </form>
           </CardContent>
         </Card>
+
+        <div className="mt-4 text-center text-xs text-[#475569]">
+          Ao entrar, você concorda com os{' '}
+          <a href="/termos" className="text-[#3B82F6] hover:underline">Termos de Uso</a>
+          {' '}e a{' '}
+          <a href="/privacidade" className="text-[#3B82F6] hover:underline">Política de Privacidade</a>
+        </div>
       </div>
     </div>
   );

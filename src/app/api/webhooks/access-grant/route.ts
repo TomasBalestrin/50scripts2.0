@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/server';
 import { webhookAccessGrantSchema } from '@/lib/validations/schemas';
+import { generateSecurePassword } from '@/lib/auth-utils';
 
 function verifyWebhookSecret(request: NextRequest): boolean {
   const secret = request.headers.get('X-Webhook-Secret');
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     // 4. Create auth user
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
-      password: process.env.DEFAULT_USER_PASSWORD || 'Script@123',
+      password: generateSecurePassword(),
       email_confirm: true,
     });
 

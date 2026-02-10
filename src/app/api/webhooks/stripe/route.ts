@@ -2,6 +2,46 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { stripe, PLAN_FROM_PRICE } from '@/lib/payments/stripe';
 
+// ---------------------------------------------------------------------------
+// Stripe Webhook Event Types (minimal interfaces for safety)
+// ---------------------------------------------------------------------------
+
+interface StripeCheckoutSession {
+  id: string;
+  customer?: string;
+  metadata?: Record<string, string>;
+}
+
+interface StripeSubscription {
+  id: string;
+  customer: string;
+  status: string;
+  items: {
+    data: Array<{
+      price?: { id: string };
+    }>;
+  };
+}
+
+interface StripeInvoice {
+  id: string;
+  customer: string;
+  amount_due?: number;
+  attempt_count?: number;
+}
+
+interface StripeEvent {
+  id: string;
+  type: string;
+  data: {
+    object: Record<string, unknown>;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
 function getAiCreditsForPlan(plan: string): { monthly: number; remaining: number } {
   switch (plan) {
     case 'pro':
@@ -15,8 +55,7 @@ function getAiCreditsForPlan(plan: string): { monthly: number; remaining: number
   }
 }
 
-async function upgradePlan(userId: string, plan: string) {
-  const supabase = await createAdminClient();
+async function upgradePlan(supabase: Awaited<ReturnType<typeof createAdminClient>>, userId: string, plan: string) {
   const now = new Date().toISOString();
   const credits = getAiCreditsForPlan(plan);
 
@@ -35,9 +74,7 @@ async function upgradePlan(userId: string, plan: string) {
   }
 }
 
-async function downgradeToStarter(userId: string) {
-  const supabase = await createAdminClient();
-
+async function downgradeToStarter(supabase: Awaited<ReturnType<typeof createAdminClient>>, userId: string) {
   const { error } = await supabase
     .from('profiles')
     .update({
@@ -55,6 +92,7 @@ async function downgradeToStarter(userId: string) {
 }
 
 async function logWebhookEvent(
+  supabase: Awaited<ReturnType<typeof createAdminClient>>,
   eventType: string,
   payload: Record<string, unknown>,
   status: string,
@@ -62,7 +100,6 @@ async function logWebhookEvent(
   errorMessage?: string,
 ) {
   try {
-    const supabase = await createAdminClient();
     await supabase.from('webhook_logs').insert({
       event_type: `stripe_${eventType}`,
       payload,
@@ -74,6 +111,10 @@ async function logWebhookEvent(
     console.error('[webhook/stripe] Failed to log event:', eventType);
   }
 }
+
+// ---------------------------------------------------------------------------
+// POST Handler
+// ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
   try {
@@ -97,13 +138,13 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Verify Stripe signature
-    let event: any;
+    let event: StripeEvent;
     try {
       event = stripe.webhooks.constructEvent(
         rawBody,
         signature,
         process.env.STRIPE_WEBHOOK_SECRET
-      );
+      ) as unknown as StripeEvent;
     } catch (err) {
       console.error('[webhook/stripe] Signature verification failed:', err);
       return NextResponse.json(
@@ -112,30 +153,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Handle events
+    // 3. Create a single admin client for all operations
+    const supabase = await createAdminClient();
+
+    // 4. Handle events
     switch (event.type) {
       case 'checkout.session.completed': {
-        const session = event.data.object as any;
+        const session = event.data.object as unknown as StripeCheckoutSession;
         const userId = session.metadata?.user_id;
         const plan = session.metadata?.plan;
 
         if (!userId || !plan) {
-          await logWebhookEvent('checkout_completed', { session_id: session.id }, 'error', undefined, 'Missing user_id or plan in metadata');
+          await logWebhookEvent(supabase, 'checkout_completed', { session_id: session.id }, 'error', undefined, 'Missing user_id or plan in metadata');
           break;
         }
 
         // Save Stripe customer ID to profile
         if (session.customer) {
-          const supabase = await createAdminClient();
           await supabase
             .from('profiles')
-            .update({ stripe_customer_id: session.customer as string })
+            .update({ stripe_customer_id: session.customer })
             .eq('id', userId);
         }
 
         // Upgrade user plan
-        await upgradePlan(userId, plan);
-        await logWebhookEvent('checkout_completed', {
+        await upgradePlan(supabase, userId, plan);
+        await logWebhookEvent(supabase, 'checkout_completed', {
           session_id: session.id,
           plan,
           customer: session.customer,
@@ -145,11 +188,9 @@ export async function POST(request: NextRequest) {
       }
 
       case 'customer.subscription.updated': {
-        const subscription = event.data.object as any;
-        const customerId = subscription.customer as string;
+        const subscription = event.data.object as unknown as StripeSubscription;
+        const customerId = subscription.customer;
 
-        // Find user by stripe_customer_id
-        const supabase = await createAdminClient();
         const { data: profile } = await supabase
           .from('profiles')
           .select('id')
@@ -157,7 +198,7 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (!profile) {
-          await logWebhookEvent('subscription_updated', {
+          await logWebhookEvent(supabase, 'subscription_updated', {
             subscription_id: subscription.id,
             customer: customerId,
           }, 'error', undefined, 'User not found for customer');
@@ -169,20 +210,20 @@ export async function POST(request: NextRequest) {
         const newPlan = priceId ? PLAN_FROM_PRICE[priceId] : null;
 
         if (newPlan && subscription.status === 'active') {
-          await upgradePlan(profile.id, newPlan);
-          await logWebhookEvent('subscription_updated', {
+          await upgradePlan(supabase, profile.id, newPlan);
+          await logWebhookEvent(supabase, 'subscription_updated', {
             subscription_id: subscription.id,
             plan: newPlan,
             status: subscription.status,
           }, 'success', profile.id);
         } else if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
-          await downgradeToStarter(profile.id);
-          await logWebhookEvent('subscription_updated', {
+          await downgradeToStarter(supabase, profile.id);
+          await logWebhookEvent(supabase, 'subscription_updated', {
             subscription_id: subscription.id,
             status: subscription.status,
           }, 'success', profile.id);
         } else {
-          await logWebhookEvent('subscription_updated', {
+          await logWebhookEvent(supabase, 'subscription_updated', {
             subscription_id: subscription.id,
             status: subscription.status,
             price_id: priceId,
@@ -193,11 +234,9 @@ export async function POST(request: NextRequest) {
       }
 
       case 'customer.subscription.deleted': {
-        const subscription = event.data.object as any;
-        const customerId = subscription.customer as string;
+        const subscription = event.data.object as unknown as StripeSubscription;
+        const customerId = subscription.customer;
 
-        // Find user by stripe_customer_id
-        const supabase = await createAdminClient();
         const { data: profile } = await supabase
           .from('profiles')
           .select('id')
@@ -205,7 +244,7 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (!profile) {
-          await logWebhookEvent('subscription_deleted', {
+          await logWebhookEvent(supabase, 'subscription_deleted', {
             subscription_id: subscription.id,
             customer: customerId,
           }, 'error', undefined, 'User not found for customer');
@@ -213,8 +252,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Downgrade to starter
-        await downgradeToStarter(profile.id);
-        await logWebhookEvent('subscription_deleted', {
+        await downgradeToStarter(supabase, profile.id);
+        await logWebhookEvent(supabase, 'subscription_deleted', {
           subscription_id: subscription.id,
           customer: customerId,
         }, 'success', profile.id);
@@ -223,11 +262,9 @@ export async function POST(request: NextRequest) {
       }
 
       case 'invoice.payment_failed': {
-        const invoice = event.data.object as any;
-        const customerId = invoice.customer as string;
+        const invoice = event.data.object as unknown as StripeInvoice;
+        const customerId = invoice.customer;
 
-        // Find user by stripe_customer_id
-        const supabase = await createAdminClient();
         const { data: profile } = await supabase
           .from('profiles')
           .select('id, email')
@@ -238,10 +275,10 @@ export async function POST(request: NextRequest) {
           '[webhook/stripe] Payment failed for customer:',
           customerId,
           'email:',
-          profile?.email || 'unknown'
+          (profile as { email?: string })?.email || 'unknown'
         );
 
-        await logWebhookEvent('payment_failed', {
+        await logWebhookEvent(supabase, 'payment_failed', {
           invoice_id: invoice.id,
           customer: customerId,
           amount_due: invoice.amount_due,
@@ -254,7 +291,7 @@ export async function POST(request: NextRequest) {
 
       default: {
         // Log unhandled events for monitoring
-        await logWebhookEvent(event.type, { event_id: event.id }, 'unhandled');
+        await logWebhookEvent(supabase, event.type, { event_id: event.id }, 'unhandled');
         break;
       }
     }
@@ -264,7 +301,9 @@ export async function POST(request: NextRequest) {
     console.error('[webhook/stripe] Error:', error);
 
     try {
+      const supabase = await createAdminClient();
       await logWebhookEvent(
+        supabase,
         'processing_error',
         {},
         'error',

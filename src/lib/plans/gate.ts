@@ -5,6 +5,27 @@ export function hasAccess(userPlan: Plan, requiredPlan: Plan): boolean {
   return PLAN_HIERARCHY[userPlan] >= PLAN_HIERARCHY[requiredPlan];
 }
 
+/**
+ * Check plan access considering expiration date.
+ * If plan is expired, treat user as 'starter'.
+ */
+export function hasValidAccess(
+  userPlan: Plan,
+  requiredPlan: Plan,
+  planExpiresAt?: string | null,
+): boolean {
+  const effectivePlan = isPlanExpired(planExpiresAt) ? 'starter' : userPlan;
+  return PLAN_HIERARCHY[effectivePlan] >= PLAN_HIERARCHY[requiredPlan];
+}
+
+/**
+ * Returns true if plan has expired.
+ */
+export function isPlanExpired(planExpiresAt?: string | null): boolean {
+  if (!planExpiresAt) return false; // No expiration = permanent plan
+  return new Date(planExpiresAt) < new Date();
+}
+
 export function canAccessScript(userPlan: Plan, scriptMinPlan: Plan): boolean {
   return hasAccess(userPlan, scriptMinPlan);
 }
