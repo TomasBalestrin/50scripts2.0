@@ -55,8 +55,8 @@ const PLAN_FEATURES: Record<Plan, string[]> = {
 };
 
 const HOTMART_LINKS: Partial<Record<Plan, string>> = {
-  pro: 'https://pay.hotmart.com/P104359833G?off=5fb1b0vk&checkoutMode=10',
-  premium: 'https://pay.hotmart.com/O104359778G?off=otimmy2t&checkoutMode=10',
+  pro: 'https://pay.hotmart.com/O104359778G?off=otimmy2t&checkoutMode=10&bid=1770724637744',
+  premium: 'https://pay.hotmart.com/P104359833G?off=5fb1b0vk&checkoutMode=10',
   copilot: 'https://pay.hotmart.com/A104359906D?off=l5swf15r&checkoutMode=10',
 };
 

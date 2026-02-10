@@ -9,9 +9,9 @@ export const PLAN_HIERARCHY: Record<Plan, number> = {
 
 export const PLAN_LABELS: Record<Plan, string> = {
   starter: 'Starter',
-  pro: 'Pro',
-  premium: 'Premium',
-  copilot: 'Copilot',
+  pro: 'Plus',
+  premium: 'Pro',
+  copilot: 'Premium',
 };
 
 export const PLAN_PRICES: Record<Plan, string> = {
@@ -68,8 +68,8 @@ export const AI_CREDITS: Record<Plan, number> = {
 
 export const REFERRAL_REWARDS = {
   1: { type: 'ai_credits', value: 3, label: '3 créditos IA' },
-  3: { type: 'free_month', value: 1, label: '1 mês Pro grátis' },
-  10: { type: 'free_month', value: 1, label: '1 mês Premium grátis' },
+  3: { type: 'free_month', value: 1, label: '1 mês Plus grátis' },
+  10: { type: 'free_month', value: 1, label: '1 mês Pro grátis' },
 } as const;
 
 export const COLORS = {

@@ -109,7 +109,7 @@ const navItems: NavItem[] = [
     href: "/ai-copilot",
     icon: Bot,
     requiredPlan: "copilot",
-    section: "Copilot",
+    section: "Premium",
   },
   {
     label: "Agenda Smart",
