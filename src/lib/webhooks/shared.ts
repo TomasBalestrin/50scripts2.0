@@ -19,40 +19,48 @@ export function getAiCreditsForPlan(plan: string): { monthly: number; remaining:
 }
 
 /**
- * Logs a webhook event to the webhook_logs table
+ * Logs a webhook event to the webhook_logs table.
+ *
+ * Schema: source, event_type (TEXT), payload (JSONB), email_extracted,
+ * plan_granted, user_created, status, user_id, error_message, processed_at
  */
 export async function logWebhookEvent(
   source: string,
   eventType: string,
   payload: Record<string, unknown>,
   status: string,
+  email?: string,
   userId?: string,
   errorMessage?: string,
+  extra?: { planGranted?: string; userCreated?: boolean },
 ) {
   try {
     const supabase = await createAdminClient();
     await supabase.from('webhook_logs').insert({
       source,
       event_type: eventType,
-      payload,
+      payload: payload || {},
+      email_extracted: email || '',
       status,
       user_id: userId || null,
       error_message: errorMessage || null,
+      plan_granted: extra?.planGranted || null,
+      user_created: extra?.userCreated ?? false,
     });
-  } catch {
-    console.error(`[webhook/${source}] Failed to log event:`, eventType);
+  } catch (err) {
+    console.error(`[webhook/${source}] Failed to log event:`, eventType, err);
   }
 }
 
 /**
  * Finds an existing user by email or creates a new one.
- * Returns the user ID.
+ * Returns the user ID and whether the user was newly created.
  */
 export async function findOrCreateUser(
   email: string,
   name: string,
   webhookSource: string,
-): Promise<string> {
+): Promise<{ userId: string; created: boolean }> {
   const supabase = await createAdminClient();
 
   // Try to find existing user by email
@@ -63,7 +71,7 @@ export async function findOrCreateUser(
     .single();
 
   if (existingProfile) {
-    return existingProfile.id;
+    return { userId: existingProfile.id, created: false };
   }
 
   // Create new auth user
@@ -82,7 +90,7 @@ export async function findOrCreateUser(
       const { data: users } = await supabase.auth.admin.listUsers();
       const authUser = users?.users?.find((u) => u.email === email);
       if (authUser) {
-        return authUser.id;
+        return { userId: authUser.id, created: false };
       }
     }
     throw new Error(`Failed to create user: ${authError.message}`);
@@ -107,7 +115,7 @@ export async function findOrCreateUser(
     throw new Error(`Failed to create profile: ${profileError.message}`);
   }
 
-  return userId;
+  return { userId, created: true };
 }
 
 /**
@@ -120,7 +128,7 @@ export async function handlePurchase(
   source: string,
   payload: Record<string, unknown>,
 ): Promise<{ userId: string; plan: string }> {
-  const userId = await findOrCreateUser(email, name, source);
+  const { userId, created } = await findOrCreateUser(email, name, source);
 
   const supabase = await createAdminClient();
   const now = new Date().toISOString();
@@ -141,11 +149,10 @@ export async function handlePurchase(
     throw new Error(`Failed to upgrade plan: ${updateError.message}`);
   }
 
-  await logWebhookEvent(source, 'purchase', {
-    email,
-    plan,
-    ...payload,
-  }, 'success', userId);
+  await logWebhookEvent(source, 'purchase', { ...payload }, 'success', email, userId, undefined, {
+    planGranted: plan,
+    userCreated: created,
+  });
 
   return { userId, plan };
 }
@@ -168,7 +175,7 @@ export async function handleCancellation(
     .single();
 
   if (!profile) {
-    await logWebhookEvent(source, eventType, { email, ...payload }, 'error', undefined, 'User not found');
+    await logWebhookEvent(source, 'cancel', payload, 'error', email, undefined, 'User not found');
     throw new Error('User not found');
   }
 
@@ -187,7 +194,7 @@ export async function handleCancellation(
     throw new Error(`Failed to downgrade plan: ${updateError.message}`);
   }
 
-  await logWebhookEvent(source, eventType, { email, ...payload }, 'success', profile.id);
+  await logWebhookEvent(source, 'cancel', { original_event: eventType, ...payload }, 'success', email, profile.id);
 
   return { userId: profile.id };
 }

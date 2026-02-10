@@ -55,8 +55,10 @@ export async function POST(request: NextRequest) {
 
     if (profileError || !profile) {
       await supabase.from('webhook_logs').insert({
-        event_type: 'plan_cancel',
+        source: source || 'plan-cancel',
+        event_type: 'cancel',
         payload: { email, source },
+        email_extracted: email,
         status: 'error',
         error_message: 'User not found',
       });
@@ -85,8 +87,10 @@ export async function POST(request: NextRequest) {
 
     // 6. Log to webhook_logs
     await supabase.from('webhook_logs').insert({
-      event_type: 'plan_cancel',
+      source: source || 'plan-cancel',
+      event_type: 'cancel',
       payload: { email, source },
+      email_extracted: email,
       status: 'success',
       user_id: profile.id,
     });
@@ -101,8 +105,10 @@ export async function POST(request: NextRequest) {
     try {
       const supabase = await createAdminClient();
       await supabase.from('webhook_logs').insert({
-        event_type: 'plan_cancel',
-        payload: null,
+        source: 'plan-cancel',
+        event_type: 'cancel',
+        payload: {},
+        email_extracted: '',
         status: 'error',
         error_message: error instanceof Error ? error.message : 'Unknown error',
       });

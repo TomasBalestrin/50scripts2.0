@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     switch (event) {
       case 'PURCHASE_COMPLETE': {
         if (!buyerEmail) {
-          await logWebhookEvent(SOURCE, 'purchase_complete', body, 'error', undefined, 'Missing buyer email');
+          await logWebhookEvent(SOURCE, 'purchase', body, 'error', '', undefined, 'Missing buyer email');
           return NextResponse.json({ error: 'Missing buyer email' }, { status: 400 });
         }
 
@@ -68,12 +68,12 @@ export async function POST(request: NextRequest) {
       case 'PURCHASE_REFUNDED':
       case 'SUBSCRIPTION_CANCELLATION': {
         if (!buyerEmail) {
-          await logWebhookEvent(SOURCE, event.toLowerCase(), body, 'error', undefined, 'Missing buyer email');
+          await logWebhookEvent(SOURCE, 'cancel', body, 'error', '', undefined, 'Missing buyer email');
           return NextResponse.json({ error: 'Missing buyer email' }, { status: 400 });
         }
 
         try {
-          const result = await handleCancellation(buyerEmail, SOURCE, event.toLowerCase(), {
+          const result = await handleCancellation(buyerEmail, SOURCE, event, {
             product_id: productId,
           });
           return NextResponse.json({ success: true, user_id: result.userId });
@@ -88,16 +88,15 @@ export async function POST(request: NextRequest) {
       case 'PURCHASE_DELAYED':
       case 'PURCHASE_PROTEST': {
         await logWebhookEvent(SOURCE, event.toLowerCase(), {
-          email: buyerEmail,
           product_id: productId,
           buyer_name: buyerName,
-        }, 'warning');
+        }, 'warning', buyerEmail);
 
         return NextResponse.json({ received: true, event });
       }
 
       default: {
-        await logWebhookEvent(SOURCE, event.toLowerCase(), body, 'unhandled');
+        await logWebhookEvent(SOURCE, event.toLowerCase(), body, 'ignored', buyerEmail);
         return NextResponse.json({ received: true, event });
       }
     }
@@ -105,7 +104,7 @@ export async function POST(request: NextRequest) {
     console.error('[webhook/hotmart] Error:', error);
 
     try {
-      await logWebhookEvent(SOURCE, 'processing_error', {}, 'error', undefined,
+      await logWebhookEvent(SOURCE, 'purchase', {}, 'error', '', undefined,
         error instanceof Error ? error.message : 'Unknown error');
     } catch { /* silent */ }
 
