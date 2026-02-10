@@ -2,9 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/server';
 
+async function getClient() {
+  // Try service role client first (bypasses RLS completely)
+  // Falls back to authenticated admin client (relies on RLS admin policies)
+  try {
+    const adminClient = await createAdminClient();
+    // Quick test to ensure service role key is valid
+    const { error } = await adminClient.from('profiles').select('id').limit(1);
+    if (!error) return adminClient;
+  } catch {
+    // Service role key invalid or missing
+  }
+  // Fallback: use the authenticated client from getAdminUser
+  const { supabase } = await getAdminUser();
+  return supabase;
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const { error } = await getAdminUser();
+    const { error, supabase: authClient } = await getAdminUser();
     if (error) return error;
 
     const { searchParams } = request.nextUrl;
@@ -15,14 +31,13 @@ export async function GET(request: NextRequest) {
 
     const offset = (page - 1) * limit;
 
-    // Use admin client to bypass RLS and see all users
-    const adminClient = await createAdminClient();
+    // Use admin client (service role) or fallback to authenticated client
+    const client = await getClient() || authClient;
 
-    let query = adminClient
+    let query = client!
       .from('profiles')
       .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .order('created_at', { ascending: false });
 
     if (plan) {
       query = query.eq('plan', plan);
@@ -31,6 +46,9 @@ export async function GET(request: NextRequest) {
     if (search) {
       query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
     }
+
+    // Apply range AFTER filters for correct pagination
+    query = query.range(offset, offset + limit - 1);
 
     const { data: users, error: queryError, count } = await query;
 
@@ -58,7 +76,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { error } = await getAdminUser();
+    const { error, supabase: authClient } = await getAdminUser();
     if (error) return error;
 
     const body = await request.json();
@@ -83,16 +101,15 @@ export async function PATCH(request: NextRequest) {
     updates.updated_at = new Date().toISOString();
 
     if (Object.keys(updates).length === 1) {
-      // Only updated_at, nothing to change
       return NextResponse.json(
         { error: 'No fields to update' },
         { status: 400 }
       );
     }
 
-    const adminClient = await createAdminClient();
+    const client = await getClient() || authClient;
 
-    const { data: profile, error: updateError } = await adminClient
+    const { data: profile, error: updateError } = await client!
       .from('profiles')
       .update(updates)
       .eq('id', id)
@@ -155,12 +172,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure profile exists (trigger may not exist or may be slow)
+    // Ensure profile exists
     if (authData.user) {
       const now = new Date().toISOString();
       const referralCode = authData.user.id.slice(0, 8).toUpperCase();
 
-      const { error: upsertError } = await adminClient
+      const client = await getClient() || adminClient;
+
+      const { error: upsertError } = await client
         .from('profiles')
         .upsert({
           id: authData.user.id,
