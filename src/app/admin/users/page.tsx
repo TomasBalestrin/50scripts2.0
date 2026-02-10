@@ -323,9 +323,9 @@ export default function AdminUsersPage() {
               <SelectContent className="border-[#131B35] bg-[#0A0F1E] text-white">
                 <SelectItem value="all">Todos os planos</SelectItem>
                 <SelectItem value="starter">Starter</SelectItem>
-                <SelectItem value="pro">Pro</SelectItem>
-                <SelectItem value="premium">Premium</SelectItem>
-                <SelectItem value="copilot">Copilot</SelectItem>
+                <SelectItem value="pro">Plus</SelectItem>
+                <SelectItem value="premium">Pro</SelectItem>
+                <SelectItem value="copilot">Premium</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -757,9 +757,9 @@ export default function AdminUsersPage() {
                 </SelectTrigger>
                 <SelectContent className="border-[#131B35] bg-[#0A0F1E] text-white">
                   <SelectItem value="starter">Starter</SelectItem>
-                  <SelectItem value="pro">Pro</SelectItem>
-                  <SelectItem value="premium">Premium</SelectItem>
-                  <SelectItem value="copilot">Copilot</SelectItem>
+                  <SelectItem value="pro">Plus</SelectItem>
+                  <SelectItem value="premium">Pro</SelectItem>
+                  <SelectItem value="copilot">Premium</SelectItem>
                 </SelectContent>
               </Select>
             </div>

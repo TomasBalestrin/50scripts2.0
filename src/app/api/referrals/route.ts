@@ -34,10 +34,10 @@ export async function GET() {
     rewards.push({ threshold: 1, type: 'ai_credits', label: '3 créditos IA', unlocked: true });
   }
   if (totalReferrals >= 3) {
-    rewards.push({ threshold: 3, type: 'free_month_pro', label: '1 mês Pro grátis', unlocked: totalReferrals >= 3 });
+    rewards.push({ threshold: 3, type: 'free_month_pro', label: '1 mês Plus grátis', unlocked: totalReferrals >= 3 });
   }
   if (totalReferrals >= 10) {
-    rewards.push({ threshold: 10, type: 'free_month_premium', label: '1 mês Premium grátis', unlocked: totalReferrals >= 10 });
+    rewards.push({ threshold: 10, type: 'free_month_premium', label: '1 mês Pro grátis', unlocked: totalReferrals >= 10 });
   }
 
   return NextResponse.json({
