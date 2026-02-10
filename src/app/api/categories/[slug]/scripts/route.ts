@@ -12,14 +12,18 @@ export async function GET(
     const { slug } = await params;
     const supabase = await createClient();
 
-    // 1. Get category by slug
-    const { data: category, error: catError } = await supabase
-      .from('script_categories')
-      .select('*')
-      .eq('slug', slug)
-      .eq('is_active', true)
-      .single();
+    // 1. Fetch category and auth user in parallel
+    const [categoryResult, userResult] = await Promise.all([
+      supabase
+        .from('script_categories')
+        .select('*')
+        .eq('slug', slug)
+        .eq('is_active', true)
+        .single(),
+      supabase.auth.getUser(),
+    ]);
 
+    const { data: category, error: catError } = categoryResult;
     if (catError || !category) {
       return NextResponse.json(
         { error: 'Category not found' },
@@ -27,30 +31,24 @@ export async function GET(
       );
     }
 
-    // 2. Get user profile for plan check
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = userResult.data?.user;
 
-    let userPlan: Plan = 'starter';
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('plan')
-        .eq('id', user.id)
-        .single();
+    // 2. Fetch user profile and scripts in parallel
+    const [profileResult, scriptsResult] = await Promise.all([
+      user
+        ? supabase.from('profiles').select('plan').eq('id', user.id).single()
+        : Promise.resolve({ data: null }),
+      supabase
+        .from('scripts')
+        .select('*')
+        .eq('category_id', category.id)
+        .eq('is_active', true)
+        .order('display_order', { ascending: true }),
+    ]);
 
-      if (profile) {
-        userPlan = profile.plan as Plan;
-      }
-    }
+    const userPlan: Plan = (profileResult.data?.plan as Plan) ?? 'starter';
 
-    // 3. Get scripts in this category
-    const { data: scripts, error: scriptsError } = await supabase
-      .from('scripts')
-      .select('*')
-      .eq('category_id', category.id)
-      .eq('is_active', true)
-      .order('display_order', { ascending: true });
-
+    const { data: scripts, error: scriptsError } = scriptsResult;
     if (scriptsError) {
       console.error('[categories/slug/scripts] Error fetching scripts:', scriptsError);
       return NextResponse.json(

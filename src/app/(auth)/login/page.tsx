@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
@@ -45,14 +46,13 @@ export default function LoginPage() {
           <CardHeader className="text-center space-y-4">
             {/* Logo + Name */}
             <div className="flex flex-col items-center gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/logo.png"
                 alt="50 Scripts"
                 width={64}
                 height={64}
                 className="rounded-xl"
-                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                priority
               />
               <h1 className="text-2xl font-heading font-bold text-white">
                 50 Scripts
