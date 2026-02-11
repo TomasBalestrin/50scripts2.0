@@ -57,6 +57,7 @@ function getAiCreditsForPlan(plan: string): { monthly: number; remaining: number
 
 async function upgradePlan(supabase: Awaited<ReturnType<typeof createAdminClient>>, userId: string, plan: string) {
   const now = new Date().toISOString();
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
   const credits = getAiCreditsForPlan(plan);
 
   const { error } = await supabase
@@ -64,6 +65,7 @@ async function upgradePlan(supabase: Awaited<ReturnType<typeof createAdminClient
     .update({
       plan,
       plan_started_at: now,
+      plan_expires_at: expiresAt,
       ai_credits_remaining: credits.remaining,
       ai_credits_monthly: credits.monthly,
     })
@@ -98,11 +100,14 @@ async function logWebhookEvent(
   status: string,
   userId?: string,
   errorMessage?: string,
+  email?: string,
 ) {
   try {
     await supabase.from('webhook_logs').insert({
+      source: 'stripe',
       event_type: `stripe_${eventType}`,
       payload,
+      email_extracted: email || '',
       status,
       user_id: userId || null,
       error_message: errorMessage || null,

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/server';
 import { webhookAccessGrantSchema } from '@/lib/validations/schemas';
-import { generateSecurePassword } from '@/lib/auth-utils';
+import { getDefaultPassword } from '@/lib/auth-utils';
 
 function verifyWebhookSecret(request: NextRequest): boolean {
   const secret = request.headers.get('X-Webhook-Secret');
@@ -42,10 +42,11 @@ export async function POST(request: NextRequest) {
     // 3. Create Supabase admin client
     const supabase = await createAdminClient();
 
-    // 4. Create auth user
+    // 4. Create auth user with default password from app_config
+    const defaultPassword = await getDefaultPassword();
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
-      password: generateSecurePassword(),
+      password: defaultPassword,
       email_confirm: true,
     });
 
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
           authError.message?.toLowerCase().includes('duplicate')) {
         await supabase.from('webhook_logs').insert({
           source: source || 'access-grant',
-          event_type: 'purchase',
+          event_type: 'access_grant',
           payload: { email, name, source, referral_code },
           email_extracted: email,
           status: 'duplicate',
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
     // 8. Log to webhook_logs
     await supabase.from('webhook_logs').insert({
       source: source || 'access-grant',
-      event_type: 'purchase',
+      event_type: 'access_grant',
       payload: { email, name, source, referral_code },
       email_extracted: email,
       status: 'success',
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest) {
       const supabase = await createAdminClient();
       await supabase.from('webhook_logs').insert({
         source: 'access-grant',
-        event_type: 'purchase',
+        event_type: 'access_grant',
         payload: {},
         email_extracted: '',
         status: 'error',

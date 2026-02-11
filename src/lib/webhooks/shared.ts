@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/server';
-import { generateSecurePassword } from '@/lib/auth-utils';
+import { getDefaultPassword } from '@/lib/auth-utils';
 
 /**
  * Returns AI credits configuration for a given plan
@@ -74,10 +74,11 @@ export async function findOrCreateUser(
     return { userId: existingProfile.id, created: false };
   }
 
-  // Create new auth user
+  // Create new auth user with default password from app_config
+  const defaultPassword = await getDefaultPassword();
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email,
-    password: generateSecurePassword(),
+    password: defaultPassword,
     email_confirm: true,
   });
 
@@ -134,11 +135,14 @@ export async function handlePurchase(
   const now = new Date().toISOString();
   const credits = getAiCreditsForPlan(plan);
 
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
   const { error: updateError } = await supabase
     .from('profiles')
     .update({
       plan,
       plan_started_at: now,
+      plan_expires_at: expiresAt,
       ai_credits_remaining: credits.remaining,
       ai_credits_monthly: credits.monthly,
       webhook_source: source,

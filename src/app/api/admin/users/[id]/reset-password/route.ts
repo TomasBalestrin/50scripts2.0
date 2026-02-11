@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/server';
-import { generateSecurePassword } from '@/lib/auth-utils';
+import { getDefaultPassword } from '@/lib/auth-utils';
 
 export async function POST(
   _request: NextRequest,
@@ -20,7 +20,7 @@ export async function POST(
       );
     }
 
-    const defaultPassword = generateSecurePassword();
+    const defaultPassword = await getDefaultPassword();
 
     const adminClient = await createAdminClient();
 
