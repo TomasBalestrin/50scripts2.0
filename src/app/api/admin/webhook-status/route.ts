@@ -34,6 +34,7 @@ export async function GET() {
       events: ['PURCHASE_COMPLETE', 'PURCHASE_CANCELED', 'PURCHASE_REFUNDED', 'SUBSCRIPTION_CANCELLATION'],
       description: 'Recebe eventos de compra, cancelamento e reembolso da Hotmart',
       products: {
+        starter: { label: '50 Scripts (Acesso Base)', envVar: 'HOTMART_PRODUCT_STARTER', configured: !!process.env.HOTMART_PRODUCT_STARTER },
         pro: { label: 'Plus (R$19,90)', envVar: 'HOTMART_PRODUCT_PRO', configured: !!process.env.HOTMART_PRODUCT_PRO },
         premium: { label: 'Pro (R$39,90)', envVar: 'HOTMART_PRODUCT_PREMIUM', configured: !!process.env.HOTMART_PRODUCT_PREMIUM },
         copilot: { label: 'Premium (R$99,90)', envVar: 'HOTMART_PRODUCT_COPILOT', configured: !!process.env.HOTMART_PRODUCT_COPILOT },
@@ -43,7 +44,7 @@ export async function GET() {
         'Clique em Configurações e adicione a URL do webhook acima',
         'No campo Hottok, defina um token seguro (o mesmo que você configurou na env var HOTMART_HOTTOK no Vercel)',
         'Selecione os eventos: PURCHASE_COMPLETE, PURCHASE_CANCELED, PURCHASE_REFUNDED, SUBSCRIPTION_CANCELLATION',
-        'Configure as env vars HOTMART_PRODUCT_PRO, HOTMART_PRODUCT_PREMIUM e HOTMART_PRODUCT_COPILOT com os IDs dos produtos',
+        'Configure as env vars HOTMART_PRODUCT_STARTER (produto base), HOTMART_PRODUCT_PRO, HOTMART_PRODUCT_PREMIUM e HOTMART_PRODUCT_COPILOT com os IDs dos produtos',
         'Faça uma compra de teste para validar. Acompanhe em Admin > Webhooks',
       ],
     },
@@ -55,6 +56,7 @@ export async function GET() {
       events: ['order_paid', 'order_refunded', 'subscription_canceled', 'chargeback'],
       description: 'Recebe eventos de compra, cancelamento e reembolso da Kiwify',
       products: {
+        starter: { label: '50 Scripts (Acesso Base)', envVar: 'KIWIFY_PRODUCT_STARTER', configured: !!process.env.KIWIFY_PRODUCT_STARTER },
         pro: { label: 'Plus (R$19,90)', envVar: 'KIWIFY_PRODUCT_PRO', configured: !!process.env.KIWIFY_PRODUCT_PRO },
         premium: { label: 'Pro (R$39,90)', envVar: 'KIWIFY_PRODUCT_PREMIUM', configured: !!process.env.KIWIFY_PRODUCT_PREMIUM },
         copilot: { label: 'Premium (R$99,90)', envVar: 'KIWIFY_PRODUCT_COPILOT', configured: !!process.env.KIWIFY_PRODUCT_COPILOT },
@@ -64,7 +66,7 @@ export async function GET() {
         'Adicione a URL do webhook acima',
         'Gere um token de segurança e configure na env var KIWIFY_TOKEN no Vercel',
         'Selecione os eventos: order_paid, order_refunded, subscription_canceled, chargeback',
-        'Configure as env vars KIWIFY_PRODUCT_PRO, KIWIFY_PRODUCT_PREMIUM e KIWIFY_PRODUCT_COPILOT com os IDs dos produtos',
+        'Configure as env vars KIWIFY_PRODUCT_STARTER (produto base), KIWIFY_PRODUCT_PRO, KIWIFY_PRODUCT_PREMIUM e KIWIFY_PRODUCT_COPILOT com os IDs dos produtos',
         'Faça uma compra de teste para validar. Acompanhe em Admin > Webhooks',
       ],
     },
@@ -76,6 +78,7 @@ export async function GET() {
       events: ['PAYMENT_APPROVED', 'PAYMENT_REFUNDED', 'PAYMENT_CHARGEBACK', 'SUBSCRIPTION_CANCELED'],
       description: 'Recebe eventos de compra, cancelamento e reembolso da PagTrust',
       products: {
+        starter: { label: '50 Scripts (Acesso Base)', envVar: 'PAGTRUST_PRODUCT_STARTER', configured: !!process.env.PAGTRUST_PRODUCT_STARTER },
         pro: { label: 'Plus (R$19,90)', envVar: 'PAGTRUST_PRODUCT_PRO', configured: !!process.env.PAGTRUST_PRODUCT_PRO },
         premium: { label: 'Pro (R$39,90)', envVar: 'PAGTRUST_PRODUCT_PREMIUM', configured: !!process.env.PAGTRUST_PRODUCT_PREMIUM },
         copilot: { label: 'Premium (R$99,90)', envVar: 'PAGTRUST_PRODUCT_COPILOT', configured: !!process.env.PAGTRUST_PRODUCT_COPILOT },
@@ -85,7 +88,7 @@ export async function GET() {
         'Adicione a URL do webhook acima',
         'Gere um token de segurança e configure na env var PAGTRUST_TOKEN no Vercel',
         'Selecione os eventos: PAYMENT_APPROVED, PAYMENT_REFUNDED, PAYMENT_CHARGEBACK, SUBSCRIPTION_CANCELED',
-        'Configure as env vars PAGTRUST_PRODUCT_PRO, PAGTRUST_PRODUCT_PREMIUM e PAGTRUST_PRODUCT_COPILOT com os IDs dos produtos',
+        'Configure as env vars PAGTRUST_PRODUCT_STARTER (produto base), PAGTRUST_PRODUCT_PRO, PAGTRUST_PRODUCT_PREMIUM e PAGTRUST_PRODUCT_COPILOT com os IDs dos produtos',
         'Faça uma compra de teste para validar. Acompanhe em Admin > Webhooks',
       ],
     },
@@ -127,16 +130,19 @@ export async function GET() {
   const envStatus: Record<string, boolean> = {
     // Hotmart
     HOTMART_HOTTOK: !!process.env.HOTMART_HOTTOK,
+    HOTMART_PRODUCT_STARTER: !!process.env.HOTMART_PRODUCT_STARTER,
     HOTMART_PRODUCT_PRO: !!process.env.HOTMART_PRODUCT_PRO,
     HOTMART_PRODUCT_PREMIUM: !!process.env.HOTMART_PRODUCT_PREMIUM,
     HOTMART_PRODUCT_COPILOT: !!process.env.HOTMART_PRODUCT_COPILOT,
     // Kiwify
     KIWIFY_TOKEN: !!process.env.KIWIFY_TOKEN,
+    KIWIFY_PRODUCT_STARTER: !!process.env.KIWIFY_PRODUCT_STARTER,
     KIWIFY_PRODUCT_PRO: !!process.env.KIWIFY_PRODUCT_PRO,
     KIWIFY_PRODUCT_PREMIUM: !!process.env.KIWIFY_PRODUCT_PREMIUM,
     KIWIFY_PRODUCT_COPILOT: !!process.env.KIWIFY_PRODUCT_COPILOT,
     // PagTrust
     PAGTRUST_TOKEN: !!process.env.PAGTRUST_TOKEN,
+    PAGTRUST_PRODUCT_STARTER: !!process.env.PAGTRUST_PRODUCT_STARTER,
     PAGTRUST_PRODUCT_PRO: !!process.env.PAGTRUST_PRODUCT_PRO,
     PAGTRUST_PRODUCT_PREMIUM: !!process.env.PAGTRUST_PRODUCT_PREMIUM,
     PAGTRUST_PRODUCT_COPILOT: !!process.env.PAGTRUST_PRODUCT_COPILOT,
