@@ -188,6 +188,64 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
+function buildProfileData(userId: string, email: string, full_name?: string, plan?: string) {
+  const now = new Date().toISOString();
+  return {
+    id: userId,
+    email,
+    full_name: full_name || '',
+    plan: plan || 'starter',
+    role: 'user',
+    is_active: true,
+    niche: null,
+    preferred_tone: 'casual',
+    onboarding_completed: false,
+    xp_points: 0,
+    level: 'iniciante',
+    current_streak: 0,
+    longest_streak: 0,
+    ai_credits_remaining: 10,
+    ai_credits_monthly: 10,
+    saved_variables: {},
+    push_subscription: null,
+    notification_prefs: {},
+    referral_code: userId.slice(0, 8).toUpperCase(),
+    referred_by: null,
+    webhook_source: null,
+    password_changed: false,
+    last_login_at: null,
+    created_at: now,
+    updated_at: now,
+  };
+}
+
+async function upsertProfile(
+  supabase: Awaited<ReturnType<typeof createAdminClient>>,
+  adminClient: Awaited<ReturnType<typeof createAdminClient>>,
+  profileData: ReturnType<typeof buildProfileData>
+): Promise<{ error?: string }> {
+  // Strategy 1: Try RPC function
+  try {
+    const { error: rpcError } = await supabase.rpc('admin_upsert_profile', {
+      p_profile: profileData,
+    });
+    if (!rpcError) return {};
+  } catch {
+    // RPC not available
+  }
+
+  // Strategy 2: Try service role client (direct upsert)
+  const { error: upsertError } = await adminClient
+    .from('profiles')
+    .upsert(profileData, { onConflict: 'id' });
+
+  if (upsertError) {
+    console.error('[admin/users] Error upserting profile:', upsertError);
+    return { error: upsertError.message };
+  }
+  return {};
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { error, supabase } = await getAdminUser();
@@ -208,8 +266,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create auth user - requires service role key
     const adminClient = await createAdminClient();
+
+    // Try to create auth user
     const { data: authData, error: createError } =
       await adminClient.auth.admin.createUser({
         email,
@@ -217,77 +276,128 @@ export async function POST(request: NextRequest) {
         email_confirm: true,
       });
 
+    // If user already exists in auth, find them and ensure profile exists
     if (createError) {
-      console.error('[admin/users] Error creating user:', createError);
-      return NextResponse.json(
-        { error: createError.message },
-        { status: 400 }
-      );
-    }
+      const alreadyRegistered = createError.message?.toLowerCase().includes('already')
+        && createError.message?.toLowerCase().includes('registered');
 
-    // Ensure profile exists
-    if (authData.user) {
-      const now = new Date().toISOString();
-      const referralCode = authData.user.id.slice(0, 8).toUpperCase();
-
-      const profileData = {
-        id: authData.user.id,
-        email,
-        full_name: full_name || '',
-        plan: plan || 'starter',
-        role: 'user',
-        is_active: true,
-        niche: null,
-        preferred_tone: 'casual',
-        onboarding_completed: false,
-        xp_points: 0,
-        level: 'iniciante',
-        current_streak: 0,
-        longest_streak: 0,
-        ai_credits_remaining: 10,
-        ai_credits_monthly: 10,
-        saved_variables: {},
-        push_subscription: null,
-        notification_prefs: {},
-        referral_code: referralCode,
-        referred_by: null,
-        webhook_source: null,
-        password_changed: false,
-        last_login_at: null,
-        created_at: now,
-        updated_at: now,
-      };
-
-      // Strategy 1: Try RPC function
-      let profileCreated = false;
-      try {
-        const { error: rpcError } = await supabase.rpc('admin_upsert_profile', {
-          p_profile: profileData,
-        });
-        if (!rpcError) profileCreated = true;
-      } catch {
-        // RPC not available
+      if (!alreadyRegistered) {
+        return NextResponse.json({ error: createError.message }, { status: 400 });
       }
 
-      // Strategy 2: Try service role client (direct upsert)
-      if (!profileCreated) {
-        const { error: upsertError } = await adminClient
-          .from('profiles')
-          .upsert(profileData, { onConflict: 'id' });
+      // Find the existing auth user
+      const { data: listData } = await adminClient.auth.admin.listUsers({ perPage: 1000 });
+      const existingUser = listData?.users?.find(
+        (u) => u.email?.toLowerCase() === email.toLowerCase()
+      );
 
-        if (upsertError) {
-          console.error('[admin/users] Error upserting profile:', upsertError);
-          return NextResponse.json(
-            { error: `User created but profile failed: ${upsertError.message}` },
-            { status: 500 }
-          );
-        }
+      if (!existingUser) {
+        return NextResponse.json(
+          { error: 'Usuário existe no auth mas não foi encontrado. Tente novamente.' },
+          { status: 400 }
+        );
+      }
+
+      // Update password to the one specified
+      await adminClient.auth.admin.updateUserById(existingUser.id, {
+        password,
+        email_confirm: true,
+      });
+
+      // Create/update profile
+      const profileData = buildProfileData(existingUser.id, email, full_name, plan);
+      const { error: profileError } = await upsertProfile(supabase, adminClient, profileData);
+
+      if (profileError) {
+        return NextResponse.json(
+          { error: `Perfil não pôde ser criado: ${profileError}` },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({ user: existingUser, synced: true }, { status: 201 });
+    }
+
+    // New user created successfully - ensure profile exists
+    if (authData.user) {
+      const profileData = buildProfileData(authData.user.id, email, full_name, plan);
+      const { error: profileError } = await upsertProfile(supabase, adminClient, profileData);
+
+      if (profileError) {
+        return NextResponse.json(
+          { error: `User created but profile failed: ${profileError}` },
+          { status: 500 }
+        );
       }
     }
 
     return NextResponse.json({ user: authData.user }, { status: 201 });
   } catch (err) {
     console.error('[admin/users] Unexpected error creating user:', err);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT: Sync auth.users with profiles table (create missing profiles)
+export async function PUT() {
+  try {
+    const { error, supabase } = await getAdminUser();
+    if (error) return error;
+
+    const adminClient = await createAdminClient();
+
+    // Get all auth users
+    const allAuthUsers: { id: string; email?: string; created_at: string }[] = [];
+    let page = 1;
+    const perPage = 500;
+    while (true) {
+      const { data } = await adminClient.auth.admin.listUsers({ page, perPage });
+      if (!data?.users?.length) break;
+      allAuthUsers.push(...data.users.map(u => ({ id: u.id, email: u.email, created_at: u.created_at })));
+      if (data.users.length < perPage) break;
+      page++;
+    }
+
+    // Get all existing profile IDs
+    const { data: existingProfiles } = await adminClient
+      .from('profiles')
+      .select('id');
+
+    const existingIds = new Set((existingProfiles ?? []).map(p => p.id));
+
+    // Find auth users without profiles
+    const missing = allAuthUsers.filter(u => !existingIds.has(u.id));
+
+    if (missing.length === 0) {
+      return NextResponse.json({ synced: 0, message: 'Todos os usuários já possuem perfil.' });
+    }
+
+    // Create profiles for missing users
+    let synced = 0;
+    const errors: string[] = [];
+
+    for (const user of missing) {
+      const profileData = buildProfileData(user.id, user.email || '', '', 'starter');
+      profileData.created_at = user.created_at;
+      const { error: profileError } = await upsertProfile(supabase, adminClient, profileData);
+
+      if (profileError) {
+        errors.push(`${user.email}: ${profileError}`);
+      } else {
+        synced++;
+      }
+    }
+
+    return NextResponse.json({
+      synced,
+      total_missing: missing.length,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (err) {
+    console.error('[admin/users] Sync error:', err);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
