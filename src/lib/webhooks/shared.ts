@@ -134,11 +134,14 @@ export async function handlePurchase(
   const now = new Date().toISOString();
   const credits = getAiCreditsForPlan(plan);
 
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
   const { error: updateError } = await supabase
     .from('profiles')
     .update({
       plan,
       plan_started_at: now,
+      plan_expires_at: expiresAt,
       ai_credits_remaining: credits.remaining,
       ai_credits_monthly: credits.monthly,
       webhook_source: source,

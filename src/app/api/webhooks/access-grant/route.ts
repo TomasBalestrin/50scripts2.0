@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
           authError.message?.toLowerCase().includes('duplicate')) {
         await supabase.from('webhook_logs').insert({
           source: source || 'access-grant',
-          event_type: 'purchase',
+          event_type: 'access_grant',
           payload: { email, name, source, referral_code },
           email_extracted: email,
           status: 'duplicate',
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     // 8. Log to webhook_logs
     await supabase.from('webhook_logs').insert({
       source: source || 'access-grant',
-      event_type: 'purchase',
+      event_type: 'access_grant',
       payload: { email, name, source, referral_code },
       email_extracted: email,
       status: 'success',
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
       const supabase = await createAdminClient();
       await supabase.from('webhook_logs').insert({
         source: 'access-grant',
-        event_type: 'purchase',
+        event_type: 'access_grant',
         payload: {},
         email_extracted: '',
         status: 'error',
