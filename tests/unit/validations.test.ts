@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   loginSchema,
-  changePasswordSchema,
   onboardingSchema,
   scriptUsageSchema,
   scriptRatingSchema,
@@ -83,62 +82,6 @@ describe('Zod Validation Schemas', () => {
         password: '123456',
       });
       expect(result.success).toBe(true);
-    });
-  });
-
-  describe('changePasswordSchema', () => {
-    it('should accept matching passwords with 8+ characters', () => {
-      const result = changePasswordSchema.safeParse({
-        password: 'newpassword123',
-        confirmPassword: 'newpassword123',
-      });
-      expect(result.success).toBe(true);
-    });
-
-    it('should reject non-matching passwords', () => {
-      const result = changePasswordSchema.safeParse({
-        password: 'newpassword123',
-        confirmPassword: 'differentpassword',
-      });
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject password shorter than 8 characters', () => {
-      const result = changePasswordSchema.safeParse({
-        password: '1234567',
-        confirmPassword: '1234567',
-      });
-      expect(result.success).toBe(false);
-    });
-
-    it('should accept password with exactly 8 characters', () => {
-      const result = changePasswordSchema.safeParse({
-        password: '12345678',
-        confirmPassword: '12345678',
-      });
-      expect(result.success).toBe(true);
-    });
-
-    it('should have error on confirmPassword path when passwords differ', () => {
-      const result = changePasswordSchema.safeParse({
-        password: 'newpassword123',
-        confirmPassword: 'wrong',
-      });
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        const confirmError = result.error.issues.find(
-          (issue) => issue.path.includes('confirmPassword')
-        );
-        expect(confirmError).toBeDefined();
-      }
-    });
-
-    it('should reject empty password', () => {
-      const result = changePasswordSchema.safeParse({
-        password: '',
-        confirmPassword: '',
-      });
-      expect(result.success).toBe(false);
     });
   });
 

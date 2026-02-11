@@ -11,7 +11,6 @@ interface UseAuthReturn {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
-  changePassword: (newPassword: string) => Promise<{ error: string | null }>;
 }
 
 export function useAuth(): UseAuthReturn {
@@ -25,7 +24,7 @@ export function useAuth(): UseAuthReturn {
   const fetchProfile = useCallback(async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, full_name, email, plan, role, niche, password_changed, onboarding_completed')
+      .select('id, full_name, email, plan, role, niche, onboarding_completed')
       .eq('id', userId)
       .single();
 
@@ -96,28 +95,11 @@ export function useAuth(): UseAuthReturn {
     setProfile(null);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const changePassword = useCallback(async (newPassword: string): Promise<{ error: string | null }> => {
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
-      if (error) {
-        return { error: error.message };
-      }
-
-      return { error: null };
-    } catch {
-      return { error: 'Erro inesperado ao alterar senha' };
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   return {
     user,
     profile,
     loading,
     signIn,
     signOut,
-    changePassword,
   };
 }

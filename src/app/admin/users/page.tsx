@@ -209,11 +209,6 @@ export default function AdminUsersPage() {
         return;
       }
 
-      if (selectedUser?.id === userId) {
-        setSelectedUser((prev) =>
-          prev ? { ...prev, password_changed: false } : null
-        );
-      }
       showToast('success', 'Senha resetada para a padrão.');
     } finally {
       setActionLoading(false);

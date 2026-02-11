@@ -56,7 +56,6 @@ export async function PATCH(
       updated_at: new Date().toISOString(),
     };
     if (email) profileUpdates.email = email;
-    if (password) profileUpdates.password_changed = false;
 
     await adminClient
       .from('profiles')

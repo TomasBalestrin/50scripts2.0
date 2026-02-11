@@ -37,12 +37,6 @@ export async function POST(
       );
     }
 
-    // Mark password_changed = false so user is prompted to change it
-    await adminClient
-      .from('profiles')
-      .update({ password_changed: false, updated_at: new Date().toISOString() })
-      .eq('id', id);
-
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[admin/users/reset-password] Unexpected error:', err);

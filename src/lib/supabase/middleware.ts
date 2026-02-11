@@ -50,10 +50,10 @@ export async function updateSession(request: NextRequest) {
   // Only check profile for page routes, not API calls
   const isApiRoute = pathname.startsWith('/api/');
 
-  if (user && !isApiRoute && pathname !== '/change-password' && pathname !== '/login') {
+  if (user && !isApiRoute && pathname !== '/login') {
     const isAdminRoute = pathname.startsWith('/admin');
 
-    // OPTIMIZATION: Once password_changed + onboarding_completed are both true,
+    // OPTIMIZATION: Once onboarding_completed is true,
     // we store user.id in a cookie to skip the profiles query on future navigations.
     // This saves ~50-100ms per page load for the common case.
     const setupCookie = request.cookies.get('_setup_done')?.value;
@@ -63,22 +63,14 @@ export async function updateSession(request: NextRequest) {
     if (!setupDone || isAdminRoute) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('password_changed, onboarding_completed, role, plan')
+        .select('onboarding_completed, role, plan')
         .eq('id', user.id)
         .single();
 
       if (profile) {
-        if (!profile.password_changed && pathname !== '/change-password') {
-          const url = request.nextUrl.clone();
-          url.pathname = '/change-password';
-          return NextResponse.redirect(url);
-        }
-
         if (
-          profile.password_changed &&
           !profile.onboarding_completed &&
-          pathname !== '/onboarding' &&
-          pathname !== '/change-password'
+          pathname !== '/onboarding'
         ) {
           const url = request.nextUrl.clone();
           url.pathname = '/onboarding';
@@ -93,7 +85,7 @@ export async function updateSession(request: NextRequest) {
         }
 
         // Cache setup completion to skip future profile queries
-        if (profile.password_changed && profile.onboarding_completed && !setupDone) {
+        if (profile.onboarding_completed && !setupDone) {
           supabaseResponse.cookies.set('_setup_done', user.id, {
             maxAge: 86400 * 7, // 7 days
             httpOnly: true,
