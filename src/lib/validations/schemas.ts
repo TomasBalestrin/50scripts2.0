@@ -5,14 +5,6 @@ export const loginSchema = z.object({
   password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
 });
 
-export const changePasswordSchema = z.object({
-  password: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Senhas não conferem',
-  path: ['confirmPassword'],
-});
-
 export const onboardingSchema = z.object({
   niche: z.string().min(2, 'Informe seu nicho'),
   difficulty: z.string().min(2, 'Informe sua maior dificuldade'),
@@ -70,7 +62,6 @@ export const aiConversationSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
-export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type OnboardingInput = z.infer<typeof onboardingSchema>;
 export type ScriptUsageInput = z.infer<typeof scriptUsageSchema>;
 export type ScriptRatingInput = z.infer<typeof scriptRatingSchema>;

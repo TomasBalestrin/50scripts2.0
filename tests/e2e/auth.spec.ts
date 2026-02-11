@@ -47,37 +47,6 @@ test.describe('Authentication Flow', () => {
     });
   });
 
-  test.describe('Password Change (First Login)', () => {
-    test.skip('should show password change form for users with default password', async ({ page }) => {
-      // TODO: Login with user that has password_changed=false
-      // 1. Login with default password
-      // 2. Verify redirect to /alterar-senha or password change modal
-      // 3. Verify form has password and confirmPassword fields
-    });
-
-    test.skip('should validate password minimum length (8 chars)', async ({ page }) => {
-      // TODO: Navigate to password change form
-      // 1. Enter password shorter than 8 characters
-      // 2. Submit form
-      // 3. Verify validation error message
-    });
-
-    test.skip('should validate passwords match', async ({ page }) => {
-      // TODO: Navigate to password change form
-      // 1. Enter different passwords in password and confirm fields
-      // 2. Submit form
-      // 3. Verify "Senhas não conferem" error appears
-    });
-
-    test.skip('should successfully change password and redirect', async ({ page }) => {
-      // TODO: Complete password change flow
-      // 1. Enter matching valid passwords
-      // 2. Submit form
-      // 3. Verify success message
-      // 4. Verify redirect to onboarding or dashboard
-    });
-  });
-
   test.describe('Onboarding', () => {
     test.skip('should display onboarding form for new users', async ({ page }) => {
       // TODO: Login with user that has onboarding_completed=false
