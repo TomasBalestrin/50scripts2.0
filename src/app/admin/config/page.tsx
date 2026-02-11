@@ -51,6 +51,7 @@ interface AppConfig {
 interface PlatformConfigData {
   token: string;
   products: {
+    starter: string;
     pro: string;
     premium: string;
     copilot: string;
@@ -122,9 +123,9 @@ export default function AdminConfigPage() {
   const [webhookStatusLoading, setWebhookStatusLoading] = useState(true);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [platformConfigs, setPlatformConfigs] = useState<Record<string, PlatformConfigData>>({
-    hotmart: { token: '', products: { pro: '', premium: '', copilot: '' } },
-    kiwify: { token: '', products: { pro: '', premium: '', copilot: '' } },
-    pagtrust: { token: '', products: { pro: '', premium: '', copilot: '' } },
+    hotmart: { token: '', products: { starter: '', pro: '', premium: '', copilot: '' } },
+    kiwify: { token: '', products: { starter: '', pro: '', premium: '', copilot: '' } },
+    pagtrust: { token: '', products: { starter: '', pro: '', premium: '', copilot: '' } },
   });
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
 
@@ -181,6 +182,7 @@ export default function AdminConfigPage() {
             platforms[pid] = {
               token: val.token || '',
               products: {
+                starter: val.products?.starter || '',
                 pro: val.products?.pro || '',
                 premium: val.products?.premium || '',
                 copilot: val.products?.copilot || '',

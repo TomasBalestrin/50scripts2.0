@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Missing buyer email' }, { status: 400 });
         }
 
-        const plan = productMap[productId] || 'pro';
+        const plan = productMap[productId] || 'starter';
         const result = await handlePurchase(buyerEmail, buyerName, plan, SOURCE, {
           product_id: productId,
           transaction_id: transactionId,

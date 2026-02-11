@@ -136,7 +136,10 @@ export async function handlePurchase(
   const now = new Date().toISOString();
   const credits = getAiCreditsForPlan(plan);
 
-  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  // Starter (base product) = permanent access, no expiration
+  // Paid plans = 30-day expiration
+  const isBaseAccess = plan === 'starter';
+  const expiresAt = isBaseAccess ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
   const { error: updateError } = await supabase
     .from('profiles')
