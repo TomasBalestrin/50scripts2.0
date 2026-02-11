@@ -17,7 +17,7 @@ function getResend() {
 }
 
 const FROM_EMAIL = process.env.FROM_EMAIL || '50 Scripts <noreply@50scripts.com>';
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://50scripts.com';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://50scripts.cleitonquerobin.com.br';
 
 type EmailResult = { success: boolean; error?: string };
 
