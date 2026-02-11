@@ -23,7 +23,7 @@ export async function GET() {
   // Get all active leads (not closed or lost)
   const { data: leads } = await supabase
     .from('leads')
-    .select('*')
+    .select('id, name, phone, stage, expected_value, next_followup_at, last_contact_at, notes')
     .eq('user_id', user.id)
     .not('stage', 'in', '("fechado","perdido")')
     .order('next_followup_at', { ascending: true, nullsFirst: false });

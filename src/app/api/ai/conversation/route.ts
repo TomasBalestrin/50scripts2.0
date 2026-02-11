@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       .limit(3),
     supabase
       .from('ai_prompts')
-      .select('*')
+      .select('id, system_prompt, user_prompt_template, model, max_tokens, temperature')
       .eq('type', 'conversation')
       .eq('is_active', true)
       .single(),
