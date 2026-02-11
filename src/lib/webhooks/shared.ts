@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/server';
-import { generateSecurePassword } from '@/lib/auth-utils';
+import { getDefaultPassword } from '@/lib/auth-utils';
 
 /**
  * Returns AI credits configuration for a given plan
@@ -74,10 +74,11 @@ export async function findOrCreateUser(
     return { userId: existingProfile.id, created: false };
   }
 
-  // Create new auth user
+  // Create new auth user with default password from app_config
+  const defaultPassword = await getDefaultPassword();
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email,
-    password: generateSecurePassword(),
+    password: defaultPassword,
     email_confirm: true,
   });
 
