@@ -39,13 +39,18 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-[#020617]">
+      {/* Skip to content - accessibility */}
+      <a href="#main-content" className="skip-link">
+        Pular para o conteúdo
+      </a>
+
       {/* Desktop sidebar */}
       <Sidebar plan={plan} role={role} userName={userName} userAvatar={null} />
 
       {/* Main content area */}
       <div className="flex flex-col lg:pl-64">
         <Header userName={userName} userAvatar={null} plan={plan} role={role} />
-        <main className="flex-1 pb-20 lg:pb-6">
+        <main id="main-content" className="flex-1 pb-20 lg:pb-6" role="main">
           {children}
         </main>
       </div>
