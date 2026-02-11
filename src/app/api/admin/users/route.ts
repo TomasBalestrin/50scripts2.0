@@ -199,7 +199,7 @@ function buildProfileData(userId: string, email: string, full_name?: string, pla
     is_active: true,
     niche: null,
     preferred_tone: 'casual',
-    onboarding_completed: false,
+    onboarding_completed: true,
     xp_points: 0,
     level: 'iniciante',
     current_streak: 0,
