@@ -7,8 +7,10 @@ export const metadata: Metadata = {
   description: "Sistema Inteligente de Scripts Persuasivos para WhatsApp",
   manifest: "/manifest.json",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: [
+      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
   appleWebApp: {
     capable: true,
