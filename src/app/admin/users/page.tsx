@@ -17,6 +17,7 @@ import {
   UserPlus,
   Eye,
   EyeOff,
+  RefreshCw,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -74,6 +75,8 @@ export default function AdminUsersPage() {
     toastTimer.current = setTimeout(() => setActionToast(null), 4000);
   }
 
+  const [syncLoading, setSyncLoading] = useState(false);
+
   const [fetchError, setFetchError] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -122,6 +125,28 @@ export default function AdminUsersPage() {
   }, [fetchUsers]);
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+  async function handleSync() {
+    setSyncLoading(true);
+    try {
+      const res = await fetch('/api/admin/users', { method: 'PUT' });
+      const data = await res.json();
+      if (res.ok) {
+        if (data.synced > 0) {
+          showToast('success', `${data.synced} perfil(is) sincronizado(s)`);
+          await fetchUsers();
+        } else {
+          showToast('success', 'Todos os usuários já possuem perfil');
+        }
+      } else {
+        showToast('error', data.error || 'Erro ao sincronizar');
+      }
+    } catch {
+      showToast('error', 'Erro de conexão ao sincronizar');
+    } finally {
+      setSyncLoading(false);
+    }
+  }
 
   // --- Actions ---
 
@@ -329,18 +354,33 @@ export default function AdminUsersPage() {
       )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Usuários</h1>
-        <Button
-          onClick={() => {
-            setAddForm({ email: '', password: '', full_name: '', plan: 'starter' });
-            setAddError('');
-            setShowAddPassword(false);
-            setShowAddModal(true);
-          }}
-          className="bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar Usuário
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleSync}
+            disabled={syncLoading}
+            variant="outline"
+            className="border-[#131B35] text-gray-300 hover:bg-[#131B35] hover:text-white"
+          >
+            {syncLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-2 h-4 w-4" />
+            )}
+            Sincronizar
+          </Button>
+          <Button
+            onClick={() => {
+              setAddForm({ email: '', password: '', full_name: '', plan: 'starter' });
+              setAddError('');
+              setShowAddPassword(false);
+              setShowAddModal(true);
+            }}
+            className="bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar Usuário
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
