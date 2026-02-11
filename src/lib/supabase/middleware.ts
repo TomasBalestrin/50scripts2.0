@@ -53,46 +53,18 @@ export async function updateSession(request: NextRequest) {
   if (user && !isApiRoute && pathname !== '/login') {
     const isAdminRoute = pathname.startsWith('/admin');
 
-    // OPTIMIZATION: Once onboarding_completed is true,
-    // we store user.id in a cookie to skip the profiles query on future navigations.
-    // This saves ~50-100ms per page load for the common case.
-    const setupCookie = request.cookies.get('_setup_done')?.value;
-    const setupDone = setupCookie === user.id;
-
-    // Skip profile query when setup is done AND not an admin route
-    if (!setupDone || isAdminRoute) {
+    // Admin route protection - only query profile for admin routes
+    if (isAdminRoute) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('onboarding_completed, role, plan')
+        .select('role')
         .eq('id', user.id)
         .single();
 
-      if (profile) {
-        if (
-          !profile.onboarding_completed &&
-          pathname !== '/onboarding'
-        ) {
-          const url = request.nextUrl.clone();
-          url.pathname = '/onboarding';
-          return NextResponse.redirect(url);
-        }
-
-        // Admin route protection
-        if (isAdminRoute && profile.role !== 'admin') {
-          const url = request.nextUrl.clone();
-          url.pathname = '/';
-          return NextResponse.redirect(url);
-        }
-
-        // Cache setup completion to skip future profile queries
-        if (profile.onboarding_completed && !setupDone) {
-          supabaseResponse.cookies.set('_setup_done', user.id, {
-            maxAge: 86400 * 7, // 7 days
-            httpOnly: true,
-            sameSite: 'lax' as const,
-            path: '/',
-          });
-        }
+      if (profile?.role !== 'admin') {
+        const url = request.nextUrl.clone();
+        url.pathname = '/';
+        return NextResponse.redirect(url);
       }
     }
   }

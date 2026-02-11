@@ -5,12 +5,6 @@ export const loginSchema = z.object({
   password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
 });
 
-export const onboardingSchema = z.object({
-  niche: z.string().min(2, 'Informe seu nicho'),
-  difficulty: z.string().min(2, 'Informe sua maior dificuldade'),
-  preferred_tone: z.enum(['formal', 'casual', 'direct']),
-});
-
 export const scriptUsageSchema = z.object({
   script_id: z.string().uuid(),
   lead_id: z.string().uuid().optional(),
@@ -62,7 +56,6 @@ export const aiConversationSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
-export type OnboardingInput = z.infer<typeof onboardingSchema>;
 export type ScriptUsageInput = z.infer<typeof scriptUsageSchema>;
 export type ScriptRatingInput = z.infer<typeof scriptRatingSchema>;
 export type LeadInput = z.infer<typeof leadSchema>;

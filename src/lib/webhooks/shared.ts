@@ -110,6 +110,7 @@ export async function findOrCreateUser(
     plan: 'starter',
     referral_code: referralCode,
     webhook_source: webhookSource,
+    onboarding_completed: true,
   });
 
   if (profileError) {

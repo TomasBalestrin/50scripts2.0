@@ -47,34 +47,6 @@ test.describe('Authentication Flow', () => {
     });
   });
 
-  test.describe('Onboarding', () => {
-    test.skip('should display onboarding form for new users', async ({ page }) => {
-      // TODO: Login with user that has onboarding_completed=false
-      // 1. Verify onboarding page/modal is shown
-      // 2. Verify niche, difficulty, and tone fields are present
-    });
-
-    test.skip('should require niche and difficulty fields', async ({ page }) => {
-      // TODO: Attempt to submit onboarding without filling required fields
-      // 1. Submit empty form
-      // 2. Verify validation errors for niche and difficulty
-    });
-
-    test.skip('should allow selecting preferred tone', async ({ page }) => {
-      // TODO: Test tone selection UI
-      // 1. Verify three tone options: formal, casual, direct
-      // 2. Select each and verify selection state
-    });
-
-    test.skip('should complete onboarding and redirect to dashboard', async ({ page }) => {
-      // TODO: Complete full onboarding flow
-      // 1. Fill in niche, difficulty, and tone
-      // 2. Submit form
-      // 3. Verify redirect to main dashboard
-      // 4. Verify onboarding_completed is set to true
-    });
-  });
-
   test.describe('Logout', () => {
     test.skip('should log out and redirect to login page', async ({ page }) => {
       // TODO: Login first, then test logout

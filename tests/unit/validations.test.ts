@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   loginSchema,
-  onboardingSchema,
   scriptUsageSchema,
   scriptRatingSchema,
   leadSchema,
@@ -82,47 +81,6 @@ describe('Zod Validation Schemas', () => {
         password: '123456',
       });
       expect(result.success).toBe(true);
-    });
-  });
-
-  describe('onboardingSchema', () => {
-    it('should accept valid onboarding data', () => {
-      const result = onboardingSchema.safeParse({
-        niche: 'SaaS',
-        difficulty: 'fechamento',
-        preferred_tone: 'formal',
-      });
-      expect(result.success).toBe(true);
-    });
-
-    it('should reject niche shorter than 2 characters', () => {
-      const result = onboardingSchema.safeParse({
-        niche: 'A',
-        difficulty: 'fechamento',
-        preferred_tone: 'formal',
-      });
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject invalid tone', () => {
-      const result = onboardingSchema.safeParse({
-        niche: 'SaaS',
-        difficulty: 'fechamento',
-        preferred_tone: 'aggressive',
-      });
-      expect(result.success).toBe(false);
-    });
-
-    it('should accept all valid tones', () => {
-      const tones = ['formal', 'casual', 'direct'] as const;
-      tones.forEach((tone) => {
-        const result = onboardingSchema.safeParse({
-          niche: 'SaaS',
-          difficulty: 'fechamento',
-          preferred_tone: tone,
-        });
-        expect(result.success).toBe(true);
-      });
     });
   });
 
