@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
 
     // 4. Handle events
     switch (event) {
+      case 'PURCHASE_APPROVED':
       case 'PURCHASE_COMPLETE': {
         if (!buyerEmail) {
           await logWebhookEvent(SOURCE, 'purchase', body, 'error', '', undefined, 'Missing buyer email');
