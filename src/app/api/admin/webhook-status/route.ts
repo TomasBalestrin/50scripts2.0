@@ -31,7 +31,7 @@ export async function GET() {
       name: 'Hotmart',
       path: '/api/webhooks/hotmart',
       auth: { header: 'X-Hotmart-Hottok', envVar: 'HOTMART_HOTTOK', configured: !!process.env.HOTMART_HOTTOK },
-      events: ['PURCHASE_COMPLETE', 'PURCHASE_CANCELED', 'PURCHASE_REFUNDED', 'SUBSCRIPTION_CANCELLATION'],
+      events: ['PURCHASE_APPROVED', 'PURCHASE_COMPLETE', 'PURCHASE_CANCELED', 'PURCHASE_REFUNDED', 'PURCHASE_CHARGEBACK', 'SUBSCRIPTION_CANCELLATION'],
       description: 'Recebe eventos de compra, cancelamento e reembolso da Hotmart',
       products: {
         starter: { label: '50 Scripts (Acesso Base)', envVar: 'HOTMART_PRODUCT_STARTER', configured: !!process.env.HOTMART_PRODUCT_STARTER },

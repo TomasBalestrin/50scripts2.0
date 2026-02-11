@@ -413,7 +413,7 @@ export default function AdminConfigPage() {
                                 },
                               }))
                             }
-                            placeholder={`ID do produto ${prod.label}`}
+                            placeholder={`ID(s) do produto ${prod.label} (separar por vírgula)`}
                             className="border-[#131B35] bg-[#131B35] text-white placeholder:text-gray-600 text-xs"
                           />
                         </div>

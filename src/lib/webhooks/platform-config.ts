@@ -76,12 +76,22 @@ export async function getPlatformConfig(platformId: string): Promise<PlatformCon
 
 /**
  * Builds a product ID → plan mapping from platform config.
+ * Supports multiple IDs per plan (comma-separated).
  */
 export function buildProductMap(config: PlatformConfig): Record<string, string> {
   const map: Record<string, string> = {};
-  if (config.products.starter) map[config.products.starter] = 'starter';
-  if (config.products.pro) map[config.products.pro] = 'pro';
-  if (config.products.premium) map[config.products.premium] = 'premium';
-  if (config.products.copilot) map[config.products.copilot] = 'copilot';
+  const plans: Array<[string, string]> = [
+    ['starter', config.products.starter],
+    ['pro', config.products.pro],
+    ['premium', config.products.premium],
+    ['copilot', config.products.copilot],
+  ];
+  for (const [plan, ids] of plans) {
+    if (!ids) continue;
+    for (const id of ids.split(',')) {
+      const trimmed = id.trim();
+      if (trimmed) map[trimmed] = plan;
+    }
+  }
   return map;
 }
