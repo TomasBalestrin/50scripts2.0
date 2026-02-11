@@ -18,7 +18,7 @@ export async function GET() {
       .single(),
     supabase
       .from('user_badges')
-      .select('*')
+      .select('badge_type, earned_at')
       .eq('user_id', user.id)
       .order('earned_at', { ascending: false }),
     supabase
