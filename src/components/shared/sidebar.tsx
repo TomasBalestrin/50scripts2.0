@@ -94,23 +94,23 @@ const navItems: NavItem[] = [
     section: "Pro",
   },
   {
-    label: "IA Copilot",
-    href: "/ai-copilot",
-    icon: Bot,
-    requiredPlan: "premium",
-  },
-  {
     label: "Coleções",
     href: "/colecoes",
     icon: FolderHeart,
     requiredPlan: "premium",
   },
   {
+    label: "IA Copilot",
+    href: "/ai-copilot",
+    icon: Bot,
+    requiredPlan: "copilot",
+    section: "Premium",
+  },
+  {
     label: "Agenda Smart",
     href: "/agenda/smart",
     icon: Brain,
     requiredPlan: "copilot",
-    section: "Premium",
   },
 ];
 

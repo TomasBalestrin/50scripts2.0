@@ -393,7 +393,7 @@ export default function PatternsPage() {
   }
 
   const userPlan = profile?.plan || 'starter';
-  const hasPremium = hasAccess(userPlan, 'premium');
+  const hasPremium = hasAccess(userPlan, 'copilot');
 
   return (
     <div className="min-h-screen bg-[#020617] p-4 md:p-6">
@@ -409,7 +409,7 @@ export default function PatternsPage() {
               Analise de padroes de vendas com IA
             </p>
           </div>
-          <Badge className="bg-purple-500/20 text-purple-400">Pro</Badge>
+          <Badge className="bg-amber-500/20 text-amber-400">Premium</Badge>
         </div>
 
         {/* Locked feature gate */}
