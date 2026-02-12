@@ -40,7 +40,7 @@ export async function GET(
         : Promise.resolve({ data: null }),
       supabase
         .from('scripts')
-        .select('id, title, content, context, min_plan, tone_variations, display_order, global_effectiveness, global_usage_count, global_conversion_rate, audio_url, category_id')
+        .select('id, title, content, content_formal, content_direct, context_description, min_plan, display_order, global_effectiveness, global_usage_count, global_conversion_rate, audio_url, category_id')
         .eq('category_id', category.id)
         .eq('is_active', true)
         .order('display_order', { ascending: true }),
