@@ -215,7 +215,7 @@ export default function AICopilotPage() {
           <Bot className="w-6 h-6 text-[#1D4ED8]" />
           IA Copilot
         </h1>
-        <Badge className="bg-amber-500/20 text-amber-400">Copilot</Badge>
+        <Badge className="bg-purple-500/20 text-purple-400">Pro</Badge>
       </div>
 
       {/* Input Section */}

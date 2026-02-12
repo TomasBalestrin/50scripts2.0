@@ -141,7 +141,7 @@ export default function AIGeneratorPage() {
       context_description: parsed?.context_description || context,
       is_ai_generated: true,
       generated_by_user_id: user.id,
-      min_plan: 'premium',
+      min_plan: 'pro',
       display_order: 999,
     });
     setSaved(true);
