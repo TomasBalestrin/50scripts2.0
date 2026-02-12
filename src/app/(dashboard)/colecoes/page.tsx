@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import useSWR from 'swr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { FolderHeart, Plus, FileText, Star, Trash2, Copy, Check } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { ToastContainer } from '@/components/shared/toast-container';
 
 interface Collection {
   id: string;
@@ -29,30 +32,16 @@ interface Collection {
 }
 
 export default function ColecoesPage() {
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: collectionsData, isLoading: loading, mutate: mutateCollections } = useSWR<{ collections: Collection[] }>('/api/collections');
+  const collections = collectionsData?.collections || [];
+
   const [newName, setNewName] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const router = useRouter();
-
-  useEffect(() => {
-    fetchCollections();
-  }, []);
-
-  async function fetchCollections() {
-    try {
-      const res = await fetch('/api/collections');
-      if (res.ok) {
-        const data = await res.json();
-        setCollections(data.collections || []);
-      }
-    } catch {
-      // ignore
-    }
-    setLoading(false);
-  }
+  const { toasts, toast, toastWithUndo, dismiss } = useToast();
+  const deleteTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
@@ -65,24 +54,56 @@ export default function ColecoesPage() {
       if (res.ok) {
         setNewName('');
         setDialogOpen(false);
-        fetchCollections();
+        mutateCollections();
+        toast('Coleção criada com sucesso', 'success');
+      } else {
+        toast('Erro ao criar coleção', 'error');
       }
     } catch {
-      // ignore
+      toast('Erro ao criar coleção', 'error');
     }
   };
 
   const handleRemoveScript = async (collectionId: string, scriptId: string) => {
-    try {
-      await fetch(`/api/collections/${collectionId}/scripts`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ script_id: scriptId }),
-      });
-      fetchCollections();
-    } catch {
-      // ignore
-    }
+    // Save current data for undo
+    const previousData = collectionsData;
+
+    // Optimistic removal
+    const optimistic = {
+      collections: collections.map((c) =>
+        c.id === collectionId
+          ? { ...c, scripts: c.scripts.filter((s) => s.id !== scriptId), scripts_count: c.scripts_count - 1 }
+          : c
+      ),
+    };
+    mutateCollections(optimistic, false);
+
+    // Schedule actual deletion after 5 seconds
+    const timerKey = `${collectionId}-${scriptId}`;
+    const deleteTimer = setTimeout(async () => {
+      deleteTimersRef.current.delete(timerKey);
+      try {
+        await fetch(`/api/collections/${collectionId}/scripts`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ script_id: scriptId }),
+        });
+        mutateCollections();
+      } catch {
+        mutateCollections();
+      }
+    }, 5000);
+    deleteTimersRef.current.set(timerKey, deleteTimer);
+
+    // Show undo toast
+    toastWithUndo('Script removido da coleção', () => {
+      const timer = deleteTimersRef.current.get(timerKey);
+      if (timer) {
+        clearTimeout(timer);
+        deleteTimersRef.current.delete(timerKey);
+      }
+      mutateCollections(previousData, false);
+    });
   };
 
   const handleCopy = async (content: string, id: string) => {
@@ -220,6 +241,8 @@ export default function ColecoesPage() {
           ))}
         </div>
       )}
+
+      <ToastContainer toasts={toasts} dismiss={dismiss} />
     </div>
   );
 }

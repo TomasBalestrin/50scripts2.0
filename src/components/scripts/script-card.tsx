@@ -21,12 +21,22 @@ export function ScriptCard({ script, locked = false, onClick }: ScriptCardProps)
     <motion.div
       whileHover={{ scale: locked ? 1 : 1.02 }}
       whileTap={{ scale: locked ? 1 : 0.98 }}
+      role="button"
+      tabIndex={locked ? -1 : 0}
+      aria-label={`Script: ${script.title}${locked ? ' (Premium - bloqueado)' : ''}`}
+      aria-disabled={locked}
       className={cn(
-        'relative cursor-pointer overflow-hidden rounded-xl border border-[#131B35] bg-[#0A0F1E] p-5 transition-colors hover:border-[#1D4ED8]/30',
+        'relative cursor-pointer overflow-hidden rounded-xl border border-[#131B35] bg-[#0A0F1E] p-5 transition-colors hover:border-[#1D4ED8]/30 focus-visible:ring-2 focus-visible:ring-[#1D4ED8] focus-visible:outline-none',
         locked && 'cursor-not-allowed'
       )}
       onClick={() => {
         if (!locked && onClick) onClick();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (!locked && onClick) onClick();
+        }
       }}
     >
       {/* Lock overlay */}
@@ -48,6 +58,7 @@ export function ScriptCard({ script, locked = false, onClick }: ScriptCardProps)
               className="shrink-0 inline-block h-2.5 w-2.5 rounded-full"
               style={{ backgroundColor: script.category.color }}
               title={script.category.name}
+              aria-label={`Categoria: ${script.category.name}`}
             />
           )}
         </div>
