@@ -40,7 +40,7 @@ const cardVariants = {
 export default function TrilhasPage() {
   const router = useRouter();
 
-  const { data: rawData, isLoading } = useSWR<ScriptCategory[] | { categories: ScriptCategory[] }>(
+  const { data: rawData, error, isLoading, mutate } = useSWR<ScriptCategory[] | { categories: ScriptCategory[] }>(
     '/api/categories',
     fetcher
   );
@@ -61,6 +61,27 @@ export default function TrilhasPage() {
             {Array.from({ length: 8 }).map((_, i) => (
               <SkeletonCard key={i} />
             ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#020617] p-4 sm:p-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <p className="text-lg text-red-400">Erro ao carregar trilhas</p>
+            <p className="mt-1 text-sm text-[#94A3B8]">
+              Tente recarregar a pagina ou volte em alguns instantes.
+            </p>
+            <button
+              onClick={() => mutate()}
+              className="mt-4 rounded-lg bg-[#1D4ED8] px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8]/90"
+            >
+              Tentar novamente
+            </button>
           </div>
         </div>
       </div>
