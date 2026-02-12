@@ -53,7 +53,7 @@ export function getAvailableFeatures(plan: Plan) {
     toneVariations: hasAccess(plan, 'pro'),
     communityMetrics: hasAccess(plan, 'pro'),
     pushNotifications: hasAccess(plan, 'pro'),
-    chromeExtension: hasAccess(plan, 'pro'),
+    chromeExtension: hasAccess(plan, 'premium'),
     pwaOffline: hasAccess(plan, 'pro'),
     gamification: hasAccess(plan, 'pro'),
     dailyChallenges: hasAccess(plan, 'pro'),
