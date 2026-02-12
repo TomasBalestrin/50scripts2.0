@@ -10,6 +10,7 @@ import { XpBar } from '@/components/gamification/xp-bar';
 import { StreakCounter } from '@/components/gamification/streak-counter';
 import { BadgeGrid } from '@/components/gamification/badge-grid';
 import { fetcher } from '@/lib/swr/fetcher';
+import { ALL_BADGES } from '@/lib/constants';
 
 interface BadgeData {
   type: string;
@@ -26,72 +27,6 @@ interface GamificationStatus {
   current_streak: number;
   longest_streak: number;
 }
-
-const ALL_BADGES: BadgeData[] = [
-  {
-    type: 'first_script',
-    name: 'Primeiro Script',
-    icon: 'ScrollText',
-    description: 'Use seu primeiro script',
-    earned: false,
-  },
-  {
-    type: 'first_sale',
-    name: 'Primeira Venda',
-    icon: 'DollarSign',
-    description: 'Registre sua primeira venda',
-    earned: false,
-  },
-  {
-    type: 'streak_7',
-    name: 'Semana de Fogo',
-    icon: 'Flame',
-    description: '7 dias seguidos de uso',
-    earned: false,
-  },
-  {
-    type: 'streak_30',
-    name: 'Mes Imparavel',
-    icon: 'CalendarCheck',
-    description: '30 dias seguidos de uso',
-    earned: false,
-  },
-  {
-    type: 'scripts_50',
-    name: 'Mestre dos Scripts',
-    icon: 'BookOpen',
-    description: 'Use 50 scripts diferentes',
-    earned: false,
-  },
-  {
-    type: 'revenue_10k',
-    name: 'Top 10K',
-    icon: 'TrendingUp',
-    description: 'Gere R$ 10.000 em vendas',
-    earned: false,
-  },
-  {
-    type: 'all_trails',
-    name: 'Explorador',
-    icon: 'Map',
-    description: 'Complete todas as trilhas',
-    earned: false,
-  },
-  {
-    type: 'ai_10',
-    name: 'AI Expert',
-    icon: 'Bot',
-    description: 'Gere 10 scripts com IA',
-    earned: false,
-  },
-  {
-    type: 'referrals_5',
-    name: 'Influenciador',
-    icon: 'Users',
-    description: 'Indique 5 amigos',
-    earned: false,
-  },
-];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -138,7 +73,8 @@ export default function BadgesPage() {
 
   // Process badges: merge earned data with ALL_BADGES
   const badges = useMemo<BadgeData[]>(() => {
-    if (!badgesRaw) return ALL_BADGES;
+    const baseBadges = ALL_BADGES.map((b) => ({ ...b, earned: false as boolean }));
+    if (!badgesRaw) return baseBadges;
 
     const earnedBadges: Array<{ badge_type: string; earned_at: string }> =
       Array.isArray(badgesRaw) ? badgesRaw : badgesRaw.badges ?? [];
@@ -147,7 +83,7 @@ export default function BadgesPage() {
       earnedBadges.map((b) => [b.badge_type, b.earned_at])
     );
 
-    return ALL_BADGES.map((badge) => ({
+    return baseBadges.map((badge) => ({
       ...badge,
       earned: earnedMap.has(badge.type),
       earned_at: earnedMap.get(badge.type),

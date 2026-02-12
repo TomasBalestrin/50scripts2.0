@@ -105,6 +105,18 @@ export const EMERGENCY_ICONS: Record<string, string> = {
   close: '🎯',
 };
 
+export const ALL_BADGES = [
+  { type: 'first_script', name: 'Primeiro Script', icon: 'ScrollText', description: 'Use seu primeiro script' },
+  { type: 'first_sale', name: 'Primeira Venda', icon: 'DollarSign', description: 'Registre sua primeira venda' },
+  { type: 'streak_7', name: 'Semana de Fogo', icon: 'Flame', description: '7 dias seguidos de uso' },
+  { type: 'streak_30', name: 'Mes Imparavel', icon: 'CalendarCheck', description: '30 dias seguidos de uso' },
+  { type: 'scripts_50', name: 'Mestre dos Scripts', icon: 'BookOpen', description: 'Use 50 scripts diferentes' },
+  { type: 'revenue_10k', name: 'Top 10K', icon: 'TrendingUp', description: 'Gere R$ 10.000 em vendas' },
+  { type: 'all_trails', name: 'Explorador', icon: 'Map', description: 'Complete todas as trilhas' },
+  { type: 'ai_10', name: 'AI Expert', icon: 'Bot', description: 'Gere 10 scripts com IA' },
+  { type: 'referrals_5', name: 'Influenciador', icon: 'Users', description: 'Indique 5 amigos' },
+] as const;
+
 export const TRAIL_SLUGS = [
   'abordagem-inicial',
   'ativacao-base',

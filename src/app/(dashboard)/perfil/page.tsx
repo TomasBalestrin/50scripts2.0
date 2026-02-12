@@ -1,17 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
 import { Profile } from '@/types/database';
-import { PLAN_LABELS, PLAN_COLORS, LEVEL_LABELS } from '@/lib/constants';
+import { PLAN_LABELS, PLAN_COLORS, ALL_BADGES } from '@/lib/constants';
+import { fetcher } from '@/lib/swr/fetcher';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { User, Trophy, Star, Flame, Settings, LogOut } from 'lucide-react';
+import { GamificationSummary } from '@/components/gamification/gamification-summary';
+import { User as UserIcon, Sparkles, LogOut } from 'lucide-react';
 
 export default function PerfilPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -27,6 +30,24 @@ export default function PerfilPage() {
   });
   const router = useRouter();
   const supabase = createClient();
+
+  // Fetch badge data
+  const { data: badgesRaw } = useSWR<
+    Array<{ badge_type: string; earned_at: string }> | { badges: Array<{ badge_type: string; earned_at: string }> }
+  >('/api/gamification/badges', fetcher);
+
+  const badges = useMemo(() => {
+    const earnedBadges: Array<{ badge_type: string; earned_at: string }> =
+      badgesRaw
+        ? Array.isArray(badgesRaw) ? badgesRaw : badgesRaw.badges ?? []
+        : [];
+    const earnedSet = new Set(earnedBadges.map((b) => b.badge_type));
+    return ALL_BADGES.map((b) => ({
+      type: b.type,
+      name: b.name,
+      earned: earnedSet.has(b.type),
+    }));
+  }, [badgesRaw]);
 
   useEffect(() => {
     async function load() {
@@ -88,53 +109,49 @@ export default function PerfilPage() {
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">Meu Perfil</h1>
 
-      {/* Plan & Level Card */}
+      {/* Plan & User Info Card */}
       <Card className="bg-[#0A0F1E] border-[#131B35]">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-[#131B35] flex items-center justify-center">
-                <User className="w-8 h-8 text-[#1D4ED8]" />
+                <UserIcon className="w-8 h-8 text-[#1D4ED8]" />
               </div>
               <div>
                 <p className="text-lg font-semibold text-white">{profile.full_name || profile.email}</p>
                 <p className="text-sm text-gray-400">{profile.email}</p>
               </div>
             </div>
-            <Badge
-              style={{ backgroundColor: PLAN_COLORS[profile.plan] }}
-              className="text-white font-semibold"
-            >
-              {PLAN_LABELS[profile.plan]}
-            </Badge>
-          </div>
-
-          <Separator className="my-4 bg-[#131B35]" />
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <Trophy className="w-5 h-5 mx-auto mb-1 text-yellow-500" />
-              <p className="text-xs text-gray-400">Nível</p>
-              <p className="text-sm font-semibold text-white">{LEVEL_LABELS[profile.level]}</p>
-            </div>
-            <div>
-              <Star className="w-5 h-5 mx-auto mb-1 text-purple-500" />
-              <p className="text-xs text-gray-400">XP</p>
-              <p className="text-sm font-semibold text-white">{profile.xp_points}</p>
-            </div>
-            <div>
-              <Flame className="w-5 h-5 mx-auto mb-1 text-orange-500" />
-              <p className="text-xs text-gray-400">Streak</p>
-              <p className="text-sm font-semibold text-white">{profile.current_streak} dias</p>
-            </div>
-            <div>
-              <Settings className="w-5 h-5 mx-auto mb-1 text-blue-500" />
-              <p className="text-xs text-gray-400">Créditos IA</p>
-              <p className="text-sm font-semibold text-white">
-                {profile.ai_credits_monthly === -1 ? '∞' : profile.ai_credits_remaining}
-              </p>
+            <div className="flex items-center gap-2">
+              {profile.ai_credits_monthly !== 0 && (
+                <div className="flex items-center gap-1 rounded-full bg-[#131B35] px-3 py-1">
+                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                  <span className="text-xs font-medium text-purple-300">
+                    {profile.ai_credits_monthly === -1 ? '∞' : profile.ai_credits_remaining} IA
+                  </span>
+                </div>
+              )}
+              <Badge
+                style={{ backgroundColor: PLAN_COLORS[profile.plan] }}
+                className="text-white font-semibold"
+              >
+                {PLAN_LABELS[profile.plan]}
+              </Badge>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Gamification Summary Card */}
+      <Card className="bg-[#0A0F1E] border-[#131B35]">
+        <CardContent className="pt-6">
+          <GamificationSummary
+            xp={profile.xp_points ?? 0}
+            level={profile.level ?? 'iniciante'}
+            currentStreak={profile.current_streak ?? 0}
+            longestStreak={profile.longest_streak ?? 0}
+            badges={badges}
+          />
         </CardContent>
       </Card>
 
