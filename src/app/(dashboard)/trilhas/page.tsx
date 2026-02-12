@@ -1,10 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import useSWR from 'swr';
 import { motion } from 'framer-motion';
 import { ScriptCategory } from '@/types/database';
-import { fetcher } from '@/lib/swr/fetcher';
 
 function SkeletonCard() {
   return (
@@ -39,17 +38,28 @@ const cardVariants = {
 
 export default function TrilhasPage() {
   const router = useRouter();
+  const [categories, setCategories] = useState<ScriptCategory[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const { data: rawData, isLoading } = useSWR<ScriptCategory[] | { categories: ScriptCategory[] }>(
-    '/api/categories',
-    fetcher
-  );
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const res = await fetch('/api/categories');
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(Array.isArray(data) ? data : data.categories ?? []);
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  const categories: ScriptCategory[] = rawData
-    ? Array.isArray(rawData) ? rawData : rawData.categories ?? []
-    : [];
+    fetchCategories();
+  }, []);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-[#020617] p-4 sm:p-6">
         <div className="mx-auto max-w-6xl">
@@ -79,8 +89,6 @@ export default function TrilhasPage() {
 
         <motion.div
           className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          role="grid"
-          aria-label="Lista de trilhas de vendas"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -91,17 +99,9 @@ export default function TrilhasPage() {
               variants={cardVariants}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              role="gridcell"
-              tabIndex={0}
-              aria-label={`Trilha ${category.name}${typeof category.scripts_count === 'number' ? `, ${category.scripts_count} scripts` : ''}`}
-              className="group cursor-pointer overflow-hidden rounded-xl border border-[#131B35] bg-[#0A0F1E] transition-colors hover:border-[#1D4ED8]/30 focus-visible:ring-2 focus-visible:ring-[#1D4ED8]"
+              className="group cursor-pointer overflow-hidden rounded-xl border border-[#131B35] bg-[#0A0F1E] transition-colors hover:border-[#1D4ED8]/30"
               style={{ borderLeftWidth: '4px', borderLeftColor: category.color }}
               onClick={() => router.push(`/trilhas/${category.slug}`)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  router.push(`/trilhas/${category.slug}`);
-                }
-              }}
             >
               <div className="p-5">
                 <div className="mb-3 flex items-center gap-3">
@@ -125,7 +125,7 @@ export default function TrilhasPage() {
           ))}
         </motion.div>
 
-        {!isLoading && categories.length === 0 && (
+        {!loading && categories.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <p className="text-lg text-[#94A3B8]">Nenhuma trilha encontrada</p>
             <p className="mt-1 text-sm text-[#94A3B8]/70">

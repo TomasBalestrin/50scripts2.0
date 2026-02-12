@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import useSWR from 'swr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -55,43 +54,33 @@ const INTEREST_LABELS: Record<string, { label: string; color: string; icon: type
   frio: { label: 'Frio', color: '#3B82F6', icon: Eye },
 };
 
-function AIProgressBar() {
-  const [progress, setProgress] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress(p => {
-        if (p >= 90) return p;
-        return p + (90 - p) * 0.1;
-      });
-    }, 300);
-    return () => clearInterval(timer);
-  }, []);
-  return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#131B35]">
-      <div
-        className="h-full rounded-full bg-gradient-to-r from-[#1D4ED8] to-[#3B82F6] transition-all duration-300"
-        style={{ width: `${progress}%` }}
-      />
-    </div>
-  );
-}
-
 export default function AICopilotPage() {
   const [conversation, setConversation] = useState('');
   const [leadId, setLeadId] = useState<string>('');
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState('');
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [messageTab, setMessageTab] = useState<'casual' | 'formal'>('casual');
-  const [startTime, setStartTime] = useState<number | null>(null);
 
-  const { data: leadsData } = useSWR('/api/leads');
-  const leads: Lead[] = leadsData?.leads || [];
+  useEffect(() => {
+    async function loadLeads() {
+      try {
+        const res = await fetch('/api/leads');
+        if (res.ok) {
+          const data = await res.json();
+          setLeads(data.leads || []);
+        }
+      } catch {
+        // ignore
+      }
+    }
+    loadLeads();
+  }, []);
 
   const handleAnalyze = async () => {
     if (conversation.length < 10) return;
     setAnalyzing(true);
-    setStartTime(Date.now());
     setResult('');
 
     try {
@@ -114,7 +103,6 @@ export default function AICopilotPage() {
       setResult('Erro ao conectar com a IA. Tente novamente.');
     }
     setAnalyzing(false);
-    setStartTime(null);
   };
 
   const handleCopy = async (text: string, section: string) => {
@@ -263,8 +251,7 @@ export default function AICopilotPage() {
             {analyzing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                <span>Analisando conversa...</span>
-                <span className="ml-2 text-xs opacity-70">~5-10s</span>
+                Analisando conversa...
               </>
             ) : (
               <>
@@ -273,15 +260,6 @@ export default function AICopilotPage() {
               </>
             )}
           </Button>
-
-          {analyzing && (
-            <div className="space-y-2">
-              <AIProgressBar />
-              <p className="text-xs text-center text-[#94A3B8]">
-                Buscando contexto → Analisando conversa → Gerando sugestão
-              </p>
-            </div>
-          )}
         </CardContent>
       </Card>
 

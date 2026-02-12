@@ -24,7 +24,7 @@ export async function GET() {
 
   const { data: leads } = await supabase
     .from('leads')
-    .select('id, name, phone, stage, expected_value, notes, next_followup_at, last_contact_at, created_at, updated_at')
+    .select('*')
     .eq('user_id', user.id)
     .order('updated_at', { ascending: false });
 

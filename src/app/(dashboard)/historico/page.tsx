@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import useSWR from 'swr';
+import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   History,
@@ -15,7 +14,6 @@ import {
   Inbox,
   Loader2,
 } from 'lucide-react';
-import { fetcher } from '@/lib/swr/fetcher';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -247,15 +245,37 @@ const RESULT_OPTIONS = [
 // ---------------------------------------------------------------------------
 
 export default function HistoricoPage() {
+  const [data, setData] = useState<HistoryResponse | null>(null);
+  const [loading, setLoading] = useState(true);
   const [trail, setTrail] = useState('');
   const [result, setResult] = useState('');
   const [page, setPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const { data, isLoading } = useSWR<HistoryResponse>(
-    `/api/scripts/history?trail=${trail}&result=${result}&page=${page}&limit=20`,
-    fetcher
-  );
+  const fetchHistory = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (trail) params.set('trail', trail);
+      if (result) params.set('result', result);
+      params.set('page', String(page));
+      params.set('limit', '20');
+
+      const res = await fetch(`/api/scripts/history?${params.toString()}`);
+      if (res.ok) {
+        const json: HistoryResponse = await res.json();
+        setData(json);
+      }
+    } catch (err) {
+      console.error('Error fetching history:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [trail, result, page]);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -283,7 +303,6 @@ export default function HistoricoPage() {
         <div className="rounded-xl border border-[#131B35] bg-[#0A0F1E] p-4">
           <button
             onClick={() => setFiltersOpen(!filtersOpen)}
-            aria-label={filtersOpen ? 'Fechar filtros' : 'Abrir filtros'}
             className="flex w-full items-center justify-between text-sm font-medium text-white"
           >
             <span className="flex items-center gap-2">
@@ -320,7 +339,6 @@ export default function HistoricoPage() {
                     <select
                       value={trail}
                       onChange={(e) => setTrail(e.target.value)}
-                      aria-label="Filtrar por trilha"
                       className="w-full rounded-lg border border-[#131B35] bg-[#020617] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#1D4ED8]"
                     >
                       {TRAIL_OPTIONS.map((opt) => (
@@ -339,7 +357,6 @@ export default function HistoricoPage() {
                     <select
                       value={result}
                       onChange={(e) => setResult(e.target.value)}
-                      aria-label="Filtrar por resultado"
                       className="w-full rounded-lg border border-[#131B35] bg-[#020617] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#1D4ED8]"
                     >
                       {RESULT_OPTIONS.map((opt) => (
@@ -358,7 +375,6 @@ export default function HistoricoPage() {
                       setTrail('');
                       setResult('');
                     }}
-                    aria-label="Limpar todos os filtros"
                     className="mt-3 text-xs font-medium text-[#1D4ED8] transition-colors hover:text-[#1D4ED8]/80"
                   >
                     Limpar filtros
@@ -370,7 +386,7 @@ export default function HistoricoPage() {
         </div>
 
         {/* Loading */}
-        {isLoading && (
+        {loading && (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin text-[#1D4ED8]" />
@@ -383,7 +399,7 @@ export default function HistoricoPage() {
         )}
 
         {/* Empty state */}
-        {!isLoading && data && data.usages.length === 0 && (
+        {!loading && data && data.usages.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-xl border border-[#131B35] bg-[#0A0F1E] py-16">
             <Inbox className="mb-4 h-12 w-12 text-[#131B35]" />
             <h3 className="mb-1 text-lg font-semibold text-white">
@@ -400,7 +416,7 @@ export default function HistoricoPage() {
         )}
 
         {/* Timeline */}
-        {!isLoading && dateKeys.length > 0 && (
+        {!loading && dateKeys.length > 0 && (
           <div className="space-y-6">
             {dateKeys.map((dateKey) => (
               <div key={dateKey}>
@@ -425,7 +441,7 @@ export default function HistoricoPage() {
         )}
 
         {/* Pagination */}
-        {!isLoading && data && data.totalPages > 1 && (
+        {!loading && data && data.totalPages > 1 && (
           <div className="flex items-center justify-between rounded-xl border border-[#131B35] bg-[#0A0F1E] px-4 py-3">
             <span className="text-xs text-[#94A3B8]">
               Pagina {data.page} de {data.totalPages} ({data.total} registros)
@@ -434,7 +450,6 @@ export default function HistoricoPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                aria-label="Pagina anterior"
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#131B35] text-white transition-colors hover:bg-[#131B35] disabled:opacity-30 disabled:hover:bg-transparent"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -442,7 +457,6 @@ export default function HistoricoPage() {
               <button
                 onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
                 disabled={page >= data.totalPages}
-                aria-label="Proxima pagina"
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#131B35] text-white transition-colors hover:bg-[#131B35] disabled:opacity-30 disabled:hover:bg-transparent"
               >
                 <ChevronRight className="h-4 w-4" />
