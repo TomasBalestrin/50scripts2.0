@@ -29,12 +29,12 @@ const PLAN_FEATURES: Record<Plan, string[]> = {
     'Agenda de Vendas',
     'IA Geracao (15 cred/mes)',
     'Metricas de Comunidade',
-    'Chrome Extension WhatsApp',
     'PWA Offline',
     'Notificacoes Push',
   ],
   premium: [
     'Tudo do Plus +',
+    'Chrome Extension WhatsApp',
     'Pipeline Visual de Leads',
     'IA Copilot Conversacional',
     'IA Geracao (30 cred/mes)',
