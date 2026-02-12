@@ -24,7 +24,7 @@ export async function GET() {
   // Check if challenge exists for today
   let { data: challenge } = await supabase
     .from('daily_challenges')
-    .select('id, challenge_type, target_count, current_count, completed, xp_reward, challenge_date')
+    .select('*')
     .eq('user_id', user.id)
     .eq('challenge_date', today)
     .single();

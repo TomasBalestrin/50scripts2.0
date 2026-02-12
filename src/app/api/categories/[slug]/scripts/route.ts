@@ -16,7 +16,7 @@ export async function GET(
     const [categoryResult, userResult] = await Promise.all([
       supabase
         .from('script_categories')
-        .select('id, name, slug, description, icon, color, display_order')
+        .select('*')
         .eq('slug', slug)
         .eq('is_active', true)
         .single(),
@@ -40,7 +40,7 @@ export async function GET(
         : Promise.resolve({ data: null }),
       supabase
         .from('scripts')
-        .select('id, title, content, context, min_plan, tone_variations, display_order, global_effectiveness, global_usage_count, global_conversion_rate, audio_url, category_id')
+        .select('*')
         .eq('category_id', category.id)
         .eq('is_active', true)
         .order('display_order', { ascending: true }),

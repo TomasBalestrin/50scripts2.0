@@ -13,7 +13,7 @@ export async function GET() {
     // 1. Get all active tips
     const { data: tips, error } = await supabase
       .from('microlearning_tips')
-      .select('id, content, category, display_count')
+      .select('*')
       .eq('is_active', true);
 
     if (error || !tips || tips.length === 0) {

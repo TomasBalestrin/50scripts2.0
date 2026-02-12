@@ -24,7 +24,7 @@ export async function GET() {
   const { data: collections } = await supabase
     .from('user_collections')
     .select(`
-      id, name, created_at,
+      *,
       collection_scripts(
         script:scripts(id, title, content, category_id, global_effectiveness)
       )

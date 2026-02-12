@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       .limit(5),
     supabase
       .from('ai_prompts')
-      .select('id, system_prompt, user_prompt_template, model, max_tokens, temperature')
+      .select('*')
       .eq('type', 'generation')
       .eq('is_active', true)
       .single(),
