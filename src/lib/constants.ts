@@ -61,8 +61,8 @@ export const RATE_LIMITS: Record<Plan, number> = {
 
 export const AI_CREDITS: Record<Plan, number> = {
   starter: 0,
-  pro: 0,
-  premium: 15,
+  pro: 15,
+  premium: 30,
   copilot: -1, // unlimited
 };
 

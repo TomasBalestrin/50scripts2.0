@@ -16,8 +16,8 @@ export async function GET() {
     .eq('id', user.id)
     .single();
 
-  if (!profile || !hasAccess(profile.plan, 'copilot')) {
-    return NextResponse.json({ error: 'Plano Copilot necessário' }, { status: 403 });
+  if (!profile || !hasAccess(profile.plan, 'premium')) {
+    return NextResponse.json({ error: 'Plano Pro necessário' }, { status: 403 });
   }
 
   // Aggregate user's usage data for pattern analysis

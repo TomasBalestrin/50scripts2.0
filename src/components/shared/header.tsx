@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PlanBadge } from "@/components/shared/plan-badge";
+import { MobileSidebar } from "@/components/shared/sidebar";
 import type { Plan, Role } from "@/types/database";
 
 interface HeaderProps {
@@ -32,6 +33,10 @@ const pageTitles: Record<string, string> = {
   "/perfil": "Meu Perfil",
   "/configuracoes": "Configuracoes",
   "/admin": "Admin",
+  "/historico": "Histórico",
+  "/ai-generator": "IA Generator",
+  "/ai-copilot": "IA Copilot",
+  "/badges": "Gamificação",
 };
 
 function getPageTitle(pathname: string): string {
@@ -64,12 +69,22 @@ export function Header({ userName, userAvatar, plan, role }: HeaderProps) {
     : "U";
 
   return (
-    <header className="flex items-center justify-between border-b border-[#131B35]/50 bg-[#020617]/80 px-6 py-4 backdrop-blur-sm">
-      {/* Left: Page title */}
-      <h1 className="text-lg font-semibold text-white">{pageTitle}</h1>
+    <header className="flex items-center justify-between border-b border-[#131B35]/50 bg-[#020617]/80 px-4 py-3 backdrop-blur-sm sm:px-6 sm:py-4">
+      {/* Left: Mobile menu + Page title */}
+      <div className="flex items-center gap-2">
+        <MobileSidebar
+          plan={plan}
+          role={role}
+          userName={userName}
+          userAvatar={userAvatar}
+        />
+        <h1 className="text-base font-semibold text-white sm:text-lg">
+          {pageTitle}
+        </h1>
+      </div>
 
       {/* Right: Notification + Avatar */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         {/* Notification bell */}
         <button
           type="button"

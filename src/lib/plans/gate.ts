@@ -44,6 +44,9 @@ export function getAvailableFeatures(plan: Plan) {
     textSearch: true,
     profile: true,
 
+    // Starter features (added)
+    leadHistory: true, // Histórico de uso available for all plans
+
     // Pro features
     revenueDashboard: hasAccess(plan, 'pro'),
     savedVariables: hasAccess(plan, 'pro'),
@@ -56,12 +59,13 @@ export function getAvailableFeatures(plan: Plan) {
     dailyChallenges: hasAccess(plan, 'pro'),
     salesAgenda: hasAccess(plan, 'pro'),
     advancedAnalytics: hasAccess(plan, 'pro'),
+    aiGeneration: hasAccess(plan, 'pro'),
 
     // Premium features
     pipeline: hasAccess(plan, 'premium'),
-    leadHistory: hasAccess(plan, 'premium'),
     realLeadAgenda: hasAccess(plan, 'premium'),
-    aiGeneration: hasAccess(plan, 'premium'),
+    aiConversational: hasAccess(plan, 'premium'),
+    patternAnalysis: hasAccess(plan, 'premium'),
     semanticSearch: hasAccess(plan, 'premium'),
     audioModels: hasAccess(plan, 'premium'),
     resultCards: hasAccess(plan, 'premium'),
@@ -69,9 +73,7 @@ export function getAvailableFeatures(plan: Plan) {
     collections: hasAccess(plan, 'premium'),
 
     // Copilot features
-    aiConversational: hasAccess(plan, 'copilot'),
     aiUnlimited: hasAccess(plan, 'copilot'),
-    patternAnalysis: hasAccess(plan, 'copilot'),
     smartAgenda: hasAccess(plan, 'copilot'),
     dataExport: hasAccess(plan, 'copilot'),
     earlyAccess: hasAccess(plan, 'copilot'),

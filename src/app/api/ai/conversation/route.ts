@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
     .eq('id', user.id)
     .single();
 
-  if (!profile || !hasValidAccess(profile.plan, 'copilot', profile.plan_expires_at)) {
-    return NextResponse.json({ error: 'Plano Copilot necessário' }, { status: 403 });
+  if (!profile || !hasValidAccess(profile.plan, 'premium', profile.plan_expires_at)) {
+    return NextResponse.json({ error: 'Plano Pro necessário' }, { status: 403 });
   }
 
   const body = await request.json();

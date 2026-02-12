@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
     .eq('id', user.id)
     .single();
 
-  if (!profile || !hasValidAccess(profile.plan, 'premium', profile.plan_expires_at)) {
-    return NextResponse.json({ error: 'Plano Premium necessário' }, { status: 403 });
+  if (!profile || !hasValidAccess(profile.plan, 'pro', profile.plan_expires_at)) {
+    return NextResponse.json({ error: 'Plano Plus necessário' }, { status: 403 });
   }
 
   // Check credits (copilot = unlimited = -1)
