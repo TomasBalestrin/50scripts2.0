@@ -1,7 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import useSWR from 'swr';
 import { motion } from 'framer-motion';
 import {
   TrendingUp,
@@ -58,8 +58,6 @@ interface DashboardData {
     total: number;
     color: string;
   }[];
-  tip?: MicrolearningTip;
-  recommendations?: { scripts: RecommendedScript[] };
 }
 
 interface RecommendedScript extends Script {
@@ -205,80 +203,121 @@ const itemVariants = {
 export default function DashboardPage() {
   const router = useRouter();
 
-  // SWR: fetch basic dashboard data (combined endpoint with fallback)
-  const { data: dashboardData, isLoading: loading } = useSWR<DashboardData>(
-    '/api/dashboard/all',
-    async (url: string) => {
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        return {
-          profile: data.profile,
-          stats: data.stats,
-          trails: data.trails,
-          tip: data.tip,
-          recommendations: data.recommendations,
-        };
-      }
-      // Fallback: fetch from individual endpoints
-      const [dashRes, tipRes, recRes] = await Promise.allSettled([
-        fetch('/api/dashboard/basic'),
-        fetch('/api/tips/daily'),
-        fetch('/api/scripts/recommendations'),
-      ]);
+  // State for all data sources
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [tip, setTip] = useState<MicrolearningTip | null>(null);
+  const [recommendations, setRecommendations] = useState<RecommendedScript[]>([]);
+  const [revenueData, setRevenueData] = useState<RevenueData | null>(null);
+  const [gamificationData, setGamificationData] = useState<GamificationData | null>(null);
+  const [challengeData, setChallengeData] = useState<ChallengeData | null>(null);
+  const [agendaData, setAgendaData] = useState<AgendaData | null>(null);
+  const [communityData, setCommunityData] = useState<CommunityData | null>(null);
 
-      const result: DashboardData = {
-        profile: { full_name: '', plan: 'starter' },
-        stats: { scripts_used: 0, total_scripts: 0, sales_count: 0, total_sales_value: 0 },
-        trails: [],
-      };
-
-      if (dashRes.status === 'fulfilled' && dashRes.value.ok) {
-        const d = await dashRes.value.json();
-        Object.assign(result, d);
-      }
-      if (tipRes.status === 'fulfilled' && tipRes.value.ok) {
-        result.tip = await tipRes.value.json();
-      }
-      if (recRes.status === 'fulfilled' && recRes.value.ok) {
-        const d = await recRes.value.json();
-        result.recommendations = { scripts: Array.isArray(d) ? d : d.scripts ?? [] };
-      }
-      return result;
-    },
-    { revalidateOnFocus: false, dedupingInterval: 30000 }
-  );
+  const [loading, setLoading] = useState(true);
+  const [proDataLoading, setProDataLoading] = useState(true);
 
   // Determine plan level
   const userPlan = dashboardData?.profile?.plan || 'starter';
   const isPro = PLAN_HIERARCHY[userPlan as keyof typeof PLAN_HIERARCHY] >= PLAN_HIERARCHY.pro;
 
-  // SWR: fetch Pro+ data (conditionally)
-  const { data: revenueData, isLoading: revLoading } = useSWR<RevenueData>(
-    isPro ? '/api/dashboard/revenue' : null,
-    { revalidateOnFocus: false, dedupingInterval: 60000 }
-  );
-  const { data: gamificationData } = useSWR<GamificationData>(
-    isPro ? '/api/gamification/status' : null,
-    { revalidateOnFocus: false, dedupingInterval: 60000 }
-  );
-  const { data: challengeData } = useSWR<ChallengeData>(
-    isPro ? '/api/gamification/challenge' : null,
-    { revalidateOnFocus: false, dedupingInterval: 60000 }
-  );
-  const { data: agendaData } = useSWR<AgendaData>(
-    isPro ? '/api/agenda/today' : null,
-    { revalidateOnFocus: false, dedupingInterval: 60000 }
-  );
-  const { data: communityData } = useSWR<CommunityData>(
-    isPro ? '/api/dashboard/community' : null,
-    { revalidateOnFocus: false, dedupingInterval: 60000 }
-  );
+  // Fetch basic data - try combined endpoint first, fallback to individual ones
+  useEffect(() => {
+    async function fetchBasicData() {
+      try {
+        // Try combined endpoint first (faster)
+        const res = await fetch('/api/dashboard/all');
+        if (res.ok) {
+          const data = await res.json();
+          setDashboardData({
+            profile: data.profile,
+            stats: data.stats,
+            trails: data.trails,
+          });
+          if (data.tip) {
+            setTip(data.tip);
+          }
+          const scripts = data.recommendations?.scripts ?? [];
+          setRecommendations(Array.isArray(scripts) ? scripts : []);
+          return;
+        }
 
-  const proDataLoading = isPro && revLoading;
+        // Fallback: fetch from individual endpoints
+        const [dashRes, tipRes, recRes] = await Promise.allSettled([
+          fetch('/api/dashboard/basic'),
+          fetch('/api/tips/daily'),
+          fetch('/api/scripts/recommendations'),
+        ]);
 
-  const tip = dashboardData?.tip || null;
-  const recommendations: RecommendedScript[] = dashboardData?.recommendations?.scripts ?? [];
+        if (dashRes.status === 'fulfilled' && dashRes.value.ok) {
+          setDashboardData(await dashRes.value.json());
+        }
+        if (tipRes.status === 'fulfilled' && tipRes.value.ok) {
+          setTip(await tipRes.value.json());
+        }
+        if (recRes.status === 'fulfilled' && recRes.value.ok) {
+          const data = await recRes.value.json();
+          setRecommendations(Array.isArray(data) ? data : data.scripts ?? []);
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchBasicData();
+  }, []);
+
+  // Fetch Pro+ data when user plan is known
+  useEffect(() => {
+    if (!isPro) {
+      setProDataLoading(false);
+      return;
+    }
+
+    async function fetchProData() {
+      try {
+        const [revRes, gamRes, chalRes, agendaRes, commRes] = await Promise.allSettled([
+          fetch('/api/dashboard/revenue'),
+          fetch('/api/gamification/status'),
+          fetch('/api/gamification/challenge'),
+          fetch('/api/agenda/today'),
+          fetch('/api/dashboard/community'),
+        ]);
+
+        if (revRes.status === 'fulfilled' && revRes.value.ok) {
+          const data = await revRes.value.json();
+          setRevenueData(data);
+        }
+
+        if (gamRes.status === 'fulfilled' && gamRes.value.ok) {
+          const data = await gamRes.value.json();
+          setGamificationData(data);
+        }
+
+        if (chalRes.status === 'fulfilled' && chalRes.value.ok) {
+          const data = await chalRes.value.json();
+          setChallengeData(data);
+        }
+
+        if (agendaRes.status === 'fulfilled' && agendaRes.value.ok) {
+          const data = await agendaRes.value.json();
+          setAgendaData(data);
+        }
+
+        if (commRes.status === 'fulfilled' && commRes.value.ok) {
+          const data = await commRes.value.json();
+          setCommunityData(data);
+        }
+      } catch (err) {
+        console.error('Error fetching pro dashboard data:', err);
+      } finally {
+        setProDataLoading(false);
+      }
+    }
+
+    fetchProData();
+  }, [isPro]);
 
   // Loading state
   if (loading) {
@@ -485,10 +524,6 @@ export default function DashboardPage() {
                 <div
                   className="cursor-pointer rounded-xl border border-[#131B35] bg-[#0A0F1E] p-5 transition-colors hover:border-[#3B82F6]"
                   onClick={() => router.push('/agenda')}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Ver agenda de hoje"
-                  onKeyDown={(e) => { if (e.key === 'Enter') router.push('/agenda'); }}
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -588,10 +623,6 @@ export default function DashboardPage() {
             <div
               className="flex cursor-pointer items-center justify-between rounded-xl border border-[#131B35] bg-[#0A0F1E] p-5 transition-colors hover:border-[#3B82F6]"
               onClick={() => router.push(`/trilhas/${suggestedTrail.slug}`)}
-              role="button"
-              tabIndex={0}
-              aria-label={`Ir para trilha ${suggestedTrail.name}`}
-              onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/trilhas/${suggestedTrail.slug}`); }}
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{suggestedTrail.icon}</span>
@@ -614,18 +645,14 @@ export default function DashboardPage() {
               <Sparkles className="h-5 w-5 text-[#1D4ED8]" />
               Scripts mais usados
             </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" role="grid" aria-label="Scripts mais usados">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {recommendations.slice(0, 4).map((script) => (
                 <motion.div
                   key={script.id}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  role="gridcell"
-                  tabIndex={0}
-                  aria-label={`Script: ${script.title}`}
-                  className="cursor-pointer rounded-xl border border-[#131B35] bg-[#0A0F1E] p-4 transition-colors hover:border-[#1D4ED8]/30 focus-visible:ring-2 focus-visible:ring-[#1D4ED8]"
+                  className="cursor-pointer rounded-xl border border-[#131B35] bg-[#0A0F1E] p-4 transition-colors hover:border-[#1D4ED8]/30"
                   onClick={() => router.push(`/scripts/${script.id}`)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/scripts/${script.id}`); }}
                 >
                   <div className="mb-2 flex items-center gap-2">
                     {script.category && (

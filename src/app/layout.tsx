@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
-import { SWRProvider } from "@/components/providers/swr-provider";
 
 export const metadata: Metadata = {
   title: "50 Scripts",
@@ -50,9 +49,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans bg-[#020617] text-white antialiased">
-        <SWRProvider>
-          {children}
-        </SWRProvider>
+        {children}
         <AnalyticsProvider />
       </body>
     </html>
