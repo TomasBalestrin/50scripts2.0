@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
+import useSWR from 'swr';
 import { motion } from 'framer-motion';
-import { Award, Shield, Percent, Loader2 } from 'lucide-react';
+import { Award, Shield, Percent } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { LevelBadge } from '@/components/gamification/level-badge';
 import { XpBar } from '@/components/gamification/xp-bar';
 import { StreakCounter } from '@/components/gamification/streak-counter';
 import { BadgeGrid } from '@/components/gamification/badge-grid';
+import { fetcher } from '@/lib/swr/fetcher';
 
 interface BadgeData {
   type: string;
@@ -118,77 +120,66 @@ function SkeletonBlock({ className = '' }: { className?: string }) {
 
 export default function BadgesPage() {
   const { profile, loading: authLoading } = useAuth();
-  const [badges, setBadges] = useState<BadgeData[]>(ALL_BADGES);
-  const [status, setStatus] = useState<GamificationStatus | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [badgesRes, statusRes] = await Promise.allSettled([
-          fetch('/api/gamification/badges'),
-          fetch('/api/gamification/status'),
-        ]);
+  // Use null key to defer fetching until auth is resolved
+  const { data: badgesRaw, isLoading: badgesLoading } = useSWR<
+    Array<{ badge_type: string; earned_at: string }> | { badges: Array<{ badge_type: string; earned_at: string }> }
+  >(
+    authLoading ? null : '/api/gamification/badges',
+    fetcher
+  );
 
-        if (badgesRes.status === 'fulfilled' && badgesRes.value.ok) {
-          const data = await badgesRes.value.json();
-          const earnedBadges: Array<{ badge_type: string; earned_at: string }> =
-            Array.isArray(data) ? data : data.badges ?? [];
+  const { data: statusRaw, isLoading: statusLoading } = useSWR<GamificationStatus>(
+    authLoading ? null : '/api/gamification/status',
+    fetcher
+  );
 
-          const earnedMap = new Map(
-            earnedBadges.map((b) => [b.badge_type, b.earned_at])
-          );
+  const loading = authLoading || badgesLoading || statusLoading;
 
-          setBadges(
-            ALL_BADGES.map((badge) => ({
-              ...badge,
-              earned: earnedMap.has(badge.type),
-              earned_at: earnedMap.get(badge.type),
-            }))
-          );
-        }
+  // Process badges: merge earned data with ALL_BADGES
+  const badges = useMemo<BadgeData[]>(() => {
+    if (!badgesRaw) return ALL_BADGES;
 
-        if (statusRes.status === 'fulfilled' && statusRes.value.ok) {
-          const data = await statusRes.value.json();
-          setStatus({
-            xp_points: data.xp_points ?? profile?.xp_points ?? 0,
-            level: data.level ?? profile?.level ?? 'iniciante',
-            current_streak: data.current_streak ?? profile?.current_streak ?? 0,
-            longest_streak: data.longest_streak ?? profile?.longest_streak ?? 0,
-          });
-        } else if (profile) {
-          setStatus({
-            xp_points: profile.xp_points ?? 0,
-            level: profile.level ?? 'iniciante',
-            current_streak: profile.current_streak ?? 0,
-            longest_streak: profile.longest_streak ?? 0,
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching badges data:', err);
-        if (profile) {
-          setStatus({
-            xp_points: profile.xp_points ?? 0,
-            level: profile.level ?? 'iniciante',
-            current_streak: profile.current_streak ?? 0,
-            longest_streak: profile.longest_streak ?? 0,
-          });
-        }
-      } finally {
-        setLoading(false);
-      }
+    const earnedBadges: Array<{ badge_type: string; earned_at: string }> =
+      Array.isArray(badgesRaw) ? badgesRaw : badgesRaw.badges ?? [];
+
+    const earnedMap = new Map(
+      earnedBadges.map((b) => [b.badge_type, b.earned_at])
+    );
+
+    return ALL_BADGES.map((badge) => ({
+      ...badge,
+      earned: earnedMap.has(badge.type),
+      earned_at: earnedMap.get(badge.type),
+    }));
+  }, [badgesRaw]);
+
+  // Process status with profile fallback
+  const status = useMemo<GamificationStatus | null>(() => {
+    if (statusRaw) {
+      return {
+        xp_points: statusRaw.xp_points ?? profile?.xp_points ?? 0,
+        level: statusRaw.level ?? profile?.level ?? 'iniciante',
+        current_streak: statusRaw.current_streak ?? profile?.current_streak ?? 0,
+        longest_streak: statusRaw.longest_streak ?? profile?.longest_streak ?? 0,
+      };
     }
-
-    if (!authLoading) {
-      fetchData();
+    if (profile) {
+      return {
+        xp_points: profile.xp_points ?? 0,
+        level: profile.level ?? 'iniciante',
+        current_streak: profile.current_streak ?? 0,
+        longest_streak: profile.longest_streak ?? 0,
+      };
     }
-  }, [authLoading, profile]);
+    return null;
+  }, [statusRaw, profile]);
 
   const earnedCount = badges.filter((b) => b.earned).length;
   const totalCount = badges.length;
   const completionPct = totalCount > 0 ? Math.round((earnedCount / totalCount) * 100) : 0;
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-[#020617] p-4 sm:p-6">
         <div className="mx-auto max-w-4xl space-y-6">
