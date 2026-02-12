@@ -9,7 +9,7 @@ export async function GET() {
 
     const { data: prompts, error: queryError } = await supabase
       .from('ai_prompts')
-      .select('*')
+      .select('id, name, type, system_prompt, user_prompt_template, model, temperature, max_tokens, is_active, version, created_at, updated_at')
       .order('created_at', { ascending: false })
       .limit(100);
 

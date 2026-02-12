@@ -9,7 +9,7 @@ export async function GET() {
 
     const { data: tips, error: queryError } = await supabase
       .from('microlearning_tips')
-      .select('*')
+      .select('id, content, category, is_active, display_count, created_at')
       .order('created_at', { ascending: false })
       .limit(200);
 

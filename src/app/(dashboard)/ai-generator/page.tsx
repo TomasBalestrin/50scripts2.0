@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
 import { ScriptCategory } from '@/types/database';
 import { Button } from '@/components/ui/button';
@@ -24,34 +25,48 @@ interface GeneratedScript {
   suggested_category?: string;
 }
 
+function AIProgressBar() {
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress(p => {
+        if (p >= 90) return p;
+        return p + (90 - p) * 0.1;
+      });
+    }, 300);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#131B35]">
+      <div
+        className="h-full rounded-full bg-gradient-to-r from-[#1D4ED8] to-[#3B82F6] transition-all duration-300"
+        style={{ width: `${progress}%` }}
+      />
+    </div>
+  );
+}
+
 export default function AIGeneratorPage() {
-  const [categories, setCategories] = useState<ScriptCategory[]>([]);
   const [categoryId, setCategoryId] = useState('');
   const [context, setContext] = useState('');
   const [tone, setTone] = useState<string>('casual');
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState('');
-  const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<'casual' | 'formal' | 'direct'>('casual');
+  const [startTime, setStartTime] = useState<number | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      const res = await fetch('/api/categories');
-      const data = await res.json();
-      setCategories(data.categories || []);
+  const { data: catData } = useSWR('/api/categories');
+  const categories: ScriptCategory[] = catData?.categories || [];
 
-      const creditsRes = await fetch('/api/ai/credits');
-      const creditsData = await creditsRes.json();
-      setCreditsRemaining(creditsData.credits_remaining);
-    }
-    load();
-  }, []);
+  const { data: creditsData, mutate: mutateCredits } = useSWR('/api/ai/credits');
+  const creditsRemaining = creditsData?.credits_remaining ?? null;
 
   const handleGenerate = async () => {
     if (!categoryId || context.length < 10) return;
     setGenerating(true);
+    setStartTime(Date.now());
     setResult('');
     setSaved(false);
 
@@ -65,7 +80,7 @@ export default function AIGeneratorPage() {
 
       if (res.ok) {
         setResult(data.content);
-        setCreditsRemaining(data.credits_remaining);
+        mutateCredits();
       } else {
         setResult(`Erro: ${data.error}`);
       }
@@ -73,6 +88,7 @@ export default function AIGeneratorPage() {
       setResult('Erro ao conectar com a IA. Tente novamente.');
     }
     setGenerating(false);
+    setStartTime(null);
   };
 
   // Try to parse JSON from result (may have markdown code fences)
@@ -213,7 +229,8 @@ export default function AIGeneratorPage() {
             {generating ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Gerando com IA...
+                <span>Gerando com IA...</span>
+                <span className="ml-2 text-xs opacity-70">~3-7s</span>
               </>
             ) : (
               <>
@@ -222,6 +239,15 @@ export default function AIGeneratorPage() {
               </>
             )}
           </Button>
+
+          {generating && (
+            <div className="space-y-2">
+              <AIProgressBar />
+              <p className="text-xs text-center text-[#94A3B8]">
+                Buscando contexto → Selecionando tom → Gerando script
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
