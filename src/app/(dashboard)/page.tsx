@@ -206,7 +206,7 @@ export default function DashboardPage() {
   const router = useRouter();
 
   // SWR: fetch basic dashboard data (combined endpoint with fallback)
-  const { data: dashboardData, isLoading: loading } = useSWR<DashboardData>(
+  const { data: dashboardData, error: dashboardError, isLoading: loading, mutate: mutateDashboard } = useSWR<DashboardData>(
     '/api/dashboard/all',
     async (url: string) => {
       const res = await fetch(url);
@@ -300,6 +300,27 @@ export default function DashboardPage() {
             {[1, 2, 3, 4].map((i) => (
               <SkeletonCard key={i} />
             ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (dashboardError) {
+    return (
+      <div className="min-h-screen bg-[#020617] p-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <p className="text-lg text-red-400">Erro ao carregar o painel</p>
+            <p className="mt-1 text-sm text-[#94A3B8]">
+              Tente recarregar a pagina ou volte em alguns instantes.
+            </p>
+            <button
+              onClick={() => mutateDashboard()}
+              className="mt-4 rounded-lg bg-[#1D4ED8] px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8]/90"
+            >
+              Tentar novamente
+            </button>
           </div>
         </div>
       </div>
