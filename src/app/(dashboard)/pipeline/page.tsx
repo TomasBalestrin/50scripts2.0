@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import useSWR from 'swr';
 import {
   DragDropContext,
   Droppable,
@@ -29,6 +30,8 @@ import {
   AlertCircle,
   GripVertical,
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { ToastContainer } from '@/components/shared/toast-container';
 
 const STAGES: { key: LeadStage; label: string; color: string }[] = [
   { key: 'novo', label: 'Novo', color: '#3B82F6' },
@@ -40,28 +43,15 @@ const STAGES: { key: LeadStage; label: string; color: string }[] = [
 ];
 
 export default function PipelinePage() {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: leadsData, isLoading: loading, mutate: mutateLeads } = useSWR<{ leads: Lead[] }>('/api/leads');
+  const leads = leadsData?.leads || [];
+
   const [newLeadName, setNewLeadName] = useState('');
   const [newLeadPhone, setNewLeadPhone] = useState('');
   const [newLeadValue, setNewLeadValue] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    fetchLeads();
-  }, []);
-
-  async function fetchLeads() {
-    try {
-      const res = await fetch('/api/leads');
-      const data = await res.json();
-      setLeads(data.leads || []);
-    } catch {
-      // ignore
-    }
-    setLoading(false);
-  }
+  const { toasts, toast, dismiss } = useToast();
 
   const handleAddLead = async () => {
     if (!newLeadName) return;
@@ -80,34 +70,34 @@ export default function PipelinePage() {
         setNewLeadPhone('');
         setNewLeadValue('');
         setDialogOpen(false);
-        fetchLeads();
+        mutateLeads();
+        toast('Lead adicionado com sucesso', 'success');
+      } else {
+        toast('Erro ao adicionar lead', 'error');
       }
     } catch {
-      // ignore
+      toast('Erro ao adicionar lead', 'error');
     }
   };
 
   const handleMoveStage = useCallback(
     async (leadId: string, newStage: LeadStage) => {
-      // Optimistic update
-      setLeads((prev) =>
-        prev.map((l) => (l.id === leadId ? { ...l, stage: newStage } : l))
+      const optimisticLeads = leads.map((l) =>
+        l.id === leadId ? { ...l, stage: newStage } : l
       );
+      mutateLeads({ leads: optimisticLeads }, false);
       try {
         const res = await fetch(`/api/leads/${leadId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ stage: newStage }),
         });
-        if (!res.ok) {
-          // Revert on failure
-          fetchLeads();
-        }
+        if (!res.ok) mutateLeads();
       } catch {
-        fetchLeads();
+        mutateLeads();
       }
     },
-    []
+    [leads, mutateLeads]
   );
 
   const getLeadsByStage = useCallback(
@@ -248,7 +238,7 @@ export default function PipelinePage() {
             const stageValue = getStageValue(stage.key);
 
             return (
-              <div key={stage.key} className="min-w-[200px]">
+              <div key={stage.key} className="min-w-[200px]" role="region" aria-label={`Coluna ${stage.label}`}>
                 {/* Column Header */}
                 <div className="flex items-center gap-2 mb-2">
                   <div
@@ -370,6 +360,8 @@ export default function PipelinePage() {
           })}
         </div>
       </DragDropContext>
+
+      <ToastContainer toasts={toasts} dismiss={dismiss} />
     </div>
   );
 }
