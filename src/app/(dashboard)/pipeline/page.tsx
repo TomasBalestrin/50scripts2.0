@@ -178,6 +178,8 @@ export default function PipelinePage() {
                 value={newLeadPhone}
                 onChange={(e) => setNewLeadPhone(e.target.value)}
                 placeholder="WhatsApp (opcional)"
+                type="tel"
+                inputMode="tel"
                 className="bg-[#131B35] border-[#1E2A52] text-white"
               />
               <Input
@@ -185,6 +187,7 @@ export default function PipelinePage() {
                 onChange={(e) => setNewLeadValue(e.target.value)}
                 placeholder="Valor esperado R$ (opcional)"
                 type="number"
+                inputMode="decimal"
                 className="bg-[#131B35] border-[#1E2A52] text-white"
               />
               <Button

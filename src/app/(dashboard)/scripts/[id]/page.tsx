@@ -393,6 +393,7 @@ export default function ScriptDetailPage() {
                           </label>
                           <input
                             type="number"
+                            inputMode="decimal"
                             value={saleValue}
                             onChange={(e) => setSaleValue(e.target.value)}
                             placeholder="0,00"

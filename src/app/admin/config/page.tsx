@@ -582,6 +582,7 @@ export default function AdminConfigPage() {
               <Label className="text-gray-400">Starter</Label>
               <Input
                 type="number"
+                inputMode="numeric"
                 value={config.ai_credits.starter}
                 onChange={(e) =>
                   setConfig((c) => ({
@@ -599,6 +600,7 @@ export default function AdminConfigPage() {
               <Label className="text-gray-400">Plus</Label>
               <Input
                 type="number"
+                inputMode="numeric"
                 value={config.ai_credits.pro}
                 onChange={(e) =>
                   setConfig((c) => ({
@@ -616,6 +618,7 @@ export default function AdminConfigPage() {
               <Label className="text-gray-400">Pro</Label>
               <Input
                 type="number"
+                inputMode="numeric"
                 value={config.ai_credits.premium}
                 onChange={(e) =>
                   setConfig((c) => ({
@@ -636,6 +639,7 @@ export default function AdminConfigPage() {
               </Label>
               <Input
                 type="number"
+                inputMode="numeric"
                 value={config.ai_credits.copilot}
                 onChange={(e) =>
                   setConfig((c) => ({
