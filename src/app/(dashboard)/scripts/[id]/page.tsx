@@ -92,7 +92,7 @@ export default function ScriptDetailPage() {
         const res = await fetch(`/api/scripts/${scriptId}`);
         if (res.ok) {
           const data = await res.json();
-          setScript(data);
+          setScript(data.script ?? data);
         }
       } catch (err) {
         console.error('Error fetching script:', err);
