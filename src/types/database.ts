@@ -189,8 +189,10 @@ export interface WebhookLog {
   event_type: WebhookEventType;
   payload: Record<string, unknown>;
   email_extracted: string;
+  status: string;
   plan_granted: string | null;
   user_created: boolean;
+  user_id: string | null;
   error_message: string | null;
   processed_at: string;
 }

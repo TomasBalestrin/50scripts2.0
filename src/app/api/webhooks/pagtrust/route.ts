@@ -12,9 +12,9 @@ const SOURCE = 'pagtrust';
 /**
  * PagTrust Webhook
  *
- * Formato JSON esperado (similar ao padrão Hotmart):
+ * Formato JSON esperado:
  * {
- *   "event": "PAYMENT_APPROVED" | "PAYMENT_REFUNDED" | "PAYMENT_CHARGEBACK" | "SUBSCRIPTION_CANCELED",
+ *   "event": "purchase_approved" | "purchase_refunded" | "purchase_chargeback" | "subscription_canceled",
  *   "data": {
  *     "buyer": { "email": "...", "name": "..." },
  *     "product": { "id": "xxx", "name": "..." },
@@ -23,6 +23,7 @@ const SOURCE = 'pagtrust';
  *   }
  * }
  *
+ * Também aceita eventos no formato PAYMENT_APPROVED (legado).
  * Autenticação: Header X-PagTrust-Token
  */
 export async function POST(request: NextRequest) {
@@ -34,21 +35,27 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const event = body.event;
+    const rawEvent = body.event;
     const buyerData = body.data?.buyer || {};
     const productId = body.data?.product?.id?.toString() || body.data?.subscription?.product?.id?.toString() || '';
     const transactionId = body.data?.transaction?.id || '';
     const buyerEmail = buyerData.email || '';
     const buyerName = buyerData.name || '';
 
-    if (!event) {
+    if (!rawEvent) {
       return NextResponse.json({ error: 'Missing event type' }, { status: 400 });
     }
+
+    // Normalize event to lowercase to handle both formats:
+    // PagTrust sends: purchase_approved, purchase_refunded, etc.
+    // Legacy format:  PAYMENT_APPROVED, PAYMENT_REFUNDED, etc.
+    const event = rawEvent.toLowerCase();
 
     const productMap = buildProductMap(config);
 
     switch (event) {
-      case 'PAYMENT_APPROVED': {
+      case 'purchase_approved':
+      case 'payment_approved': {
         if (!buyerEmail) {
           await logWebhookEvent(SOURCE, 'purchase', body, 'error', '', undefined, 'Missing buyer email');
           return NextResponse.json({ error: 'Missing buyer email' }, { status: 400 });
@@ -63,9 +70,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, user_id: result.userId, plan: result.plan });
       }
 
-      case 'PAYMENT_REFUNDED':
-      case 'PAYMENT_CHARGEBACK':
-      case 'SUBSCRIPTION_CANCELED': {
+      case 'purchase_refunded':
+      case 'payment_refunded':
+      case 'purchase_chargeback':
+      case 'payment_chargeback':
+      case 'subscription_canceled': {
         if (!buyerEmail) {
           await logWebhookEvent(SOURCE, 'cancel', body, 'error', '', undefined, 'Missing buyer email');
           return NextResponse.json({ error: 'Missing buyer email' }, { status: 400 });
@@ -85,19 +94,21 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      case 'PAYMENT_EXPIRED':
-      case 'PAYMENT_PENDING': {
-        await logWebhookEvent(SOURCE, event.toLowerCase(), {
+      case 'payment_expired':
+      case 'purchase_expired':
+      case 'payment_pending':
+      case 'purchase_pending': {
+        await logWebhookEvent(SOURCE, event, {
           product_id: productId,
           transaction_id: transactionId,
         }, 'warning', buyerEmail);
 
-        return NextResponse.json({ received: true, event });
+        return NextResponse.json({ received: true, event: rawEvent });
       }
 
       default: {
-        await logWebhookEvent(SOURCE, event.toLowerCase(), body, 'ignored', buyerEmail);
-        return NextResponse.json({ received: true, event });
+        await logWebhookEvent(SOURCE, event, body, 'ignored', buyerEmail);
+        return NextResponse.json({ received: true, event: rawEvent });
       }
     }
   } catch (error) {

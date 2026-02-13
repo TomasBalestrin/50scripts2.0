@@ -279,10 +279,12 @@ export default function AdminWebhooksPage() {
                               className={
                                 isError
                                   ? 'border-red-800 bg-red-900/30 text-red-400'
-                                  : 'border-green-800 bg-green-900/30 text-green-400'
+                                  : log.status === 'ignored'
+                                    ? 'border-yellow-800 bg-yellow-900/30 text-yellow-400'
+                                    : 'border-green-800 bg-green-900/30 text-green-400'
                               }
                             >
-                              {isError ? 'Erro' : 'Sucesso'}
+                              {isError ? 'Erro' : log.status === 'ignored' ? 'Ignorado' : 'Sucesso'}
                             </Badge>
                           </td>
                           <td className="px-4 py-3 text-gray-400">
