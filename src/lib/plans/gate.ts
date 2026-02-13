@@ -64,7 +64,7 @@ export function getAvailableFeatures(plan: Plan) {
     // Premium features
     pipeline: hasAccess(plan, 'premium'),
     realLeadAgenda: hasAccess(plan, 'premium'),
-    aiConversational: hasAccess(plan, 'premium'),
+    aiConversational: hasAccess(plan, 'copilot'),
     patternAnalysis: hasAccess(plan, 'premium'),
     semanticSearch: hasAccess(plan, 'premium'),
     audioModels: hasAccess(plan, 'premium'),

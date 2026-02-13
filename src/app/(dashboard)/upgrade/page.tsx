@@ -36,7 +36,6 @@ const PLAN_FEATURES: Record<Plan, string[]> = {
     'Tudo do Plus +',
     'Chrome Extension WhatsApp',
     'Pipeline Visual de Leads',
-    'IA Copilot Conversacional',
     'IA Geracao (30 cred/mes)',
     'Analise de Padroes Mensal',
     'Busca Semantica de Objecoes',
@@ -46,6 +45,7 @@ const PLAN_FEATURES: Record<Plan, string[]> = {
   ],
   copilot: [
     'Tudo do Pro +',
+    'IA Copilot Conversacional',
     'IA Ilimitada',
     'Agenda Inteligente com Leads',
     'Exportacao CSV/PDF',
