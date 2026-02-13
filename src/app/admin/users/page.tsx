@@ -329,7 +329,10 @@ export default function AdminUsersPage() {
       if (selectedUser?.id === deleteUser.id) {
         setSelectedUser(null);
       }
+      showToast('success', 'Usuário removido com sucesso');
       await fetchUsers();
+    } catch {
+      setDeleteError('Erro de rede ao remover usuário. Tente novamente.');
     } finally {
       setActionLoading(false);
     }

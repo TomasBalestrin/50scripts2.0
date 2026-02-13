@@ -100,13 +100,17 @@ export async function DELETE(
 
     const adminClient = await createAdminClient();
 
-    // Delete profile first (cascade might handle this, but be explicit)
-    await adminClient
-      .from('profiles')
-      .delete()
-      .eq('id', id);
+    // Nullify FK references that don't have ON DELETE CASCADE,
+    // otherwise deleting the profile (via auth cascade) would fail.
+    await Promise.all([
+      adminClient.from('profiles').update({ referred_by: null }).eq('referred_by', id),
+      adminClient.from('scripts').update({ generated_by_user_id: null }).eq('generated_by_user_id', id),
+      adminClient.from('microlearning_tips').update({ created_by: null }).eq('created_by', id),
+      adminClient.from('ai_prompts').update({ created_by: null }).eq('created_by', id),
+    ]);
 
-    // Delete auth user
+    // Delete auth user – cascades to profiles (ON DELETE CASCADE),
+    // which in turn cascades to all other user-related tables.
     const { error: deleteError } =
       await adminClient.auth.admin.deleteUser(id);
 
