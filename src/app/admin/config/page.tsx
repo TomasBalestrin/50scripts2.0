@@ -248,6 +248,9 @@ export default function AdminConfigPage() {
         )
       );
 
+      // Refresh webhook status to reflect saved configs
+      fetchWebhookStatus();
+
       setToast('Configurações salvas com sucesso!');
       setTimeout(() => setToast(null), 3000);
     } catch (err) {
