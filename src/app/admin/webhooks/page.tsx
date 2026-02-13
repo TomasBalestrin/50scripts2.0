@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronUp,
   Filter,
+  RefreshCw,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,7 @@ export default function AdminWebhooksPage() {
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [reprocessingId, setReprocessingId] = useState<string | null>(null);
 
   // Filters
   const [sourceFilter, setSourceFilter] = useState('all');
@@ -80,6 +82,30 @@ export default function AdminWebhooksPage() {
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs]);
+
+  const handleReprocess = async (logId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (reprocessingId) return;
+    setReprocessingId(logId);
+    try {
+      const res = await fetch('/api/admin/webhooks/reprocess', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: logId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`Erro ao reprocessar: ${data.error || 'Erro desconhecido'}`);
+      } else {
+        alert(`Reprocessado com sucesso! Plano: ${data.plan || '-'}`);
+        fetchLogs();
+      }
+    } catch {
+      alert('Erro de rede ao reprocessar');
+    } finally {
+      setReprocessingId(null);
+    }
+  };
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
@@ -347,6 +373,23 @@ export default function AdminWebhooksPage() {
                                     {JSON.stringify(log.payload, null, 2)}
                                   </pre>
                                 </div>
+                                {(log.status === 'ignored' || log.status === 'error') && !log.user_created && (
+                                  <div className="pt-2">
+                                    <Button
+                                      size="sm"
+                                      onClick={(e) => handleReprocess(log.id, e)}
+                                      disabled={reprocessingId === log.id}
+                                      className="bg-[#1D4ED8] text-white hover:bg-[#1E40AF]"
+                                    >
+                                      {reprocessingId === log.id ? (
+                                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <RefreshCw className="mr-2 h-3 w-3" />
+                                      )}
+                                      Reprocessar
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             </td>
                           </tr>
