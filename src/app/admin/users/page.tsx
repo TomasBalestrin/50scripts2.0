@@ -329,7 +329,10 @@ export default function AdminUsersPage() {
       if (selectedUser?.id === deleteUser.id) {
         setSelectedUser(null);
       }
+      showToast('success', 'Usuário removido com sucesso');
       await fetchUsers();
+    } catch {
+      setDeleteError('Erro de rede ao remover usuário. Tente novamente.');
     } finally {
       setActionLoading(false);
     }
@@ -810,6 +813,8 @@ export default function AdminUsersPage() {
               <Label className="text-gray-300">Email *</Label>
               <Input
                 type="email"
+                inputMode="email"
+                autoComplete="email"
                 placeholder="email@exemplo.com"
                 value={addForm.email}
                 onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
@@ -898,6 +903,8 @@ export default function AdminUsersPage() {
                 <Label className="text-gray-300">Email</Label>
                 <Input
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
                   placeholder="Novo email"
                   value={editForm.email}
                   onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}

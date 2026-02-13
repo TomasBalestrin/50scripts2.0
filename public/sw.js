@@ -141,11 +141,14 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Message handler for cache cleanup on logout
+// Message handler
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'CLEAR_CACHES') {
     caches.keys().then((keys) =>
       Promise.all(keys.map((k) => caches.delete(k)))
     );
+  }
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 });

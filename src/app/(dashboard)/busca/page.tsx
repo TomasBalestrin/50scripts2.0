@@ -49,6 +49,8 @@ export default function BuscaPage() {
           onChange={(e) => handleQueryChange(e.target.value)}
           placeholder="Busque por título, conteúdo ou situação..."
           className="pl-10 bg-[#0A0F1E] border-[#131B35] text-white h-12 text-lg"
+          type="search"
+          inputMode="search"
           autoFocus
           aria-label="Buscar scripts"
           role="searchbox"

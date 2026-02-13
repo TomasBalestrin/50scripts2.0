@@ -376,6 +376,7 @@ export default function AdminPromptsPage() {
                 <Label className="text-gray-400">Temperatura (0-1)</Label>
                 <Input
                   type="number"
+                  inputMode="decimal"
                   step={0.1}
                   min={0}
                   max={1}
@@ -393,6 +394,7 @@ export default function AdminPromptsPage() {
                 <Label className="text-gray-400">Max Tokens</Label>
                 <Input
                   type="number"
+                  inputMode="numeric"
                   value={form.max_tokens}
                   onChange={(e) =>
                     setForm((f) => ({

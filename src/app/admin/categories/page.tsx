@@ -384,6 +384,7 @@ export default function AdminCategoriesPage() {
               <Label className="text-gray-400">Ordem de Exibição</Label>
               <Input
                 type="number"
+                inputMode="numeric"
                 value={form.display_order}
                 onChange={(e) =>
                   setForm((f) => ({
