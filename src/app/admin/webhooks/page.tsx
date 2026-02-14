@@ -34,6 +34,7 @@ export default function AdminWebhooksPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [reprocessingId, setReprocessingId] = useState<string | null>(null);
+  const [reprocessingAll, setReprocessingAll] = useState(false);
 
   // Filters
   const [sourceFilter, setSourceFilter] = useState('all');
@@ -59,10 +60,8 @@ export default function AdminWebhooksPage() {
       if (eventTypeFilter !== 'all') {
         query = query.eq('event_type', eventTypeFilter);
       }
-      if (statusFilter === 'success') {
-        query = query.is('error_message', null);
-      } else if (statusFilter === 'error') {
-        query = query.not('error_message', 'is', null);
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
       }
       if (dateFrom) {
         query = query.gte('processed_at', `${dateFrom}T00:00:00`);
@@ -77,7 +76,8 @@ export default function AdminWebhooksPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, sourceFilter, eventTypeFilter, statusFilter, dateFrom, dateTo, supabase]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, sourceFilter, eventTypeFilter, statusFilter, dateFrom, dateTo]);
 
   useEffect(() => {
     fetchLogs();
@@ -107,6 +107,29 @@ export default function AdminWebhooksPage() {
     }
   };
 
+  const handleReprocessAll = async () => {
+    if (reprocessingAll) return;
+    if (!confirm('Reprocessar TODOS os webhooks ignorados/com erro? Isso pode levar alguns minutos.')) return;
+    setReprocessingAll(true);
+    try {
+      const res = await fetch('/api/admin/webhooks/reprocess-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`Erro ao reprocessar: ${data.error || 'Erro desconhecido'}`);
+      } else {
+        alert(`Reprocessamento concluído!\n\nTotal: ${data.total}\nSucesso: ${data.processed}\nFalhas: ${data.failed}`);
+        fetchLogs();
+      }
+    } catch {
+      alert('Erro de rede ao reprocessar');
+    } finally {
+      setReprocessingAll(false);
+    }
+  };
+
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   // Get unique sources from logs
@@ -121,11 +144,26 @@ export default function AdminWebhooksPage() {
       setSources(unique);
     }
     fetchSources();
-  }, [supabase]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">Webhooks</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-white">Webhooks</h1>
+        <Button
+          onClick={handleReprocessAll}
+          disabled={reprocessingAll}
+          className="bg-[#1D4ED8] text-white hover:bg-[#1E40AF]"
+        >
+          {reprocessingAll ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="mr-2 h-4 w-4" />
+          )}
+          {reprocessingAll ? 'Reprocessando...' : 'Reprocessar Todos Ignorados'}
+        </Button>
+      </div>
 
       {/* Filters */}
       <Card className="border-[#131B35] bg-[#0A0F1E]">
@@ -200,7 +238,10 @@ export default function AdminWebhooksPage() {
                 <SelectContent className="border-[#131B35] bg-[#0A0F1E] text-white">
                   <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="success">Sucesso</SelectItem>
+                  <SelectItem value="ignored">Ignorado</SelectItem>
                   <SelectItem value="error">Erro</SelectItem>
+                  <SelectItem value="warning">Aviso</SelectItem>
+                  <SelectItem value="reprocessed">Reprocessado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -303,14 +344,26 @@ export default function AdminWebhooksPage() {
                           <td className="px-4 py-3">
                             <Badge
                               className={
-                                isError
+                                log.status === 'error' || isError
                                   ? 'border-red-800 bg-red-900/30 text-red-400'
                                   : log.status === 'ignored'
                                     ? 'border-yellow-800 bg-yellow-900/30 text-yellow-400'
-                                    : 'border-green-800 bg-green-900/30 text-green-400'
+                                    : log.status === 'warning'
+                                      ? 'border-orange-800 bg-orange-900/30 text-orange-400'
+                                      : log.status === 'reprocessed'
+                                        ? 'border-blue-800 bg-blue-900/30 text-blue-400'
+                                        : 'border-green-800 bg-green-900/30 text-green-400'
                               }
                             >
-                              {isError ? 'Erro' : log.status === 'ignored' ? 'Ignorado' : 'Sucesso'}
+                              {log.status === 'error' || isError
+                                ? 'Erro'
+                                : log.status === 'ignored'
+                                  ? 'Ignorado'
+                                  : log.status === 'warning'
+                                    ? 'Aviso'
+                                    : log.status === 'reprocessed'
+                                      ? 'Reprocessado'
+                                      : 'Sucesso'}
                             </Badge>
                           </td>
                           <td className="px-4 py-3 text-gray-400">
