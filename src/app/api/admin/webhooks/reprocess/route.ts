@@ -119,10 +119,34 @@ export async function POST(request: NextRequest) {
         throw err;
       }
     } else {
-      return NextResponse.json(
-        { error: `Unknown event type: ${eventType}. Cannot determine how to reprocess.` },
-        { status: 400 }
-      );
+      // Treat any unknown event as a purchase (most common webhook type)
+      const config = await getPlatformConfig(source);
+      const productMap = buildProductMap(config);
+      const plan = productMap[productId] || 'starter';
+
+      const result = await handlePurchase(email, buyerName, plan, source, {
+        product_id: productId,
+        reprocessed: true,
+        original_log_id: id,
+        original_event: eventType,
+      });
+
+      await supabase
+        .from('webhook_logs')
+        .update({
+          status: 'reprocessed',
+          user_id: result.userId,
+          user_created: true,
+          plan_granted: result.plan,
+          error_message: null,
+        })
+        .eq('id', id);
+
+      return NextResponse.json({
+        success: true,
+        user_id: result.userId,
+        plan: result.plan,
+      });
     }
   } catch (error) {
     console.error('[admin/webhooks/reprocess] Error:', error);

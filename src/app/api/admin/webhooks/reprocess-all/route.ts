@@ -21,7 +21,6 @@ export async function POST() {
       .from('webhook_logs')
       .select('*')
       .in('status', ['ignored', 'error'])
-      .eq('user_created', false)
       .order('processed_at', { ascending: true });
 
     if (fetchError) {
@@ -125,7 +124,33 @@ export async function POST() {
 
           results.push({ id: log.id, email, status: 'success' });
         } else {
-          results.push({ id: log.id, email, status: 'error', error: `Unknown event: ${eventType}` });
+          // Treat any unknown event as a purchase (most common webhook type)
+          if (!configCache[source]) {
+            configCache[source] = await getPlatformConfig(source);
+          }
+          const config = configCache[source];
+          const productMap = buildProductMap(config);
+          const plan = productMap[productId] || 'starter';
+
+          const result = await handlePurchase(email, buyerName, plan, source, {
+            product_id: productId,
+            reprocessed: true,
+            original_log_id: log.id,
+            original_event: eventType,
+          });
+
+          await supabase
+            .from('webhook_logs')
+            .update({
+              status: 'reprocessed',
+              user_id: result.userId,
+              user_created: true,
+              plan_granted: result.plan,
+              error_message: null,
+            })
+            .eq('id', log.id);
+
+          results.push({ id: log.id, email, status: 'success', plan: result.plan });
         }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Unknown error';
