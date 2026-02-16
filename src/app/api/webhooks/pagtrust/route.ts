@@ -107,7 +107,23 @@ export async function POST(request: NextRequest) {
       }
 
       default: {
-        await logWebhookEvent(SOURCE, event, body, 'ignored', buyerEmail);
+        // Treat any unrecognized event as a purchase if we have an email
+        if (buyerEmail) {
+          try {
+            const plan = productMap[productId] || 'starter';
+            const result = await handlePurchase(buyerEmail, buyerName, plan, SOURCE, {
+              product_id: productId,
+              transaction_id: transactionId,
+              original_event: rawEvent,
+            });
+            return NextResponse.json({ success: true, user_id: result.userId, plan: result.plan });
+          } catch (err) {
+            await logWebhookEvent(SOURCE, event, body, 'error', buyerEmail, undefined,
+              err instanceof Error ? err.message : 'Failed to process as purchase');
+            return NextResponse.json({ received: true, event: rawEvent });
+          }
+        }
+        await logWebhookEvent(SOURCE, event, body, 'warning', '', undefined, 'No email to process');
         return NextResponse.json({ received: true, event: rawEvent });
       }
     }

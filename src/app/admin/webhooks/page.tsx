@@ -426,7 +426,7 @@ export default function AdminWebhooksPage() {
                                     {JSON.stringify(log.payload, null, 2)}
                                   </pre>
                                 </div>
-                                {(log.status === 'ignored' || log.status === 'error') && !log.user_created && (
+                                {(log.status === 'ignored' || log.status === 'error') && (
                                   <div className="pt-2">
                                     <Button
                                       size="sm"
