@@ -433,8 +433,8 @@ export default function ScriptDetailPage() {
         </motion.div>
       </div>
 
-      {/* Toast container */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+      {/* Toast container – offset above bottom nav on mobile */}
+      <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-2 lg:bottom-6 lg:right-6">
         <AnimatePresence>
           {toasts.map((t) => (
             <motion.div

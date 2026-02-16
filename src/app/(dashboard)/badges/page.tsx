@@ -124,7 +124,7 @@ export default function BadgesPage() {
             <div className="h-4 w-64 rounded bg-[#0A0F1E]" />
           </div>
           <SkeletonBlock className="h-40" />
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
             {Array.from({ length: 9 }).map((_, i) => (
               <SkeletonBlock key={i} className="h-32" />
             ))}
@@ -199,7 +199,7 @@ export default function BadgesPage() {
 
         {/* Stats row */}
         <motion.div variants={itemVariants}>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="flex items-center gap-3 rounded-xl border border-[#131B35] bg-[#0A0F1E] p-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#1D4ED8]/15">
                 <Shield className="h-5 w-5 text-[#1D4ED8]" />
@@ -208,7 +208,7 @@ export default function BadgesPage() {
                 <p className="text-lg font-bold text-white">
                   {earnedCount}/{totalCount}
                 </p>
-                <p className="text-[10px] text-[#94A3B8] sm:text-xs">Badges conquistadas</p>
+                <p className="text-xs text-[#94A3B8]">Badges conquistadas</p>
               </div>
             </div>
 
@@ -218,7 +218,7 @@ export default function BadgesPage() {
               </div>
               <div>
                 <p className="text-lg font-bold text-white">{completionPct}%</p>
-                <p className="text-[10px] text-[#94A3B8] sm:text-xs">Progresso total</p>
+                <p className="text-xs text-[#94A3B8]">Progresso total</p>
               </div>
             </div>
 
@@ -230,7 +230,7 @@ export default function BadgesPage() {
                 <p className="text-lg font-bold text-white">
                   {totalCount - earnedCount}
                 </p>
-                <p className="text-[10px] text-[#94A3B8] sm:text-xs">Faltam desbloquear</p>
+                <p className="text-xs text-[#94A3B8]">Faltam desbloquear</p>
               </div>
             </div>
           </div>

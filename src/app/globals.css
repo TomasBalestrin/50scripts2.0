@@ -179,3 +179,8 @@
 .skip-link:focus {
   top: 0;
 }
+
+/* Safe area for notched devices (iPhone X+, etc.) */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

@@ -119,10 +119,10 @@ export function EmergencyFAB() {
         )}
       </AnimatePresence>
 
-      {/* FAB container */}
+      {/* FAB container – on mobile sits above bottom nav, aligned right */}
       <div
         className="fixed z-50 bottom-6 right-6 md:bottom-8 md:right-8
-                    max-md:bottom-20 max-md:right-1/2 max-md:translate-x-1/2"
+                    max-lg:bottom-[5.5rem] max-lg:right-4"
       >
         {/* Radial option buttons */}
         <AnimatePresence>
@@ -195,7 +195,7 @@ export function EmergencyFAB() {
         <motion.button
           onClick={toggleExpand}
           whileTap={{ scale: 0.9 }}
-          className="relative flex items-center justify-center w-14 h-14 rounded-full
+          className="relative flex items-center justify-center w-12 h-12 lg:w-14 lg:h-14 rounded-full
                      shadow-2xl shadow-[#1D4ED8]/30 z-50 focus:outline-none focus-visible:ring-2
                      focus-visible:ring-[#1D4ED8] focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]"
           style={{

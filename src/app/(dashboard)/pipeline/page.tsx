@@ -151,14 +151,14 @@ export default function PipelinePage() {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Kanban className="w-6 h-6 text-[#1D4ED8]" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+          <Kanban className="w-5 h-5 sm:w-6 sm:h-6 text-[#1D4ED8]" />
           Pipeline de Leads
         </h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#1D4ED8] hover:bg-[#1E40AF] text-white">
+            <Button className="bg-[#1D4ED8] hover:bg-[#1E40AF] text-white w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               Novo Lead
             </Button>
@@ -202,46 +202,46 @@ export default function PipelinePage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-1 gap-3 mb-6 sm:grid-cols-3">
         <Card className="bg-[#0A0F1E] border-[#131B35]">
-          <CardContent className="pt-4 text-center">
-            <p className="text-2xl font-bold text-white">{leads.length}</p>
-            <p className="text-xs text-gray-400">Total Leads</p>
+          <CardContent className="pt-4 flex items-center justify-between sm:block sm:text-center">
+            <p className="text-xs text-gray-400 sm:order-2">Total Leads</p>
+            <p className="text-xl sm:text-2xl font-bold text-white">{leads.length}</p>
           </CardContent>
         </Card>
         <Card className="bg-[#0A0F1E] border-[#131B35]">
-          <CardContent className="pt-4 text-center">
-            <p className="text-2xl font-bold text-green-500">
+          <CardContent className="pt-4 flex items-center justify-between sm:block sm:text-center">
+            <p className="text-xs text-gray-400 sm:order-2">Fechados</p>
+            <p className="text-xl sm:text-2xl font-bold text-green-500">
               R$ {leads
                 .filter((l) => l.stage === 'fechado')
                 .reduce((acc, l) => acc + (l.expected_value || 0), 0)
                 .toLocaleString('pt-BR')}
             </p>
-            <p className="text-xs text-gray-400">Fechados</p>
           </CardContent>
         </Card>
         <Card className="bg-[#0A0F1E] border-[#131B35]">
-          <CardContent className="pt-4 text-center">
-            <p className="text-2xl font-bold text-yellow-500">
+          <CardContent className="pt-4 flex items-center justify-between sm:block sm:text-center">
+            <p className="text-xs text-gray-400 sm:order-2">Em Pipeline</p>
+            <p className="text-xl sm:text-2xl font-bold text-yellow-500">
               R$ {leads
                 .filter((l) => !['fechado', 'perdido'].includes(l.stage))
                 .reduce((acc, l) => acc + (l.expected_value || 0), 0)
                 .toLocaleString('pt-BR')}
             </p>
-            <p className="text-xs text-gray-400">Em Pipeline</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Kanban Board with Drag and Drop */}
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 overflow-x-auto">
+        <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-thin sm:grid sm:grid-cols-2 sm:overflow-x-visible md:grid-cols-3 lg:grid-cols-6">
           {STAGES.map((stage) => {
             const stageLeads = getLeadsByStage(stage.key);
             const stageValue = getStageValue(stage.key);
 
             return (
-              <div key={stage.key} className="min-w-[200px]" role="region" aria-label={`Coluna ${stage.label}`}>
+              <div key={stage.key} className="min-w-[11rem] flex-shrink-0 sm:min-w-0 sm:flex-shrink" role="region" aria-label={`Coluna ${stage.label}`}>
                 {/* Column Header */}
                 <div className="flex items-center gap-2 mb-2">
                   <div

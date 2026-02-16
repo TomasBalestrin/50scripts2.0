@@ -1,6 +1,5 @@
 "use client";
 
-import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Route, Search, User } from "lucide-react";
@@ -15,7 +14,6 @@ interface BottomNavItem {
 const navItems: BottomNavItem[] = [
   { label: "Scripts", href: "/trilhas", icon: Route },
   { label: "Progresso", href: "/", icon: LayoutDashboard },
-  // Center slot left empty for FAB overlay
   { label: "Buscar", href: "/busca", icon: Search },
   { label: "Perfil", href: "/perfil", icon: User },
 ];
@@ -24,36 +22,31 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#131B35]/50 bg-[#0A0F1E]/95 backdrop-blur-md lg:hidden">
-      <div className="mx-auto flex h-16 max-w-md items-center justify-around px-2">
-        {navItems.map((item, index) => {
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#131B35]/50 bg-[#0A0F1E]/95 backdrop-blur-md lg:hidden safe-area-bottom">
+      <div className="mx-auto flex h-14 max-w-md items-center justify-around px-4">
+        {navItems.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
 
           return (
-            <Fragment key={item.href}>
-              {/* Insert empty center slot before the third item (index 2) */}
-              {index === 2 && (
-                <div className="w-14 flex-shrink-0" />
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center gap-0.5 rounded-lg px-4 py-1.5 transition-colors min-w-[3.5rem]",
+                isActive
+                  ? "text-[#1D4ED8]"
+                  : "text-[#94A3B8] active:text-white"
               )}
-              <Link
-                href={item.href}
+            >
+              <item.icon
                 className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-1.5 transition-colors",
-                  isActive
-                    ? "text-[#1D4ED8]"
-                    : "text-[#94A3B8] active:text-white"
+                  "h-5 w-5",
+                  isActive ? "text-[#1D4ED8]" : "text-[#94A3B8]"
                 )}
-              >
-                <item.icon
-                  className={cn(
-                    "h-5 w-5",
-                    isActive ? "text-[#1D4ED8]" : "text-[#94A3B8]"
-                  )}
-                />
-                <span className="text-[10px] font-medium">{item.label}</span>
-              </Link>
-            </Fragment>
+              />
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </Link>
           );
         })}
       </div>

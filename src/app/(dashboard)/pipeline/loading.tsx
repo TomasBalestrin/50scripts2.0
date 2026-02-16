@@ -20,11 +20,11 @@ export default function Loading() {
         </div>
 
         {/* Kanban columns */}
-        <div className="flex gap-4 overflow-hidden">
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
           {columnsConfig.map((col, colIdx) => (
             <div
               key={colIdx}
-              className="animate-pulse min-w-[220px] flex-1 rounded-xl border border-[#131B35] bg-[#0A0F1E] p-3"
+              className="animate-pulse min-w-[11rem] sm:min-w-[220px] flex-1 rounded-xl border border-[#131B35] bg-[#0A0F1E] p-3"
               style={{ animationDelay: `${colIdx * 75}ms` }}
             >
               {/* Column header */}

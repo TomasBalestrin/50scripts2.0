@@ -149,7 +149,7 @@ export default function ReferralsPage() {
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Card className="bg-[#0A0F1E] border-[#131B35]">
           <CardContent className="pt-4 text-center">
             <Users className="w-5 h-5 mx-auto mb-1 text-blue-500" />

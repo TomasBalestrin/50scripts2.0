@@ -91,23 +91,23 @@ export default function AgendaPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Calendar className="w-6 h-6 text-[#1D4ED8]" />
+      <div className="mb-6">
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-[#1D4ED8] shrink-0" />
             Agenda de Vendas
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
-            {new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-            })}
-          </p>
+          <Badge className="bg-[#131B35] text-white shrink-0 text-xs">
+            {completedCount}/{blocks.length}
+          </Badge>
         </div>
-        <Badge className="bg-[#131B35] text-white">
-          {completedCount}/{blocks.length} concluídos
-        </Badge>
+        <p className="text-sm text-gray-400 mt-1">
+          {new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+          })}
+        </p>
       </div>
 
       <div className="space-y-4">
