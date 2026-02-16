@@ -109,7 +109,7 @@ export default function AdminWebhooksPage() {
 
   const handleReprocessAll = async () => {
     if (reprocessingAll) return;
-    if (!confirm('Reprocessar TODOS os webhooks ignorados/com erro? Isso pode levar alguns minutos.')) return;
+    if (!confirm('Reprocessar TODOS os webhooks não processados (ignorados, erros, avisos)? Isso pode levar alguns minutos.')) return;
     setReprocessingAll(true);
     try {
       const res = await fetch('/api/admin/webhooks/reprocess-all', {
@@ -161,7 +161,7 @@ export default function AdminWebhooksPage() {
           ) : (
             <RefreshCw className="mr-2 h-4 w-4" />
           )}
-          {reprocessingAll ? 'Reprocessando...' : 'Reprocessar Todos Ignorados'}
+          {reprocessingAll ? 'Reprocessando...' : 'Reprocessar Não Processados'}
         </Button>
       </div>
 
@@ -239,6 +239,7 @@ export default function AdminWebhooksPage() {
                   <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="success">Sucesso</SelectItem>
                   <SelectItem value="ignored">Ignorado</SelectItem>
+                  <SelectItem value="unhandled">Não Processado</SelectItem>
                   <SelectItem value="error">Erro</SelectItem>
                   <SelectItem value="warning">Aviso</SelectItem>
                   <SelectItem value="reprocessed">Reprocessado</SelectItem>
@@ -346,7 +347,7 @@ export default function AdminWebhooksPage() {
                               className={
                                 log.status === 'error' || isError
                                   ? 'border-red-800 bg-red-900/30 text-red-400'
-                                  : log.status === 'ignored'
+                                  : log.status === 'ignored' || log.status === 'unhandled'
                                     ? 'border-yellow-800 bg-yellow-900/30 text-yellow-400'
                                     : log.status === 'warning'
                                       ? 'border-orange-800 bg-orange-900/30 text-orange-400'
@@ -357,8 +358,8 @@ export default function AdminWebhooksPage() {
                             >
                               {log.status === 'error' || isError
                                 ? 'Erro'
-                                : log.status === 'ignored'
-                                  ? 'Ignorado'
+                                : log.status === 'ignored' || log.status === 'unhandled'
+                                  ? 'Não Processado'
                                   : log.status === 'warning'
                                     ? 'Aviso'
                                     : log.status === 'reprocessed'
@@ -426,7 +427,7 @@ export default function AdminWebhooksPage() {
                                     {JSON.stringify(log.payload, null, 2)}
                                   </pre>
                                 </div>
-                                {(log.status === 'ignored' || log.status === 'error') && (
+                                {(log.status === 'ignored' || log.status === 'error' || log.status === 'unhandled' || log.status === 'warning') && (
                                   <div className="pt-2">
                                     <Button
                                       size="sm"
