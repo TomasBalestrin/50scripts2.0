@@ -35,6 +35,7 @@ interface DashboardData {
   total_users_by_plan: Record<string, number>;
   active_count: number;
   mrr: number;
+  mrr_by_plan: Record<string, number>;
   churn_percent: number;
   dau: number;
   mau: number;
@@ -120,7 +121,7 @@ export default function AdminDashboardPage() {
         <MetricCard
           title="MRR"
           value={`R$ ${data.mrr.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-          subtitle={`${data.active_count} assinantes ativos`}
+          subtitle={`Pro: R$ ${(data.mrr_by_plan?.pro ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} | Premium: R$ ${(data.mrr_by_plan?.premium ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} | Copilot: R$ ${(data.mrr_by_plan?.copilot ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           icon={<DollarSign className="h-5 w-5" />}
         />
         <MetricCard
@@ -377,10 +378,14 @@ export default function AdminDashboardPage() {
                       className={
                         wh.status === 'success'
                           ? 'border-green-800 bg-green-900/30 text-green-400'
-                          : 'border-red-800 bg-red-900/30 text-red-400'
+                          : wh.status === 'reprocessed'
+                            ? 'border-blue-800 bg-blue-900/30 text-blue-400'
+                            : wh.status === 'warning'
+                              ? 'border-orange-800 bg-orange-900/30 text-orange-400'
+                              : 'border-red-800 bg-red-900/30 text-red-400'
                       }
                     >
-                      {wh.status === 'success' ? 'OK' : 'Erro'}
+                      {wh.status === 'success' ? 'OK' : wh.status === 'reprocessed' ? 'Repr.' : wh.status === 'warning' ? 'Aviso' : 'Erro'}
                     </Badge>
                     <div>
                       <p className="text-sm font-medium text-white">

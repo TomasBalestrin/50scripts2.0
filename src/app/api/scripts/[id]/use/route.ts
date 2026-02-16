@@ -31,10 +31,10 @@ export async function POST(
       // No body or invalid JSON is fine, tone_used is optional
     }
 
-    // 3. Verify script exists
+    // 3. Verify script exists and get current usage count
     const { data: script, error: scriptError } = await supabase
       .from('scripts')
-      .select('id')
+      .select('id, global_usage_count')
       .eq('id', scriptId)
       .eq('is_active', true)
       .single();
@@ -65,8 +65,16 @@ export async function POST(
       );
     }
 
-    // 5. Increment global_usage_count
-    await supabase.rpc('increment_usage_count', { p_script_id: scriptId });
+    // 5. Increment global_usage_count directly (no RPC needed)
+    const currentCount = (script as Record<string, unknown>).global_usage_count as number ?? 0;
+    const { error: incrementError } = await supabase
+      .from('scripts')
+      .update({ global_usage_count: currentCount + 1 })
+      .eq('id', scriptId);
+
+    if (incrementError) {
+      console.error('[scripts/id/use] Error incrementing usage count:', incrementError);
+    }
 
     // 6. Add 10 XP
     await supabase.rpc('add_xp', { p_user_id: userId, p_xp: 10 });
