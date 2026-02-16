@@ -157,7 +157,8 @@ export async function handlePurchase(
     throw new Error(`Failed to upgrade plan: ${updateError.message}`);
   }
 
-  await logWebhookEvent(source, 'purchase', { ...payload }, 'success', email, userId, undefined, {
+  const originalEvent = (payload.original_event as string) || 'purchase';
+  await logWebhookEvent(source, originalEvent, { ...payload }, 'success', email, userId, undefined, {
     planGranted: plan,
     userCreated: created,
   });

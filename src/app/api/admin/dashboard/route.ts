@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/admin/auth';
 
 const PLAN_PRICES: Record<string, number> = {
-  starter: 29.9,
+  starter: 0,
   pro: 19.9,
-  premium: 49.9,
-  copilot: 97.9,
+  premium: 39.9,
+  copilot: 99.9,
 };
 
 export async function GET() {
@@ -31,7 +31,7 @@ export async function GET() {
         .select('tokens_used'),
       supabase
         .from('webhook_logs')
-        .select('id, source, event_type, email_extracted, error_message, processed_at')
+        .select('id, source, event_type, email_extracted, status, error_message, processed_at')
         .order('processed_at', { ascending: false })
         .limit(10),
     ]);
@@ -82,11 +82,13 @@ export async function GET() {
     const totalUsers = allProfiles.length;
 
     // ---- MRR ----
-    const mrr =
-      totalUsersByPlan.starter * PLAN_PRICES.starter +
-      totalUsersByPlan.pro * PLAN_PRICES.pro +
-      totalUsersByPlan.premium * PLAN_PRICES.premium +
-      totalUsersByPlan.copilot * PLAN_PRICES.copilot;
+    const mrrByPlan: Record<string, number> = {
+      starter: Math.round(totalUsersByPlan.starter * PLAN_PRICES.starter * 100) / 100,
+      pro: Math.round(totalUsersByPlan.pro * PLAN_PRICES.pro * 100) / 100,
+      premium: Math.round(totalUsersByPlan.premium * PLAN_PRICES.premium * 100) / 100,
+      copilot: Math.round(totalUsersByPlan.copilot * PLAN_PRICES.copilot * 100) / 100,
+    };
+    const mrr = mrrByPlan.starter + mrrByPlan.pro + mrrByPlan.premium + mrrByPlan.copilot;
 
     // ---- Churn % ----
     const churnPercent = totalUsers > 0 ? ((totalUsers - activeCount) / totalUsers) * 100 : 0;
@@ -187,6 +189,7 @@ export async function GET() {
       total_users_by_plan: totalUsersByPlan,
       active_count: activeCount,
       mrr: Math.round(mrr * 100) / 100,
+      mrr_by_plan: mrrByPlan,
       churn_percent: Math.round(churnPercent * 10) / 10,
       dau: dauCount,
       mau: mauCount,
@@ -201,7 +204,7 @@ export async function GET() {
         source: w.source,
         event_type: w.event_type,
         email: w.email_extracted,
-        status: w.error_message ? 'error' : 'success',
+        status: (w as Record<string, unknown>).status as string || (w.error_message ? 'error' : 'success'),
         error_message: w.error_message,
         processed_at: w.processed_at,
       })),

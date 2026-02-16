@@ -45,78 +45,83 @@ export async function POST(request: NextRequest) {
 
     const productMap = buildProductMap(config);
 
-    switch (event) {
-      case 'order_paid':
-      case 'paid': {
-        if (!customerEmail) {
-          await logWebhookEvent(SOURCE, 'purchase', body, 'error', '', undefined, 'Missing customer email');
-          return NextResponse.json({ error: 'Missing customer email' }, { status: 400 });
-        }
+    // Normalize and classify event
+    const normalizedEvent = event.toLowerCase().trim().replace(/\./g, '_');
 
-        const plan = productMap[productId] || 'starter';
-        const result = await handlePurchase(customerEmail, customerName, plan, SOURCE, {
+    const isPurchaseEvent =
+      normalizedEvent === 'purchase' ||
+      normalizedEvent.includes('paid') ||
+      normalizedEvent.includes('approved') ||
+      normalizedEvent.includes('complete');
+
+    const isCancelEvent =
+      normalizedEvent.includes('refund') ||
+      normalizedEvent.includes('chargeback') ||
+      normalizedEvent.includes('cancel');
+
+    const isWarningEvent =
+      normalizedEvent.includes('waiting') ||
+      normalizedEvent.includes('expired') ||
+      normalizedEvent.includes('pending');
+
+    if (isPurchaseEvent) {
+      if (!customerEmail) {
+        await logWebhookEvent(SOURCE, normalizedEvent, body, 'error', '', undefined, 'Missing customer email');
+        return NextResponse.json({ error: 'Missing customer email' }, { status: 400 });
+      }
+
+      const plan = productMap[productId] || 'starter';
+      const result = await handlePurchase(customerEmail, customerName, plan, SOURCE, {
+        product_id: productId,
+        order_id: body.order_id,
+        original_event: event,
+      });
+
+      return NextResponse.json({ success: true, user_id: result.userId, plan: result.plan });
+    } else if (isCancelEvent) {
+      if (!customerEmail) {
+        await logWebhookEvent(SOURCE, normalizedEvent, body, 'error', '', undefined, 'Missing customer email');
+        return NextResponse.json({ error: 'Missing customer email' }, { status: 400 });
+      }
+
+      try {
+        const result = await handleCancellation(customerEmail, SOURCE, normalizedEvent, {
           product_id: productId,
           order_id: body.order_id,
         });
-
-        return NextResponse.json({ success: true, user_id: result.userId, plan: result.plan });
-      }
-
-      case 'order_refunded':
-      case 'refunded':
-      case 'chargeback':
-      case 'chargedback':
-      case 'subscription_canceled':
-      case 'canceled': {
-        if (!customerEmail) {
-          await logWebhookEvent(SOURCE, 'cancel', body, 'error', '', undefined, 'Missing customer email');
-          return NextResponse.json({ error: 'Missing customer email' }, { status: 400 });
+        return NextResponse.json({ success: true, user_id: result.userId });
+      } catch (err) {
+        if (err instanceof Error && err.message === 'User not found') {
+          return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
+        throw err;
+      }
+    } else if (isWarningEvent) {
+      await logWebhookEvent(SOURCE, normalizedEvent, {
+        product_id: productId,
+        order_id: body.order_id,
+      }, 'warning', customerEmail);
 
+      return NextResponse.json({ received: true, event });
+    } else {
+      // Treat any unrecognized event as a purchase if we have an email
+      if (customerEmail) {
         try {
-          const result = await handleCancellation(customerEmail, SOURCE, event, {
+          const plan = productMap[productId] || 'starter';
+          const result = await handlePurchase(customerEmail, customerName, plan, SOURCE, {
             product_id: productId,
             order_id: body.order_id,
+            original_event: event,
           });
-          return NextResponse.json({ success: true, user_id: result.userId });
+          return NextResponse.json({ success: true, user_id: result.userId, plan: result.plan });
         } catch (err) {
-          if (err instanceof Error && err.message === 'User not found') {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 });
-          }
-          throw err;
+          await logWebhookEvent(SOURCE, normalizedEvent, body, 'error', customerEmail, undefined,
+            err instanceof Error ? err.message : 'Failed to process as purchase');
+          return NextResponse.json({ received: true, event });
         }
       }
-
-      case 'waiting_payment':
-      case 'expired': {
-        await logWebhookEvent(SOURCE, event, {
-          product_id: productId,
-          order_id: body.order_id,
-        }, 'warning', customerEmail);
-
-        return NextResponse.json({ received: true, event });
-      }
-
-      default: {
-        // Treat any unrecognized event as a purchase if we have an email
-        if (customerEmail) {
-          try {
-            const plan = productMap[productId] || 'starter';
-            const result = await handlePurchase(customerEmail, customerName, plan, SOURCE, {
-              product_id: productId,
-              order_id: body.order_id,
-              original_event: event,
-            });
-            return NextResponse.json({ success: true, user_id: result.userId, plan: result.plan });
-          } catch (err) {
-            await logWebhookEvent(SOURCE, event, body, 'error', customerEmail, undefined,
-              err instanceof Error ? err.message : 'Failed to process as purchase');
-            return NextResponse.json({ received: true, event });
-          }
-        }
-        await logWebhookEvent(SOURCE, event, body, 'warning', '', undefined, 'No email to process');
-        return NextResponse.json({ received: true, event });
-      }
+      await logWebhookEvent(SOURCE, normalizedEvent, body, 'warning', '', undefined, 'No email to process');
+      return NextResponse.json({ received: true, event });
     }
   } catch (error) {
     console.error('[webhook/kiwify] Error:', error);
