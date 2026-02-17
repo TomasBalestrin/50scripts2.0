@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/server';
 import { webhookPlanUpgradeSchema } from '@/lib/validations/schemas';
+import { logWebhookEvent } from '@/lib/webhooks/shared';
 
 function verifyWebhookSecret(request: NextRequest): boolean {
   const secret = request.headers.get('X-Webhook-Secret');
@@ -27,6 +28,8 @@ function getAiCreditsForPlan(plan: string): { monthly: number; remaining: number
 }
 
 export async function POST(request: NextRequest) {
+  let extractedEmail = '';
+
   try {
     // 1. Validate webhook secret
     if (!verifyWebhookSecret(request)) {
@@ -48,6 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, plan, source } = parsed.data;
+    extractedEmail = email;
 
     // 3. Create Supabase admin client
     const supabase = await createAdminClient();
@@ -60,14 +64,15 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (profileError || !profile) {
-      await supabase.from('webhook_logs').insert({
-        source: source || 'plan-upgrade',
-        event_type: 'upgrade',
-        payload: { email, plan, source },
-        email_extracted: email,
-        status: 'error',
-        error_message: 'User not found',
-      });
+      await logWebhookEvent(
+        source || 'plan-upgrade',
+        'upgrade',
+        { email, plan, source },
+        'error',
+        email,
+        undefined,
+        'User not found',
+      );
 
       return NextResponse.json(
         { error: 'User not found' },
@@ -96,16 +101,17 @@ export async function POST(request: NextRequest) {
       throw updateError;
     }
 
-    // 7. Log to webhook_logs
-    await supabase.from('webhook_logs').insert({
-      source: source || 'plan-upgrade',
-      event_type: 'upgrade',
-      payload: { email, plan, source },
-      email_extracted: email,
-      plan_granted: plan,
-      status: 'success',
-      user_id: profile.id,
-    });
+    // 7. Log to webhook_logs (upsert per email)
+    await logWebhookEvent(
+      source || 'plan-upgrade',
+      'upgrade',
+      { email, plan, source },
+      'success',
+      email,
+      profile.id,
+      undefined,
+      { planGranted: plan },
+    );
 
     return NextResponse.json(
       { success: true, user_id: profile.id },
@@ -115,15 +121,15 @@ export async function POST(request: NextRequest) {
     console.error('[webhook/plan-upgrade] Error:', error);
 
     try {
-      const supabase = await createAdminClient();
-      await supabase.from('webhook_logs').insert({
-        source: 'plan-upgrade',
-        event_type: 'upgrade',
-        payload: {},
-        email_extracted: '',
-        status: 'error',
-        error_message: error instanceof Error ? error.message : 'Unknown error',
-      });
+      await logWebhookEvent(
+        'plan-upgrade',
+        'upgrade',
+        {},
+        'error',
+        extractedEmail || undefined,
+        undefined,
+        error instanceof Error ? error.message : 'Unknown error',
+      );
     } catch {
       // Logging failed silently
     }

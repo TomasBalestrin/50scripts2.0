@@ -49,13 +49,12 @@ export async function logWebhookEvent(
       user_created: extra?.userCreated ?? false,
     };
 
-    // One record per email+source: update existing if found, insert otherwise
-    if (email) {
+    // One record per user: try to find existing by user_id first, then email
+    if (userId) {
       const { data: existing } = await supabase
         .from('webhook_logs')
         .select('id')
-        .eq('email_extracted', email)
-        .eq('source', source)
+        .eq('user_id', userId)
         .order('processed_at', { ascending: false })
         .limit(1)
         .single();
@@ -69,7 +68,56 @@ export async function logWebhookEvent(
       }
     }
 
-    await supabase.from('webhook_logs').insert(logData);
+    if (email) {
+      const { data: existing } = await supabase
+        .from('webhook_logs')
+        .select('id')
+        .eq('email_extracted', email)
+        .order('processed_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('webhook_logs')
+          .update({ ...logData, processed_at: new Date().toISOString() })
+          .eq('id', existing.id);
+        return;
+      }
+    }
+
+    const { error: insertError } = await supabase.from('webhook_logs').insert(logData);
+
+    // Handle race condition: if unique constraint is violated, retry as update
+    if (insertError && insertError.code === '23505') {
+      // Try to find by user_id first, then by email
+      let existing = null;
+      if (userId) {
+        const { data } = await supabase
+          .from('webhook_logs')
+          .select('id')
+          .eq('user_id', userId)
+          .limit(1)
+          .single();
+        existing = data;
+      }
+      if (!existing && email) {
+        const { data } = await supabase
+          .from('webhook_logs')
+          .select('id')
+          .eq('email_extracted', email)
+          .limit(1)
+          .single();
+        existing = data;
+      }
+
+      if (existing) {
+        await supabase
+          .from('webhook_logs')
+          .update({ ...logData, processed_at: new Date().toISOString() })
+          .eq('id', existing.id);
+      }
+    }
   } catch (err) {
     console.error(`[webhook/${source}] Failed to log event:`, eventType, err);
   }

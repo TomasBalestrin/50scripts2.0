@@ -106,6 +106,9 @@ export function ObjectionSearch() {
       await navigator.clipboard.writeText(content);
       setCopiedId(scriptId);
       setTimeout(() => setCopiedId(null), 2000);
+
+      // Register usage (fire-and-forget)
+      fetch(`/api/scripts/${scriptId}/use`, { method: 'POST' }).catch(() => {});
     } catch (err) {
       console.error('Failed to copy:', err);
     }

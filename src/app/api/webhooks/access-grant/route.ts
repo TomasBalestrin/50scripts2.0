@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/server';
 import { webhookAccessGrantSchema } from '@/lib/validations/schemas';
 import { getDefaultPassword } from '@/lib/auth-utils';
+import { logWebhookEvent } from '@/lib/webhooks/shared';
 
 function verifyWebhookSecret(request: NextRequest): boolean {
   const secret = request.headers.get('X-Webhook-Secret');
@@ -17,6 +18,8 @@ function verifyWebhookSecret(request: NextRequest): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  let extractedEmail = '';
+
   try {
     // 1. Validate webhook secret
     if (!verifyWebhookSecret(request)) {
@@ -28,6 +31,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Parse and validate request body
     const body = await request.json();
+    extractedEmail = (body as Record<string, unknown>)?.email as string || '';
     const parsed = webhookAccessGrantSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -38,6 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, name, source, referral_code } = parsed.data;
+    extractedEmail = email;
 
     // 3. Create Supabase admin client
     const supabase = await createAdminClient();
@@ -54,14 +59,15 @@ export async function POST(request: NextRequest) {
       // Handle duplicate email
       if (authError.message?.toLowerCase().includes('already') ||
           authError.message?.toLowerCase().includes('duplicate')) {
-        await supabase.from('webhook_logs').insert({
-          source: source || 'access-grant',
-          event_type: 'access_grant',
-          payload: { email, name, source, referral_code },
-          email_extracted: email,
-          status: 'duplicate',
-          error_message: authError.message,
-        });
+        await logWebhookEvent(
+          source || 'access-grant',
+          'access_grant',
+          { email, name, source, referral_code },
+          'duplicate',
+          email,
+          undefined,
+          authError.message,
+        );
 
         return NextResponse.json(
           { error: 'User with this email already exists' },
@@ -106,16 +112,17 @@ export async function POST(request: NextRequest) {
       throw profileError;
     }
 
-    // 8. Log to webhook_logs
-    await supabase.from('webhook_logs').insert({
-      source: source || 'access-grant',
-      event_type: 'access_grant',
-      payload: { email, name, source, referral_code },
-      email_extracted: email,
-      status: 'success',
-      user_id: userId,
-      user_created: true,
-    });
+    // 8. Log to webhook_logs (upsert per email)
+    await logWebhookEvent(
+      source || 'access-grant',
+      'access_grant',
+      { email, name, source, referral_code },
+      'success',
+      email,
+      userId,
+      undefined,
+      { userCreated: true },
+    );
 
     return NextResponse.json(
       { success: true, user_id: userId },
@@ -124,17 +131,16 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[webhook/access-grant] Error:', error);
 
-    // Attempt to log the error
     try {
-      const supabase = await createAdminClient();
-      await supabase.from('webhook_logs').insert({
-        source: 'access-grant',
-        event_type: 'access_grant',
-        payload: {},
-        email_extracted: '',
-        status: 'error',
-        error_message: error instanceof Error ? error.message : 'Unknown error',
-      });
+      await logWebhookEvent(
+        'access-grant',
+        'access_grant',
+        {},
+        'error',
+        extractedEmail || undefined,
+        undefined,
+        error instanceof Error ? error.message : 'Unknown error',
+      );
     } catch {
       // Logging failed silently
     }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { stripe, PLAN_FROM_PRICE } from '@/lib/payments/stripe';
+import { logWebhookEvent, getAiCreditsForPlan } from '@/lib/webhooks/shared';
 
 // ---------------------------------------------------------------------------
 // Stripe Webhook Event Types (minimal interfaces for safety)
@@ -42,19 +43,6 @@ interface StripeEvent {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getAiCreditsForPlan(plan: string): { monthly: number; remaining: number } {
-  switch (plan) {
-    case 'pro':
-      return { monthly: 0, remaining: 0 };
-    case 'premium':
-      return { monthly: 15, remaining: 15 };
-    case 'copilot':
-      return { monthly: -1, remaining: -1 }; // unlimited
-    default:
-      return { monthly: 0, remaining: 0 };
-  }
-}
-
 async function upgradePlan(supabase: Awaited<ReturnType<typeof createAdminClient>>, userId: string, plan: string) {
   const now = new Date().toISOString();
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -93,68 +81,30 @@ async function downgradeToStarter(supabase: Awaited<ReturnType<typeof createAdmi
   }
 }
 
-async function logWebhookEvent(
-  supabase: Awaited<ReturnType<typeof createAdminClient>>,
-  eventType: string,
-  payload: Record<string, unknown>,
-  status: string,
-  userId?: string,
-  errorMessage?: string,
-  email?: string,
-) {
-  try {
-    const logData = {
-      source: 'stripe' as const,
-      event_type: `stripe_${eventType}`,
-      payload,
-      email_extracted: email || '',
-      status,
-      user_id: userId || null,
-      error_message: errorMessage || null,
-    };
-
-    // One record per user+source: update existing if found, insert otherwise
-    if (userId) {
-      const { data: existing } = await supabase
-        .from('webhook_logs')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('source', 'stripe')
-        .order('processed_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (existing) {
-        await supabase
-          .from('webhook_logs')
-          .update({ ...logData, processed_at: new Date().toISOString() })
-          .eq('id', existing.id);
-        return;
-      }
-    } else if (email) {
-      const { data: existing } = await supabase
-        .from('webhook_logs')
-        .select('id')
-        .eq('email_extracted', email)
-        .eq('source', 'stripe')
-        .order('processed_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (existing) {
-        await supabase
-          .from('webhook_logs')
-          .update({ ...logData, processed_at: new Date().toISOString() })
-          .eq('id', existing.id);
-        return;
-      }
-    }
-
-    await supabase.from('webhook_logs').insert(logData);
-  } catch {
-    console.error('[webhook/stripe] Failed to log event:', eventType);
-  }
-}
+// Common informational events that don't need action or logging
+const IGNORED_EVENT_PREFIXES = [
+  'charge.',
+  'payment_intent.',
+  'payment_method.',
+  'customer.created',
+  'customer.updated',
+  'customer.source.',
+  'customer.tax_id.',
+  'invoice.created',
+  'invoice.finalized',
+  'invoice.paid',
+  'invoice.payment_succeeded',
+  'invoice.updated',
+  'invoiceitem.',
+  'setup_intent.',
+  'mandate.',
+  'source.',
+  'tax_rate.',
+  'billing_portal.',
+  'price.',
+  'product.',
+  'subscription_schedule.',
+];
 
 // ---------------------------------------------------------------------------
 // POST Handler
@@ -208,9 +158,17 @@ export async function POST(request: NextRequest) {
         const plan = session.metadata?.plan;
 
         if (!userId || !plan) {
-          await logWebhookEvent(supabase, 'checkout_completed', { session_id: session.id }, 'error', undefined, 'Missing user_id or plan in metadata');
+          await logWebhookEvent('stripe', 'checkout_completed', { session_id: session.id }, 'error', undefined, undefined, 'Missing user_id or plan in metadata');
           break;
         }
+
+        // Fetch email for proper logging
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', userId)
+          .single();
+        const userEmail = (userProfile as { email?: string })?.email;
 
         // Save Stripe customer ID to profile
         if (session.customer) {
@@ -222,11 +180,11 @@ export async function POST(request: NextRequest) {
 
         // Upgrade user plan
         await upgradePlan(supabase, userId, plan);
-        await logWebhookEvent(supabase, 'checkout_completed', {
+        await logWebhookEvent('stripe', 'checkout_completed', {
           session_id: session.id,
           plan,
           customer: session.customer,
-        }, 'success', userId);
+        }, 'success', userEmail, userId, undefined, { planGranted: plan });
 
         break;
       }
@@ -237,17 +195,19 @@ export async function POST(request: NextRequest) {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, email')
           .eq('stripe_customer_id', customerId)
           .single();
 
         if (!profile) {
-          await logWebhookEvent(supabase, 'subscription_updated', {
+          await logWebhookEvent('stripe', 'subscription_updated', {
             subscription_id: subscription.id,
             customer: customerId,
-          }, 'error', undefined, 'User not found for customer');
+          }, 'error', undefined, undefined, 'User not found for customer');
           break;
         }
+
+        const profileEmail = (profile as { id: string; email?: string }).email;
 
         // Determine the new plan from the subscription's price
         const priceId = subscription.items.data[0]?.price?.id;
@@ -255,23 +215,23 @@ export async function POST(request: NextRequest) {
 
         if (newPlan && subscription.status === 'active') {
           await upgradePlan(supabase, profile.id, newPlan);
-          await logWebhookEvent(supabase, 'subscription_updated', {
+          await logWebhookEvent('stripe', 'subscription_updated', {
             subscription_id: subscription.id,
             plan: newPlan,
             status: subscription.status,
-          }, 'success', profile.id);
+          }, 'success', profileEmail, profile.id, undefined, { planGranted: newPlan });
         } else if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
           await downgradeToStarter(supabase, profile.id);
-          await logWebhookEvent(supabase, 'subscription_updated', {
+          await logWebhookEvent('stripe', 'subscription_updated', {
             subscription_id: subscription.id,
             status: subscription.status,
-          }, 'success', profile.id);
+          }, 'success', profileEmail, profile.id);
         } else {
-          await logWebhookEvent(supabase, 'subscription_updated', {
+          await logWebhookEvent('stripe', 'subscription_updated', {
             subscription_id: subscription.id,
             status: subscription.status,
             price_id: priceId,
-          }, 'info', profile.id);
+          }, 'info', profileEmail, profile.id);
         }
 
         break;
@@ -283,24 +243,26 @@ export async function POST(request: NextRequest) {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, email')
           .eq('stripe_customer_id', customerId)
           .single();
 
         if (!profile) {
-          await logWebhookEvent(supabase, 'subscription_deleted', {
+          await logWebhookEvent('stripe', 'subscription_deleted', {
             subscription_id: subscription.id,
             customer: customerId,
-          }, 'error', undefined, 'User not found for customer');
+          }, 'error', undefined, undefined, 'User not found for customer');
           break;
         }
 
+        const profileEmail = (profile as { id: string; email?: string }).email;
+
         // Downgrade to starter
         await downgradeToStarter(supabase, profile.id);
-        await logWebhookEvent(supabase, 'subscription_deleted', {
+        await logWebhookEvent('stripe', 'subscription_deleted', {
           subscription_id: subscription.id,
           customer: customerId,
-        }, 'success', profile.id);
+        }, 'success', profileEmail, profile.id);
 
         break;
       }
@@ -315,57 +277,34 @@ export async function POST(request: NextRequest) {
           .eq('stripe_customer_id', customerId)
           .single();
 
+        const profileEmail = (profile as { id: string; email?: string } | null)?.email;
+
         console.warn(
           '[webhook/stripe] Payment failed for customer:',
           customerId,
           'email:',
-          (profile as { email?: string })?.email || 'unknown'
+          profileEmail || 'unknown'
         );
 
-        await logWebhookEvent(supabase, 'payment_failed', {
+        await logWebhookEvent('stripe', 'payment_failed', {
           invoice_id: invoice.id,
           customer: customerId,
           amount_due: invoice.amount_due,
           attempt_count: invoice.attempt_count,
-        }, 'warning', profile?.id);
+        }, 'warning', profileEmail, profile?.id);
 
         // TODO: Send email notification about failed payment
         break;
       }
 
       default: {
-        // Common informational events that don't need action – skip logging
-        const ignoredPrefixes = [
-          'charge.',
-          'payment_intent.',
-          'payment_method.',
-          'customer.created',
-          'customer.updated',
-          'customer.source.',
-          'customer.tax_id.',
-          'invoice.created',
-          'invoice.finalized',
-          'invoice.paid',
-          'invoice.payment_succeeded',
-          'invoice.updated',
-          'invoiceitem.',
-          'setup_intent.',
-          'mandate.',
-          'source.',
-          'tax_rate.',
-          'billing_portal.',
-          'price.',
-          'product.',
-          'subscription_schedule.',
-        ];
-
-        const isExpectedEvent = ignoredPrefixes.some((prefix) =>
+        const isExpectedEvent = IGNORED_EVENT_PREFIXES.some((prefix) =>
           event.type.startsWith(prefix)
         );
 
         if (!isExpectedEvent) {
           // Only log truly unexpected events for monitoring
-          await logWebhookEvent(supabase, event.type, { event_id: event.id }, 'warning', undefined, `Evento Stripe não mapeado: ${event.type}`);
+          await logWebhookEvent('stripe', event.type, { event_id: event.id }, 'info', undefined, undefined, `Evento Stripe nao mapeado: ${event.type}`);
         }
         break;
       }
@@ -376,14 +315,14 @@ export async function POST(request: NextRequest) {
     console.error('[webhook/stripe] Error:', error);
 
     try {
-      const supabase = await createAdminClient();
       await logWebhookEvent(
-        supabase,
+        'stripe',
         'processing_error',
         {},
         'error',
         undefined,
-        error instanceof Error ? error.message : 'Unknown error'
+        undefined,
+        error instanceof Error ? error.message : 'Unknown error',
       );
     } catch {
       // Logging failed silently

@@ -74,13 +74,22 @@ export function useAuth(): UseAuthReturn {
 
   const signIn = useCallback(async (email: string, password: string): Promise<{ error: string | null }> => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
         return { error: error.message };
+      }
+
+      // Update last_login_at (non-blocking)
+      if (data.user) {
+        supabase
+          .from('profiles')
+          .update({ last_login_at: new Date().toISOString() })
+          .eq('id', data.user.id)
+          .then(() => {});
       }
 
       return { error: null };
