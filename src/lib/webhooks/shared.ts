@@ -49,7 +49,25 @@ export async function logWebhookEvent(
       user_created: extra?.userCreated ?? false,
     };
 
-    // One record per email: update existing if found, insert otherwise
+    // One record per user: try to find existing by user_id first, then email
+    if (userId) {
+      const { data: existing } = await supabase
+        .from('webhook_logs')
+        .select('id')
+        .eq('user_id', userId)
+        .order('processed_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('webhook_logs')
+          .update({ ...logData, processed_at: new Date().toISOString() })
+          .eq('id', existing.id);
+        return;
+      }
+    }
+
     if (email) {
       const { data: existing } = await supabase
         .from('webhook_logs')
@@ -71,13 +89,27 @@ export async function logWebhookEvent(
     const { error: insertError } = await supabase.from('webhook_logs').insert(logData);
 
     // Handle race condition: if unique constraint is violated, retry as update
-    if (insertError && email && insertError.code === '23505') {
-      const { data: existing } = await supabase
-        .from('webhook_logs')
-        .select('id')
-        .eq('email_extracted', email)
-        .limit(1)
-        .single();
+    if (insertError && insertError.code === '23505') {
+      // Try to find by user_id first, then by email
+      let existing = null;
+      if (userId) {
+        const { data } = await supabase
+          .from('webhook_logs')
+          .select('id')
+          .eq('user_id', userId)
+          .limit(1)
+          .single();
+        existing = data;
+      }
+      if (!existing && email) {
+        const { data } = await supabase
+          .from('webhook_logs')
+          .select('id')
+          .eq('email_extracted', email)
+          .limit(1)
+          .single();
+        existing = data;
+      }
 
       if (existing) {
         await supabase

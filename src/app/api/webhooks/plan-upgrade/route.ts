@@ -28,6 +28,8 @@ function getAiCreditsForPlan(plan: string): { monthly: number; remaining: number
 }
 
 export async function POST(request: NextRequest) {
+  let extractedEmail = '';
+
   try {
     // 1. Validate webhook secret
     if (!verifyWebhookSecret(request)) {
@@ -49,6 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, plan, source } = parsed.data;
+    extractedEmail = email;
 
     // 3. Create Supabase admin client
     const supabase = await createAdminClient();
@@ -123,7 +126,7 @@ export async function POST(request: NextRequest) {
         'upgrade',
         {},
         'error',
-        undefined,
+        extractedEmail || undefined,
         undefined,
         error instanceof Error ? error.message : 'Unknown error',
       );

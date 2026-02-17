@@ -18,6 +18,8 @@ function verifyWebhookSecret(request: NextRequest): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  let extractedEmail = '';
+
   try {
     // 1. Validate webhook secret
     if (!verifyWebhookSecret(request)) {
@@ -29,6 +31,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Parse and validate request body
     const body = await request.json();
+    extractedEmail = (body as Record<string, unknown>)?.email as string || '';
     const parsed = webhookAccessGrantSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -39,6 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, name, source, referral_code } = parsed.data;
+    extractedEmail = email;
 
     // 3. Create Supabase admin client
     const supabase = await createAdminClient();
@@ -127,14 +131,13 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[webhook/access-grant] Error:', error);
 
-    // Attempt to log the error
     try {
       await logWebhookEvent(
         'access-grant',
         'access_grant',
         {},
         'error',
-        undefined,
+        extractedEmail || undefined,
         undefined,
         error instanceof Error ? error.message : 'Unknown error',
       );
