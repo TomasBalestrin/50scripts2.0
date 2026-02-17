@@ -25,6 +25,10 @@ const SOURCE = 'kiwify';
  * Autenticação: Header X-Kiwify-Token
  */
 export async function POST(request: NextRequest) {
+  let body: Record<string, unknown> = {};
+  let customerEmail = '';
+  let event = '';
+
   try {
     const config = await getPlatformConfig(SOURCE);
 
@@ -32,12 +36,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const event = body.webhook_event_type || body.order_status;
-    const customerData = body.Customer || {};
-    const productId = body.product?.product_id?.toString() || body.Subscription?.plan?.id?.toString() || '';
-    const customerEmail = customerData.email || '';
-    const customerName = customerData.full_name || '';
+    body = await request.json();
+    event = (body.webhook_event_type as string) || (body.order_status as string) || '';
+    const customerData = (body.Customer as Record<string, unknown>) || {};
+    const kiwifyProduct = body.product as Record<string, unknown> | undefined;
+    const kiwifySubscription = body.Subscription as Record<string, unknown> | undefined;
+    const kiwifyPlan = kiwifySubscription?.plan as Record<string, unknown> | undefined;
+    const productId = kiwifyProduct?.product_id?.toString() || kiwifyPlan?.id?.toString() || '';
+    customerEmail = (customerData.email as string) || '';
+    const customerName = (customerData.full_name as string) || '';
 
     if (!event) {
       return NextResponse.json({ error: 'Missing event type' }, { status: 400 });
@@ -127,7 +134,7 @@ export async function POST(request: NextRequest) {
     console.error('[webhook/kiwify] Error:', error);
 
     try {
-      await logWebhookEvent(SOURCE, 'purchase', {}, 'error', '', undefined,
+      await logWebhookEvent(SOURCE, event || 'unknown', body, 'error', customerEmail, undefined,
         error instanceof Error ? error.message : 'Unknown error');
     } catch { /* silent */ }
 
