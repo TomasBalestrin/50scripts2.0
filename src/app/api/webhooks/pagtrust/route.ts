@@ -23,8 +23,16 @@ const SOURCE = 'pagtrust';
  *   }
  * }
  *
- * Também aceita eventos no formato PAYMENT_APPROVED (legado).
- * Autenticação: Header X-PagTrust-Token
+ * Formato alternativo (sem wrapper "data"):
+ * {
+ *   "event": "purchase_approved",
+ *   "buyer": { "email": "...", "name": "..." },
+ *   "product": { "id": "xxx" },
+ *   "email": "...",
+ *   ...
+ * }
+ *
+ * Autenticacao: Header X-PagTrust-Token (opcional se nao configurado)
  */
 export async function POST(request: NextRequest) {
   // Declare outside try so they're available in catch for error logging
@@ -35,22 +43,50 @@ export async function POST(request: NextRequest) {
   try {
     const config = await getPlatformConfig(SOURCE);
 
-    if (!verifyToken(request.headers.get('X-PagTrust-Token'), config.token)) {
+    // Parse body FIRST so we can always log it
+    body = await request.json();
+
+    // Extract event and email early for logging purposes
+    rawEvent = (body.event as string)
+      || (body.webhook_event_type as string)
+      || (body.type as string)
+      || '';
+
+    // Extract email from all possible locations
+    const dataObj = body.data as Record<string, unknown> | undefined;
+    const buyerData = (dataObj?.buyer as Record<string, unknown>)
+      || (body.buyer as Record<string, unknown>)
+      || (body.Customer as Record<string, unknown>)
+      || {};
+    buyerEmail = (buyerData.email as string)
+      || (body.email as string)
+      || (dataObj?.email as string)
+      || '';
+
+    // Token verification: skip when no token is configured on our side
+    const receivedToken = request.headers.get('X-PagTrust-Token')
+      || request.headers.get('x-pagtrust-token');
+    const hasTokenConfigured = !!config.token;
+
+    if (hasTokenConfigured && !verifyToken(receivedToken, config.token)) {
+      // Log the failed auth attempt so it shows in admin panel
+      await logWebhookEvent(SOURCE, rawEvent || 'unknown', body, 'error', buyerEmail, undefined, 'Token verification failed');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    body = await request.json();
-    rawEvent = (body.event as string) || '';
-    const dataObj = body.data as Record<string, unknown> | undefined;
-    const buyerData = dataObj?.buyer as Record<string, unknown> || {};
-    const productData = dataObj?.product as Record<string, unknown> | undefined;
-    const subscriptionData = dataObj?.subscription as Record<string, unknown> | undefined;
+    const productData = (dataObj?.product as Record<string, unknown>)
+      || (body.product as Record<string, unknown>)
+      || {};
+    const subscriptionData = (dataObj?.subscription as Record<string, unknown>)
+      || (body.subscription as Record<string, unknown>)
+      || {};
     const subProduct = subscriptionData?.product as Record<string, unknown> | undefined;
-    const transactionData = dataObj?.transaction as Record<string, unknown> | undefined;
-    const productId = productData?.id?.toString() || subProduct?.id?.toString() || '';
-    const transactionId = transactionData?.id || '';
-    buyerEmail = (buyerData.email as string) || '';
-    const buyerName = (buyerData.name as string) || '';
+    const transactionData = (dataObj?.transaction as Record<string, unknown>)
+      || (body.transaction as Record<string, unknown>)
+      || {};
+    const productId = productData?.id?.toString() || subProduct?.id?.toString() || (body.product_id as string) || '';
+    const transactionId = transactionData?.id || (body.transaction_id as string) || '';
+    const buyerName = (buyerData.name as string) || (buyerData.full_name as string) || '';
 
     if (!rawEvent) {
       await logWebhookEvent(SOURCE, 'unknown', body, 'error', buyerEmail, undefined, 'Missing event type');

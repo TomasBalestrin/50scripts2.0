@@ -12,7 +12,7 @@ const SOURCE = 'hotmart';
 /**
  * Hotmart Webhook
  *
- * Formato JSON esperado (padrão Hotmart):
+ * Formato JSON esperado (padrao Hotmart):
  * {
  *   "event": "PURCHASE_COMPLETE" | "PURCHASE_CANCELED" | "PURCHASE_REFUNDED" | "SUBSCRIPTION_CANCELLATION",
  *   "data": {
@@ -22,7 +22,7 @@ const SOURCE = 'hotmart';
  *   }
  * }
  *
- * Autenticação: Header X-Hotmart-Hottok
+ * Autenticacao: Header X-Hotmart-Hottok (opcional se nao configurado)
  */
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown> = {};
@@ -33,24 +33,38 @@ export async function POST(request: NextRequest) {
     // 1. Load config from DB (fallback env vars)
     const config = await getPlatformConfig(SOURCE);
 
-    // 2. Verify Hottok header
-    if (!verifyToken(request.headers.get('X-Hotmart-Hottok'), config.token)) {
+    // 2. Parse body FIRST so we can always log it
+    body = await request.json();
+    event = (body.event as string) || '';
+
+    // Extract email early for logging
+    const dataObj = body.data as Record<string, unknown> | undefined;
+    const buyerData = (dataObj?.buyer as Record<string, unknown>)
+      || (body.buyer as Record<string, unknown>)
+      || {};
+    buyerEmail = (buyerData.email as string) || (body.email as string) || '';
+    const buyerName = (buyerData.name as string) || (buyerData.full_name as string) || '';
+
+    // 3. Token verification: skip when no token is configured
+    const receivedToken = request.headers.get('X-Hotmart-Hottok');
+    const hasTokenConfigured = !!config.token;
+
+    if (hasTokenConfigured && !verifyToken(receivedToken, config.token)) {
+      await logWebhookEvent(SOURCE, event || 'unknown', body, 'error', buyerEmail, undefined, 'Token verification failed');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 3. Parse request body
-    body = await request.json();
-    event = (body.event as string) || '';
-    const dataObj = body.data as Record<string, unknown> | undefined;
-    const buyerData = dataObj?.buyer as Record<string, unknown> || {};
-    const productData = dataObj?.product as Record<string, unknown> | undefined;
-    const subscriptionData = dataObj?.subscription as Record<string, unknown> | undefined;
+    const productData = (dataObj?.product as Record<string, unknown>)
+      || (body.product as Record<string, unknown>)
+      || {};
+    const subscriptionData = (dataObj?.subscription as Record<string, unknown>)
+      || (body.subscription as Record<string, unknown>)
+      || {};
     const subProduct = subscriptionData?.product as Record<string, unknown> | undefined;
-    const productId = productData?.id?.toString() || subProduct?.id?.toString() || '';
-    buyerEmail = (buyerData.email as string) || '';
-    const buyerName = (buyerData.name as string) || '';
+    const productId = productData?.id?.toString() || subProduct?.id?.toString() || (body.product_id as string) || '';
 
     if (!event) {
+      await logWebhookEvent(SOURCE, 'unknown', body, 'error', buyerEmail, undefined, 'Missing event type');
       return NextResponse.json({ error: 'Missing event type' }, { status: 400 });
     }
 
