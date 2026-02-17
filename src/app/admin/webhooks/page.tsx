@@ -109,7 +109,7 @@ export default function AdminWebhooksPage() {
 
   const handleReprocessAll = async () => {
     if (reprocessingAll) return;
-    if (!confirm('Reprocessar TODOS os webhooks não processados (ignorados, erros, avisos)? Isso pode levar alguns minutos.')) return;
+    if (!confirm('Reprocessar todos os webhooks não processados? Isso pode levar alguns minutos.')) return;
     setReprocessingAll(true);
     try {
       const res = await fetch('/api/admin/webhooks/reprocess-all', {
