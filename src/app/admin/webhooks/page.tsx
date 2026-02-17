@@ -314,7 +314,7 @@ export default function AdminWebhooksPage() {
                 </thead>
                 <tbody>
                   {logs.map((log) => {
-                    const isError = !!log.error_message;
+                    const isError = log.status === 'error' || (!!log.error_message && log.status !== 'info');
                     const isExpanded = expandedId === log.id;
                     return (
                       <React.Fragment key={log.id}>

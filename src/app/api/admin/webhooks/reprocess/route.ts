@@ -109,28 +109,21 @@ export async function POST(request: NextRequest) {
       normalizedEvent.includes('cancel')
     ) {
       // Cancellation event
-      try {
-        const result = await handleCancellation(email, source, eventType, {
-          reprocessed: true,
-          original_log_id: id,
-        });
+      const result = await handleCancellation(email, source, eventType, {
+        reprocessed: true,
+        original_log_id: id,
+      });
 
-        await supabase
-          .from('webhook_logs')
-          .update({
-            status: 'reprocessed',
-            user_id: result.userId,
-            error_message: null,
-          })
-          .eq('id', id);
+      await supabase
+        .from('webhook_logs')
+        .update({
+          status: 'reprocessed',
+          user_id: result.userId || null,
+          error_message: null,
+        })
+        .eq('id', id);
 
-        return NextResponse.json({ success: true, user_id: result.userId });
-      } catch (err) {
-        if (err instanceof Error && err.message === 'User not found') {
-          return NextResponse.json({ error: 'User not found for cancellation' }, { status: 404 });
-        }
-        throw err;
-      }
+      return NextResponse.json({ success: true, user_id: result.userId || null });
     } else {
       // Treat any unknown event as a purchase (most common webhook type)
       const config = await getPlatformConfig(source);
