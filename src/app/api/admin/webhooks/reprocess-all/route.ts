@@ -46,8 +46,18 @@ export async function POST() {
     for (const log of logs) {
       const payload = log.payload as Record<string, unknown>;
       const source = log.source;
-      const email = log.email_extracted;
       const eventType = log.event_type;
+
+      // Extract buyer data from multiple possible payload formats
+      const data = payload.data as Record<string, unknown> | undefined;
+      const buyerData = (data?.buyer as Record<string, unknown>) || (payload.Customer as Record<string, unknown>) || {};
+      const buyerName = (buyerData?.name as string) || (buyerData?.full_name as string) || '';
+
+      // Extract email: prefer email_extracted, fall back to payload
+      const email = log.email_extracted
+        || (buyerData?.email as string)
+        || (payload.email as string)
+        || '';
 
       if (!email) {
         results.push({ id: log.id, email: '', status: 'error', error: 'No email' });
@@ -55,19 +65,20 @@ export async function POST() {
       }
 
       try {
-        // Extract buyer name from payload
-        const data = payload.data as Record<string, unknown> | undefined;
-        const buyerData = data?.buyer as Record<string, unknown> | undefined;
-        const buyerName = (buyerData?.name as string) || (buyerData?.full_name as string) || '';
+        // Extract product ID from multiple possible payload formats
+        const productData = (data?.product as Record<string, unknown>) || {};
+        const subscriptionData = (data?.subscription as Record<string, unknown>) || {};
+        const subProduct = (subscriptionData?.product as Record<string, unknown>) || {};
+        const kiwifyProduct = (payload.product as Record<string, unknown>) || {};
+        const productId = productData?.id?.toString()
+          || subProduct?.id?.toString()
+          || kiwifyProduct?.product_id?.toString()
+          || (payload.product_id as string)
+          || '';
 
-        // Extract product ID from payload
-        const productData = data?.product as Record<string, unknown> | undefined;
-        const subscriptionData = data?.subscription as Record<string, unknown> | undefined;
-        const subProduct = subscriptionData?.product as Record<string, unknown> | undefined;
-        const productId = productData?.id?.toString() || subProduct?.id?.toString() ||
-          (payload.product as Record<string, unknown>)?.product_id?.toString() || '';
-
-        const normalizedEvent = eventType.toLowerCase();
+        // Strip platform prefix from event type (e.g. "hotmart_purchase_approved" -> "purchase_approved")
+        const strippedEvent = eventType.replace(/^(hotmart|pagtrust|kiwify)_/i, '');
+        const normalizedEvent = strippedEvent.toLowerCase();
 
         if (
           normalizedEvent.includes('approved') ||

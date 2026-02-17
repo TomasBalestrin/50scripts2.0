@@ -27,6 +27,11 @@ const SOURCE = 'pagtrust';
  * Autenticação: Header X-PagTrust-Token
  */
 export async function POST(request: NextRequest) {
+  // Declare outside try so they're available in catch for error logging
+  let body: Record<string, unknown> = {};
+  let buyerEmail = '';
+  let rawEvent = '';
+
   try {
     const config = await getPlatformConfig(SOURCE);
 
@@ -34,15 +39,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const rawEvent = body.event;
-    const buyerData = body.data?.buyer || {};
-    const productId = body.data?.product?.id?.toString() || body.data?.subscription?.product?.id?.toString() || '';
-    const transactionId = body.data?.transaction?.id || '';
-    const buyerEmail = buyerData.email || '';
-    const buyerName = buyerData.name || '';
+    body = await request.json();
+    rawEvent = (body.event as string) || '';
+    const dataObj = body.data as Record<string, unknown> | undefined;
+    const buyerData = dataObj?.buyer as Record<string, unknown> || {};
+    const productData = dataObj?.product as Record<string, unknown> | undefined;
+    const subscriptionData = dataObj?.subscription as Record<string, unknown> | undefined;
+    const subProduct = subscriptionData?.product as Record<string, unknown> | undefined;
+    const transactionData = dataObj?.transaction as Record<string, unknown> | undefined;
+    const productId = productData?.id?.toString() || subProduct?.id?.toString() || '';
+    const transactionId = transactionData?.id || '';
+    buyerEmail = (buyerData.email as string) || '';
+    const buyerName = (buyerData.name as string) || '';
 
     if (!rawEvent) {
+      await logWebhookEvent(SOURCE, 'unknown', body, 'error', buyerEmail, undefined, 'Missing event type');
       return NextResponse.json({ error: 'Missing event type' }, { status: 400 });
     }
 
@@ -137,7 +148,7 @@ export async function POST(request: NextRequest) {
     console.error('[webhook/pagtrust] Error:', error);
 
     try {
-      await logWebhookEvent(SOURCE, 'purchase', {}, 'error', '', undefined,
+      await logWebhookEvent(SOURCE, rawEvent || 'unknown', body, 'error', buyerEmail, undefined,
         error instanceof Error ? error.message : 'Unknown error');
     } catch { /* silent */ }
 

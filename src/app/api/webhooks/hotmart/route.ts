@@ -25,6 +25,10 @@ const SOURCE = 'hotmart';
  * Autenticação: Header X-Hotmart-Hottok
  */
 export async function POST(request: NextRequest) {
+  let body: Record<string, unknown> = {};
+  let buyerEmail = '';
+  let event = '';
+
   try {
     // 1. Load config from DB (fallback env vars)
     const config = await getPlatformConfig(SOURCE);
@@ -35,12 +39,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Parse request body
-    const body = await request.json();
-    const event = body.event;
-    const buyerData = body.data?.buyer || {};
-    const productId = body.data?.product?.id?.toString() || body.data?.subscription?.product?.id?.toString() || '';
-    const buyerEmail = buyerData.email || '';
-    const buyerName = buyerData.name || '';
+    body = await request.json();
+    event = (body.event as string) || '';
+    const dataObj = body.data as Record<string, unknown> | undefined;
+    const buyerData = dataObj?.buyer as Record<string, unknown> || {};
+    const productData = dataObj?.product as Record<string, unknown> | undefined;
+    const subscriptionData = dataObj?.subscription as Record<string, unknown> | undefined;
+    const subProduct = subscriptionData?.product as Record<string, unknown> | undefined;
+    const productId = productData?.id?.toString() || subProduct?.id?.toString() || '';
+    buyerEmail = (buyerData.email as string) || '';
+    const buyerName = (buyerData.name as string) || '';
 
     if (!event) {
       return NextResponse.json({ error: 'Missing event type' }, { status: 400 });
@@ -127,7 +135,7 @@ export async function POST(request: NextRequest) {
     console.error('[webhook/hotmart] Error:', error);
 
     try {
-      await logWebhookEvent(SOURCE, 'purchase', {}, 'error', '', undefined,
+      await logWebhookEvent(SOURCE, event || 'unknown', body, 'error', buyerEmail, undefined,
         error instanceof Error ? error.message : 'Unknown error');
     } catch { /* silent */ }
 
