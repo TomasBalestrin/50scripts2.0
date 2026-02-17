@@ -255,8 +255,10 @@ export async function handleCancellation(
     .single();
 
   if (!profile) {
-    await logWebhookEvent(source, 'cancel', payload, 'error', email, undefined, 'User not found');
-    throw new Error('User not found');
+    // User not found is normal for cancel webhooks - platforms send cancels
+    // for all their users, including those who never registered in our system
+    await logWebhookEvent(source, 'cancel', payload, 'info', email, undefined, 'User not found - no action needed');
+    return { userId: '' };
   }
 
   const { error: updateError } = await supabase

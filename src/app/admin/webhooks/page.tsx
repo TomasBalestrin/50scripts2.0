@@ -109,7 +109,7 @@ export default function AdminWebhooksPage() {
 
   const handleReprocessAll = async () => {
     if (reprocessingAll) return;
-    if (!confirm('Reprocessar TODOS os webhooks não processados (ignorados, erros, avisos)? Isso pode levar alguns minutos.')) return;
+    if (!confirm('Reprocessar todos os webhooks não processados? Isso pode levar alguns minutos.')) return;
     setReprocessingAll(true);
     try {
       const res = await fetch('/api/admin/webhooks/reprocess-all', {
@@ -314,7 +314,7 @@ export default function AdminWebhooksPage() {
                 </thead>
                 <tbody>
                   {logs.map((log) => {
-                    const isError = !!log.error_message;
+                    const isError = log.status === 'error' || (!!log.error_message && log.status !== 'info');
                     const isExpanded = expandedId === log.id;
                     return (
                       <React.Fragment key={log.id}>

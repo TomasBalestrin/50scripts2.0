@@ -104,18 +104,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Missing customer email' }, { status: 400 });
       }
 
-      try {
-        const result = await handleCancellation(customerEmail, SOURCE, normalizedEvent, {
-          product_id: productId,
-          order_id: body.order_id,
-        });
-        return NextResponse.json({ success: true, user_id: result.userId });
-      } catch (err) {
-        if (err instanceof Error && err.message === 'User not found') {
-          return NextResponse.json({ error: 'User not found' }, { status: 404 });
-        }
-        throw err;
-      }
+      const result = await handleCancellation(customerEmail, SOURCE, normalizedEvent, {
+        product_id: productId,
+        order_id: body.order_id,
+      });
+      return NextResponse.json({ success: true, user_id: result.userId || null });
     } else if (isWarningEvent) {
       await logWebhookEvent(SOURCE, normalizedEvent, {
         product_id: productId,

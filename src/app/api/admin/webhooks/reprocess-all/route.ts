@@ -6,7 +6,7 @@ import { getPlatformConfig, buildProductMap } from '@/lib/webhooks/platform-conf
 
 /**
  * POST /api/admin/webhooks/reprocess-all
- * Reprocesses all ignored/error webhook log entries in bulk.
+ * Reprocesses only unhandled/ignored webhook log entries in bulk.
  * Admin-only endpoint.
  */
 export async function POST() {
@@ -16,11 +16,11 @@ export async function POST() {
 
     const supabase = await createAdminClient();
 
-    // Fetch all ignored/error webhooks that haven't been successfully processed
+    // Fetch only unhandled/ignored webhooks (not errors or warnings)
     const { data: logs, error: fetchError } = await supabase
       .from('webhook_logs')
       .select('*')
-      .in('status', ['error', 'unhandled', 'warning'])
+      .in('status', ['unhandled', 'ignored'])
       .order('processed_at', { ascending: true });
 
     if (fetchError) {
