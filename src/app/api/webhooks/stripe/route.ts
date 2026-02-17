@@ -103,15 +103,54 @@ async function logWebhookEvent(
   email?: string,
 ) {
   try {
-    await supabase.from('webhook_logs').insert({
-      source: 'stripe',
+    const logData = {
+      source: 'stripe' as const,
       event_type: `stripe_${eventType}`,
       payload,
       email_extracted: email || '',
       status,
       user_id: userId || null,
       error_message: errorMessage || null,
-    });
+    };
+
+    // One record per user+source: update existing if found, insert otherwise
+    if (userId) {
+      const { data: existing } = await supabase
+        .from('webhook_logs')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('source', 'stripe')
+        .order('processed_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('webhook_logs')
+          .update({ ...logData, processed_at: new Date().toISOString() })
+          .eq('id', existing.id);
+        return;
+      }
+    } else if (email) {
+      const { data: existing } = await supabase
+        .from('webhook_logs')
+        .select('id')
+        .eq('email_extracted', email)
+        .eq('source', 'stripe')
+        .order('processed_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('webhook_logs')
+          .update({ ...logData, processed_at: new Date().toISOString() })
+          .eq('id', existing.id);
+        return;
+      }
+    }
+
+    await supabase.from('webhook_logs').insert(logData);
   } catch {
     console.error('[webhook/stripe] Failed to log event:', eventType);
   }

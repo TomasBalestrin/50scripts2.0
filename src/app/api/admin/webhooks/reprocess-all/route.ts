@@ -99,6 +99,7 @@ export async function POST() {
             product_id: productId,
             reprocessed: true,
             original_log_id: log.id,
+            original_event: eventType,
           });
 
           await supabase
