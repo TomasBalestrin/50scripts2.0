@@ -69,22 +69,22 @@ export function Header({ userName, userAvatar, plan, role }: HeaderProps) {
     : "U";
 
   return (
-    <header className="flex items-center justify-between border-b border-[#131B35]/50 bg-[#020617]/80 px-4 py-3 backdrop-blur-sm sm:px-6 sm:py-4">
+    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#131B35]/50 bg-[#020617]/95 px-4 py-2.5 backdrop-blur-md sm:px-6 sm:py-3">
       {/* Left: Mobile menu + Page title */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         <MobileSidebar
           plan={plan}
           role={role}
           userName={userName}
           userAvatar={userAvatar}
         />
-        <h1 className="text-base font-semibold text-white sm:text-lg">
+        <h1 className="truncate text-base font-semibold text-white sm:text-lg">
           {pageTitle}
         </h1>
       </div>
 
       {/* Right: Notification + Avatar */}
-      <div className="flex items-center gap-2 sm:gap-4">
+      <div className="flex items-center gap-1 sm:gap-3 shrink-0">
         {/* Notification bell */}
         <button
           type="button"

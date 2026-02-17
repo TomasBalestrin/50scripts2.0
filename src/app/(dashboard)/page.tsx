@@ -283,7 +283,7 @@ export default function DashboardPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#020617] p-6">
+      <div className="min-h-screen bg-[#020617] p-4 sm:p-6">
         <div className="mx-auto max-w-6xl space-y-6">
           <div className="animate-pulse">
             <div className="mb-2 h-8 w-64 rounded bg-[#0A0F1E]" />
@@ -308,7 +308,7 @@ export default function DashboardPage() {
 
   if (dashboardError) {
     return (
-      <div className="min-h-screen bg-[#020617] p-6">
+      <div className="min-h-screen bg-[#020617] p-4 sm:p-6">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <p className="text-lg text-red-400">Erro ao carregar o painel</p>
