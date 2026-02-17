@@ -42,6 +42,9 @@ export function EmergencyScriptModal({
       await navigator.clipboard.writeText(script.content);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+
+      // Register usage (fire-and-forget)
+      fetch(`/api/scripts/${script.id}/use`, { method: 'POST' }).catch(() => {});
     } catch (err) {
       console.error('Failed to copy script:', err);
     }

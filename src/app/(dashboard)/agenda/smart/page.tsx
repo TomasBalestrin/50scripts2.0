@@ -82,6 +82,9 @@ export default function SmartAgendaPage() {
     await navigator.clipboard.writeText(content);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+
+    // Register usage (fire-and-forget)
+    fetch(`/api/scripts/${id}/use`, { method: 'POST' }).catch(() => {});
   };
 
   if (loading) {
