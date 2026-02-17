@@ -36,7 +36,8 @@ export async function logWebhookEvent(
 ) {
   try {
     const supabase = await createAdminClient();
-    await supabase.from('webhook_logs').insert({
+
+    const logData = {
       source,
       event_type: eventType,
       payload: payload || {},
@@ -46,7 +47,29 @@ export async function logWebhookEvent(
       error_message: errorMessage || null,
       plan_granted: extra?.planGranted || null,
       user_created: extra?.userCreated ?? false,
-    });
+    };
+
+    // One record per email+source: update existing if found, insert otherwise
+    if (email) {
+      const { data: existing } = await supabase
+        .from('webhook_logs')
+        .select('id')
+        .eq('email_extracted', email)
+        .eq('source', source)
+        .order('processed_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('webhook_logs')
+          .update({ ...logData, processed_at: new Date().toISOString() })
+          .eq('id', existing.id);
+        return;
+      }
+    }
+
+    await supabase.from('webhook_logs').insert(logData);
   } catch (err) {
     console.error(`[webhook/${source}] Failed to log event:`, eventType, err);
   }

@@ -83,9 +83,10 @@ export async function POST(request: NextRequest) {
         product_id: productId,
         reprocessed: true,
         original_log_id: id,
+        original_event: eventType,
       });
 
-      // Update original log entry
+      // Update original log entry status to reprocessed
       await supabase
         .from('webhook_logs')
         .update({
