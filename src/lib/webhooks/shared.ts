@@ -49,13 +49,12 @@ export async function logWebhookEvent(
       user_created: extra?.userCreated ?? false,
     };
 
-    // One record per email+source: update existing if found, insert otherwise
+    // One record per email: update existing if found, insert otherwise
     if (email) {
       const { data: existing } = await supabase
         .from('webhook_logs')
         .select('id')
         .eq('email_extracted', email)
-        .eq('source', source)
         .order('processed_at', { ascending: false })
         .limit(1)
         .single();
@@ -69,7 +68,24 @@ export async function logWebhookEvent(
       }
     }
 
-    await supabase.from('webhook_logs').insert(logData);
+    const { error: insertError } = await supabase.from('webhook_logs').insert(logData);
+
+    // Handle race condition: if unique constraint is violated, retry as update
+    if (insertError && email && insertError.code === '23505') {
+      const { data: existing } = await supabase
+        .from('webhook_logs')
+        .select('id')
+        .eq('email_extracted', email)
+        .limit(1)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('webhook_logs')
+          .update({ ...logData, processed_at: new Date().toISOString() })
+          .eq('id', existing.id);
+      }
+    }
   } catch (err) {
     console.error(`[webhook/${source}] Failed to log event:`, eventType, err);
   }

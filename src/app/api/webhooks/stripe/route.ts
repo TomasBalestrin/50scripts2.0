@@ -113,13 +113,12 @@ async function logWebhookEvent(
       error_message: errorMessage || null,
     };
 
-    // One record per user+source: update existing if found, insert otherwise
+    // One record per user: update existing if found, insert otherwise
     if (userId) {
       const { data: existing } = await supabase
         .from('webhook_logs')
         .select('id')
         .eq('user_id', userId)
-        .eq('source', 'stripe')
         .order('processed_at', { ascending: false })
         .limit(1)
         .single();
@@ -131,12 +130,12 @@ async function logWebhookEvent(
           .eq('id', existing.id);
         return;
       }
-    } else if (email) {
+    }
+    if (email) {
       const { data: existing } = await supabase
         .from('webhook_logs')
         .select('id')
         .eq('email_extracted', email)
-        .eq('source', 'stripe')
         .order('processed_at', { ascending: false })
         .limit(1)
         .single();
@@ -150,7 +149,24 @@ async function logWebhookEvent(
       }
     }
 
-    await supabase.from('webhook_logs').insert(logData);
+    const { error: insertError } = await supabase.from('webhook_logs').insert(logData);
+
+    // Handle race condition: if unique constraint is violated, retry as update
+    if (insertError && email && insertError.code === '23505') {
+      const { data: existing } = await supabase
+        .from('webhook_logs')
+        .select('id')
+        .eq('email_extracted', email)
+        .limit(1)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('webhook_logs')
+          .update({ ...logData, processed_at: new Date().toISOString() })
+          .eq('id', existing.id);
+      }
+    }
   } catch {
     console.error('[webhook/stripe] Failed to log event:', eventType);
   }

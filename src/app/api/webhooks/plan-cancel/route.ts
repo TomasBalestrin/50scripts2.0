@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/server';
 import { z } from 'zod';
+import { logWebhookEvent } from '@/lib/webhooks/shared';
 
 const webhookPlanCancelSchema = z.object({
   email: z.string().email(),
@@ -54,14 +55,15 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (profileError || !profile) {
-      await supabase.from('webhook_logs').insert({
-        source: source || 'plan-cancel',
-        event_type: 'cancel',
-        payload: { email, source },
-        email_extracted: email,
-        status: 'error',
-        error_message: 'User not found',
-      });
+      await logWebhookEvent(
+        source || 'plan-cancel',
+        'cancel',
+        { email, source },
+        'error',
+        email,
+        undefined,
+        'User not found',
+      );
 
       return NextResponse.json(
         { error: 'User not found' },
@@ -85,15 +87,15 @@ export async function POST(request: NextRequest) {
       throw updateError;
     }
 
-    // 6. Log to webhook_logs
-    await supabase.from('webhook_logs').insert({
-      source: source || 'plan-cancel',
-      event_type: 'cancel',
-      payload: { email, source },
-      email_extracted: email,
-      status: 'success',
-      user_id: profile.id,
-    });
+    // 6. Log to webhook_logs (upsert per email)
+    await logWebhookEvent(
+      source || 'plan-cancel',
+      'cancel',
+      { email, source },
+      'success',
+      email,
+      profile.id,
+    );
 
     return NextResponse.json(
       { success: true, user_id: profile.id },
@@ -103,15 +105,15 @@ export async function POST(request: NextRequest) {
     console.error('[webhook/plan-cancel] Error:', error);
 
     try {
-      const supabase = await createAdminClient();
-      await supabase.from('webhook_logs').insert({
-        source: 'plan-cancel',
-        event_type: 'cancel',
-        payload: {},
-        email_extracted: '',
-        status: 'error',
-        error_message: error instanceof Error ? error.message : 'Unknown error',
-      });
+      await logWebhookEvent(
+        'plan-cancel',
+        'cancel',
+        {},
+        'error',
+        undefined,
+        undefined,
+        error instanceof Error ? error.message : 'Unknown error',
+      );
     } catch {
       // Logging failed silently
     }
