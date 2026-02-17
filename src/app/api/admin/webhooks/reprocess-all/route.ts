@@ -20,7 +20,7 @@ export async function POST() {
     const { data: logs, error: fetchError } = await supabase
       .from('webhook_logs')
       .select('*')
-      .in('status', ['ignored', 'error', 'unhandled', 'warning'])
+      .in('status', ['error', 'unhandled', 'warning'])
       .order('processed_at', { ascending: true });
 
     if (fetchError) {

@@ -334,8 +334,39 @@ export async function POST(request: NextRequest) {
       }
 
       default: {
-        // Log unhandled events for monitoring
-        await logWebhookEvent(supabase, event.type, { event_id: event.id }, 'unhandled');
+        // Common informational events that don't need action – skip logging
+        const ignoredPrefixes = [
+          'charge.',
+          'payment_intent.',
+          'payment_method.',
+          'customer.created',
+          'customer.updated',
+          'customer.source.',
+          'customer.tax_id.',
+          'invoice.created',
+          'invoice.finalized',
+          'invoice.paid',
+          'invoice.payment_succeeded',
+          'invoice.updated',
+          'invoiceitem.',
+          'setup_intent.',
+          'mandate.',
+          'source.',
+          'tax_rate.',
+          'billing_portal.',
+          'price.',
+          'product.',
+          'subscription_schedule.',
+        ];
+
+        const isExpectedEvent = ignoredPrefixes.some((prefix) =>
+          event.type.startsWith(prefix)
+        );
+
+        if (!isExpectedEvent) {
+          // Only log truly unexpected events for monitoring
+          await logWebhookEvent(supabase, event.type, { event_id: event.id }, 'warning', undefined, `Evento Stripe não mapeado: ${event.type}`);
+        }
         break;
       }
     }
