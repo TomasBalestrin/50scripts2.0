@@ -317,8 +317,8 @@ export default function AdminConfigPage() {
         <>
           {/* Platform Webhooks */}
           {webhookStatus?.platforms.map((platform) => {
-            const allProductsConfigured = Object.values(platform.products).every(p => p.configured);
-            const isReady = platform.auth.configured && allProductsConfigured;
+            const anyProductConfigured = Object.values(platform.products).some(p => p.configured);
+            const isReady = platform.auth.configured && anyProductConfigured;
 
             return (
               <Card key={platform.id} className="border-[#131B35] bg-[#0A0F1E]">
