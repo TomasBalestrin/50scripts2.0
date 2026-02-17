@@ -12,7 +12,7 @@ const SOURCE = 'kiwify';
 /**
  * Kiwify Webhook
  *
- * Formato JSON esperado (padrão Kiwify):
+ * Formato JSON esperado (padrao Kiwify):
  * {
  *   "webhook_event_type": "order_paid" | "order_refunded" | "subscription_canceled" | "chargeback",
  *   "order_id": "xxx",
@@ -22,7 +22,7 @@ const SOURCE = 'kiwify';
  *   "Subscription": { "id": "xxx", "status": "active" | "canceled", "plan": { "id": "xxx" } }
  * }
  *
- * Autenticação: Header X-Kiwify-Token
+ * Autenticacao: Header X-Kiwify-Token (opcional se nao configurado)
  */
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown> = {};
@@ -32,21 +32,34 @@ export async function POST(request: NextRequest) {
   try {
     const config = await getPlatformConfig(SOURCE);
 
-    if (!verifyToken(request.headers.get('X-Kiwify-Token'), config.token)) {
+    // Parse body FIRST so we can always log it
+    body = await request.json();
+    event = (body.webhook_event_type as string) || (body.order_status as string) || (body.event as string) || '';
+
+    // Extract email early for logging
+    const customerData = (body.Customer as Record<string, unknown>)
+      || (body.customer as Record<string, unknown>)
+      || {};
+    customerEmail = (customerData.email as string) || (body.email as string) || '';
+    const customerName = (customerData.full_name as string) || (customerData.name as string) || '';
+
+    // Token verification: skip when no token is configured
+    const receivedToken = request.headers.get('X-Kiwify-Token')
+      || request.headers.get('x-kiwify-token');
+    const hasTokenConfigured = !!config.token;
+
+    if (hasTokenConfigured && !verifyToken(receivedToken, config.token)) {
+      await logWebhookEvent(SOURCE, event || 'unknown', body, 'error', customerEmail, undefined, 'Token verification failed');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    body = await request.json();
-    event = (body.webhook_event_type as string) || (body.order_status as string) || '';
-    const customerData = (body.Customer as Record<string, unknown>) || {};
     const kiwifyProduct = body.product as Record<string, unknown> | undefined;
     const kiwifySubscription = body.Subscription as Record<string, unknown> | undefined;
     const kiwifyPlan = kiwifySubscription?.plan as Record<string, unknown> | undefined;
-    const productId = kiwifyProduct?.product_id?.toString() || kiwifyPlan?.id?.toString() || '';
-    customerEmail = (customerData.email as string) || '';
-    const customerName = (customerData.full_name as string) || '';
+    const productId = kiwifyProduct?.product_id?.toString() || kiwifyPlan?.id?.toString() || (body.product_id as string) || '';
 
     if (!event) {
+      await logWebhookEvent(SOURCE, 'unknown', body, 'error', customerEmail, undefined, 'Missing event type');
       return NextResponse.json({ error: 'Missing event type' }, { status: 400 });
     }
 

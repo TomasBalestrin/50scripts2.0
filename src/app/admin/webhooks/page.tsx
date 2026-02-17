@@ -238,10 +238,10 @@ export default function AdminWebhooksPage() {
                 <SelectContent className="border-[#131B35] bg-[#0A0F1E] text-white">
                   <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="success">Sucesso</SelectItem>
-                  <SelectItem value="ignored">Ignorado</SelectItem>
                   <SelectItem value="unhandled">Não Processado</SelectItem>
                   <SelectItem value="error">Erro</SelectItem>
                   <SelectItem value="warning">Aviso</SelectItem>
+                  <SelectItem value="info">Info</SelectItem>
                   <SelectItem value="reprocessed">Reprocessado</SelectItem>
                 </SelectContent>
               </Select>
@@ -353,7 +353,9 @@ export default function AdminWebhooksPage() {
                                       ? 'border-orange-800 bg-orange-900/30 text-orange-400'
                                       : log.status === 'reprocessed'
                                         ? 'border-blue-800 bg-blue-900/30 text-blue-400'
-                                        : 'border-green-800 bg-green-900/30 text-green-400'
+                                        : log.status === 'info'
+                                          ? 'border-gray-700 bg-gray-800/30 text-gray-400'
+                                          : 'border-green-800 bg-green-900/30 text-green-400'
                               }
                             >
                               {log.status === 'error' || isError
@@ -364,7 +366,9 @@ export default function AdminWebhooksPage() {
                                     ? 'Aviso'
                                     : log.status === 'reprocessed'
                                       ? 'Reprocessado'
-                                      : 'Sucesso'}
+                                      : log.status === 'info'
+                                        ? 'Info'
+                                        : 'Sucesso'}
                             </Badge>
                           </td>
                           <td className="px-4 py-3 text-gray-400">
@@ -427,7 +431,7 @@ export default function AdminWebhooksPage() {
                                     {JSON.stringify(log.payload, null, 2)}
                                   </pre>
                                 </div>
-                                {(log.status === 'ignored' || log.status === 'error' || log.status === 'unhandled' || log.status === 'warning') && (
+                                {(log.status === 'error' || log.status === 'unhandled' || log.status === 'warning') && (
                                   <div className="pt-2">
                                     <Button
                                       size="sm"
