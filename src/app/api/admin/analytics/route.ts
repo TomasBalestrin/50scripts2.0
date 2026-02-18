@@ -3,7 +3,12 @@ import { getAdminUser } from '@/lib/admin/auth';
 
 /**
  * GET /api/admin/analytics?days=30
- * Returns user activity analytics for the admin dashboard.
+ * Returns user activity analytics using ALL available data sources:
+ * - user_activity (page views, heartbeats - new tracking)
+ * - script_usage (historical script interactions)
+ * - ai_generation_logs (historical AI usage)
+ * - daily_challenges (gamification engagement)
+ * - profiles.last_login_at (login fallback)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -17,30 +22,36 @@ export async function GET(request: NextRequest) {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Run all queries in parallel
-    const [activityRes, profilesRes, scriptUsageRes, aiLogsRes] = await Promise.all([
-      // All activity events in the period
+    // Run ALL queries in parallel - use every data source available
+    const [activityRes, profilesRes, scriptUsageRes, aiLogsRes, challengesRes, leadsRes] = await Promise.all([
       supabase
         .from('user_activity')
         .select('user_id, event_type, page_path, created_at')
         .gte('created_at', since)
         .order('created_at', { ascending: true }),
 
-      // All profiles for cross-reference
       supabase
         .from('profiles')
         .select('id, email, full_name, plan, last_login_at, created_at, is_active'),
 
-      // Script usage in the period
       supabase
         .from('script_usage')
         .select('user_id, script_id, tone_used, used_at, resulted_in_sale')
         .gte('used_at', since),
 
-      // AI usage in the period
       supabase
         .from('ai_generation_logs')
         .select('user_id, type, created_at')
+        .gte('created_at', since),
+
+      supabase
+        .from('daily_challenges')
+        .select('user_id, completed, challenge_date')
+        .gte('challenge_date', since.split('T')[0]),
+
+      supabase
+        .from('leads')
+        .select('user_id, created_at')
         .gte('created_at', since),
     ]);
 
@@ -48,20 +59,43 @@ export async function GET(request: NextRequest) {
     const profiles = profilesRes.data ?? [];
     const scriptUsages = scriptUsageRes.data ?? [];
     const aiLogs = aiLogsRes.data ?? [];
+    const challenges = challengesRes.data ?? [];
+    const leads = leadsRes.data ?? [];
 
-    // ---- DAU/WAU/MAU from activity events ----
+    // ---- Build unified activity timeline from ALL sources ----
+    // Each entry: { user_id, timestamp, source }
+    type ActivityEntry = { user_id: string; timestamp: string; source: string };
+    const allActivity: ActivityEntry[] = [];
+
+    for (const a of activities) {
+      allActivity.push({ user_id: a.user_id, timestamp: a.created_at, source: 'page_view' });
+    }
+    for (const s of scriptUsages) {
+      allActivity.push({ user_id: s.user_id, timestamp: s.used_at, source: 'script' });
+    }
+    for (const a of aiLogs) {
+      allActivity.push({ user_id: a.user_id, timestamp: a.created_at, source: 'ai' });
+    }
+    for (const c of challenges) {
+      allActivity.push({ user_id: c.user_id, timestamp: c.challenge_date, source: 'challenge' });
+    }
+    for (const l of leads) {
+      allActivity.push({ user_id: l.user_id, timestamp: l.created_at, source: 'lead' });
+    }
+
+    // ---- DAU/WAU/MAU from ALL sources ----
     const uniqueUsersToday = new Set<string>();
     const uniqueUsersWeek = new Set<string>();
     const uniqueUsersMonth = new Set<string>();
 
-    for (const a of activities) {
-      const ts = new Date(a.created_at);
+    for (const a of allActivity) {
+      const ts = new Date(a.timestamp);
       if (ts >= todayStart) uniqueUsersToday.add(a.user_id);
-      if (a.created_at >= weekAgo) uniqueUsersWeek.add(a.user_id);
-      if (a.created_at >= monthAgo) uniqueUsersMonth.add(a.user_id);
+      if (a.timestamp >= weekAgo) uniqueUsersWeek.add(a.user_id);
+      if (a.timestamp >= monthAgo) uniqueUsersMonth.add(a.user_id);
     }
 
-    // Fallback: also count from profiles.last_login_at for users without activity tracking
+    // Also count from profiles.last_login_at
     for (const p of profiles) {
       if (p.last_login_at) {
         const loginDate = new Date(p.last_login_at);
@@ -75,7 +109,7 @@ export async function GET(request: NextRequest) {
     const wau = uniqueUsersWeek.size;
     const mau = uniqueUsersMonth.size;
 
-    // ---- DAU trend (daily unique users over period) ----
+    // ---- DAU trend (daily unique users from ALL sources) ----
     const dauByDay: Record<string, Set<string>> = {};
     for (let i = 0; i < days; i++) {
       const d = new Date();
@@ -83,8 +117,8 @@ export async function GET(request: NextRequest) {
       dauByDay[d.toISOString().split('T')[0]] = new Set();
     }
 
-    for (const a of activities) {
-      const day = a.created_at.split('T')[0];
+    for (const a of allActivity) {
+      const day = a.timestamp.split('T')[0];
       if (dauByDay[day]) dauByDay[day].add(a.user_id);
     }
 
@@ -93,28 +127,13 @@ export async function GET(request: NextRequest) {
       count: users.size,
     }));
 
-    // ---- Daily logins ----
-    const loginsByDay: Record<string, number> = {};
-    for (const key of Object.keys(dauByDay)) loginsByDay[key] = 0;
-
-    for (const a of activities) {
-      if (a.event_type === 'login' || a.event_type === 'page_view') {
-        const day = a.created_at.split('T')[0];
-        // Count unique users per day as "logins"
-        if (dauByDay[day]) {
-          // Already counted in DAU, just count page_view as first-access
-        }
-      }
-    }
-
-    // Use DAU as proxy for daily logins (each unique user = 1 login)
+    // ---- Daily logins (unique users with any activity per day) ----
     const loginsTrend = dauTrend.map((d) => ({ date: d.date, logins: d.count }));
 
-    // ---- Most visited pages ----
+    // ---- Most visited pages (from user_activity only) ----
     const pageCounts: Record<string, number> = {};
     for (const a of activities) {
       if (a.event_type === 'page_view' && a.page_path) {
-        // Group similar paths (e.g., /scripts/123 → /scripts)
         const basePath = a.page_path.split('/').slice(0, 3).join('/') || a.page_path;
         pageCounts[basePath] = (pageCounts[basePath] || 0) + 1;
       }
@@ -129,12 +148,14 @@ export async function GET(request: NextRequest) {
         views,
       }));
 
-    // ---- Peak hours (activity by hour of day) ----
+    // ---- Peak hours (from ALL activity sources) ----
     const hourCounts = new Array(24).fill(0);
-    for (const a of activities) {
-      if (a.event_type === 'page_view') {
-        const hour = new Date(a.created_at).getHours();
-        hourCounts[hour]++;
+    for (const a of allActivity) {
+      try {
+        const hour = new Date(a.timestamp).getHours();
+        if (!isNaN(hour)) hourCounts[hour]++;
+      } catch {
+        // skip invalid timestamps (e.g., date-only from daily_challenges)
       }
     }
 
@@ -143,27 +164,20 @@ export async function GET(request: NextRequest) {
       count,
     }));
 
-    // ---- Feature usage breakdown ----
+    // ---- Feature usage breakdown (from real data) ----
     const featureUsage = [
       { feature: 'Scripts', count: scriptUsages.length },
       { feature: 'IA Copilot', count: aiLogs.length },
-      {
-        feature: 'Leads/CRM',
-        count: activities.filter((a) => a.page_path?.startsWith('/leads')).length,
-      },
+      { feature: 'Leads/CRM', count: leads.length },
+      { feature: 'Desafios', count: challenges.length },
       {
         feature: 'Agenda',
         count: activities.filter((a) => a.page_path?.startsWith('/today') || a.page_path?.startsWith('/agenda')).length,
       },
-      {
-        feature: 'Gamificação',
-        count: activities.filter((a) => a.page_path?.startsWith('/challenges') || a.page_path?.startsWith('/ranking')).length,
-      },
     ].filter((f) => f.count > 0)
     .sort((a, b) => b.count - a.count);
 
-    // ---- Average session duration ----
-    // Group activity by user+day, compute time between first and last event
+    // ---- Average session duration (from user_activity heartbeats + page views) ----
     const userDaySessions: Record<string, { first: number; last: number }> = {};
     for (const a of activities) {
       const day = a.created_at.split('T')[0];
@@ -178,17 +192,17 @@ export async function GET(request: NextRequest) {
     }
 
     const sessionDurations = Object.values(userDaySessions)
-      .map((s) => (s.last - s.first) / 1000 / 60) // minutes
-      .filter((d) => d > 0); // exclude single-event sessions
+      .map((s) => (s.last - s.first) / 1000 / 60)
+      .filter((d) => d > 0);
 
     const avgSessionMinutes = sessionDurations.length > 0
       ? Math.round(sessionDurations.reduce((a, b) => a + b, 0) / sessionDurations.length)
       : 0;
 
-    // ---- User engagement tiers ----
+    // ---- User engagement tiers (from ALL sources) ----
     const userEventCounts: Record<string, number> = {};
-    for (const a of activities) {
-      if (a.created_at >= monthAgo) {
+    for (const a of allActivity) {
+      if (a.timestamp >= monthAgo) {
         userEventCounts[a.user_id] = (userEventCounts[a.user_id] || 0) + 1;
       }
     }
@@ -202,13 +216,13 @@ export async function GET(request: NextRequest) {
       else lowEngagement++;
     }
 
-    // ---- Top active users ----
-    const userActivityCounts = Object.entries(userEventCounts)
+    // ---- Top active users (from ALL sources) ----
+    const topUserEntries = Object.entries(userEventCounts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10);
 
     const profileMap = new Map(profiles.map((p) => [p.id, p]));
-    const topUsers = userActivityCounts.map(([userId, eventCount]) => {
+    const topUsers = topUserEntries.map(([userId, eventCount]) => {
       const p = profileMap.get(userId);
       return {
         id: userId,
@@ -229,6 +243,13 @@ export async function GET(request: NextRequest) {
       .map(([tone, count]) => ({ tone, count }))
       .sort((a, b) => b.count - a.count);
 
+    // ---- Script conversion rate ----
+    const totalScriptUses = scriptUsages.length;
+    const salesFromScripts = scriptUsages.filter((s) => s.resulted_in_sale).length;
+    const scriptConversionRate = totalScriptUses > 0
+      ? Math.round((salesFromScripts / totalScriptUses) * 1000) / 10
+      : 0;
+
     const response = NextResponse.json({
       dau,
       wau,
@@ -248,6 +269,11 @@ export async function GET(request: NextRequest) {
       },
       top_users: topUsers,
       tone_preference: tonePreference,
+      script_stats: {
+        total_uses: totalScriptUses,
+        sales: salesFromScripts,
+        conversion_rate: scriptConversionRate,
+      },
     });
 
     response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');

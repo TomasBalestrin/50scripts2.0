@@ -9,6 +9,7 @@ import {
   Loader2,
   TrendingUp,
   Monitor,
+  Target,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,6 +44,7 @@ interface AnalyticsData {
   engagement: { high: number; medium: number; low: number };
   top_users: { id: string; name: string; plan: string; events: number }[];
   tone_preference: { tone: string; count: number }[];
+  script_stats: { total_uses: number; sales: number; conversion_rate: number };
 }
 
 const FEATURE_COLORS = ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#EF4444', '#EC4899'];
@@ -143,7 +145,29 @@ export default function AnalyticsPage() {
         />
       </div>
 
-      {/* DAU Trend + Logins Trend */}
+      {/* Script Stats Row */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <MetricCard
+          title="Usos de Scripts"
+          value={data.script_stats.total_uses.toString()}
+          subtitle={`no período de ${period} dias`}
+          icon={<TrendingUp className="h-5 w-5" />}
+        />
+        <MetricCard
+          title="Vendas via Scripts"
+          value={data.script_stats.sales.toString()}
+          subtitle={`de ${data.script_stats.total_uses} usos`}
+          icon={<Target className="h-5 w-5" />}
+        />
+        <MetricCard
+          title="Taxa de Conversão"
+          value={`${data.script_stats.conversion_rate}%`}
+          subtitle="scripts que geraram venda"
+          icon={<Activity className="h-5 w-5" />}
+        />
+      </div>
+
+      {/* DAU Trend + Peak Hours */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardHeader>
