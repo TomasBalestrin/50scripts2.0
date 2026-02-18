@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const buyerData = (dataObj?.buyer as Record<string, unknown>)
       || (body.buyer as Record<string, unknown>)
       || {};
-    buyerEmail = (buyerData.email as string) || (body.email as string) || '';
+    buyerEmail = ((buyerData.email as string) || (body.email as string) || '').toLowerCase().trim();
     const buyerName = (buyerData.name as string) || (buyerData.full_name as string) || '';
 
     // 3. Token verification: skip when no token is configured
@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
 
       const plan = productMap[productId] || 'starter';
       const result = await handlePurchase(buyerEmail, buyerName, plan, SOURCE, {
+        ...body,
         product_id: productId,
         original_event: event,
       });
@@ -109,6 +110,7 @@ export async function POST(request: NextRequest) {
       }
 
       const result = await handleCancellation(buyerEmail, SOURCE, normalizedEvent, {
+        ...body,
         product_id: productId,
       });
       return NextResponse.json({ success: true, user_id: result.userId || null });

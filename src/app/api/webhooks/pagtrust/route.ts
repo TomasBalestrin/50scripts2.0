@@ -58,10 +58,10 @@ export async function POST(request: NextRequest) {
       || (body.buyer as Record<string, unknown>)
       || (body.Customer as Record<string, unknown>)
       || {};
-    buyerEmail = (buyerData.email as string)
+    buyerEmail = ((buyerData.email as string)
       || (body.email as string)
       || (dataObj?.email as string)
-      || '';
+      || '').toLowerCase().trim();
 
     // Token verification: skip when no token is configured on our side
     const receivedToken = request.headers.get('X-PagTrust-Token')
@@ -129,6 +129,7 @@ export async function POST(request: NextRequest) {
 
       const plan = productMap[productId] || 'starter';
       const result = await handlePurchase(buyerEmail, buyerName, plan, SOURCE, {
+        ...body,
         product_id: productId,
         transaction_id: transactionId,
         original_event: rawEvent,
@@ -142,6 +143,7 @@ export async function POST(request: NextRequest) {
       }
 
       const result = await handleCancellation(buyerEmail, SOURCE, event, {
+        ...body,
         product_id: productId,
         transaction_id: transactionId,
       });

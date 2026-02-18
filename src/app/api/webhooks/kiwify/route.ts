@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const customerData = (body.Customer as Record<string, unknown>)
       || (body.customer as Record<string, unknown>)
       || {};
-    customerEmail = (customerData.email as string) || (body.email as string) || '';
+    customerEmail = ((customerData.email as string) || (body.email as string) || '').toLowerCase().trim();
     const customerName = (customerData.full_name as string) || (customerData.name as string) || '';
 
     // Token verification: skip when no token is configured
