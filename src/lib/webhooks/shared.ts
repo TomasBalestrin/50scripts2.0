@@ -37,7 +37,7 @@ export async function logWebhookEvent(
   try {
     const supabase = await createAdminClient();
 
-    const logData = {
+    const { error: insertError } = await supabase.from('webhook_logs').insert({
       source,
       event_type: eventType,
       payload: payload || {},
@@ -48,41 +48,10 @@ export async function logWebhookEvent(
       plan_granted: extra?.planGranted || null,
       user_created: extra?.userCreated ?? false,
       processed_at: new Date().toISOString(),
-    };
+    });
 
-    // Try direct insert first (most common path for new events)
-    const { error: insertError } = await supabase.from('webhook_logs').insert(logData);
-
-    if (insertError && insertError.code === '23505') {
-      // Unique constraint violated - update the existing record
-      // Try by user_id first, then by email
-      let existingId: string | null = null;
-
-      if (userId) {
-        const { data } = await supabase
-          .from('webhook_logs')
-          .select('id')
-          .eq('user_id', userId)
-          .limit(1)
-          .single();
-        existingId = data?.id || null;
-      }
-      if (!existingId && email) {
-        const { data } = await supabase
-          .from('webhook_logs')
-          .select('id')
-          .eq('email_extracted', email)
-          .limit(1)
-          .single();
-        existingId = data?.id || null;
-      }
-
-      if (existingId) {
-        await supabase
-          .from('webhook_logs')
-          .update(logData)
-          .eq('id', existingId);
-      }
+    if (insertError) {
+      console.error(`[webhook/${source}] Failed to insert log:`, insertError.message);
     }
   } catch (err) {
     console.error(`[webhook/${source}] Failed to log event:`, eventType, err);
