@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/shared/sidebar';
 import { BottomNav } from '@/components/shared/bottom-nav';
 import { Header } from '@/components/shared/header';
 import { LazyEmergencyFAB } from '@/components/emergency-fab/lazy-emergency-fab';
+import { ActivityTracker } from '@/components/activity/activity-tracker';
 
 // Cache auth+profile per request to avoid duplicate calls across components
 const getAuthProfile = cache(async () => {
@@ -60,6 +61,9 @@ export default async function DashboardLayout({
 
       {/* Emergency FAB - lazy loaded client component */}
       <LazyEmergencyFAB />
+
+      {/* Activity tracking - invisible, tracks page views + session duration */}
+      <ActivityTracker />
     </div>
   );
 }
