@@ -47,51 +47,17 @@ export async function logWebhookEvent(
       error_message: errorMessage || null,
       plan_granted: extra?.planGranted || null,
       user_created: extra?.userCreated ?? false,
+      processed_at: new Date().toISOString(),
     };
 
-    // One record per user: try to find existing by user_id first, then email
-    if (userId) {
-      const { data: existing } = await supabase
-        .from('webhook_logs')
-        .select('id')
-        .eq('user_id', userId)
-        .order('processed_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (existing) {
-        await supabase
-          .from('webhook_logs')
-          .update({ ...logData, processed_at: new Date().toISOString() })
-          .eq('id', existing.id);
-        return;
-      }
-    }
-
-    if (email) {
-      const { data: existing } = await supabase
-        .from('webhook_logs')
-        .select('id')
-        .eq('email_extracted', email)
-        .order('processed_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (existing) {
-        await supabase
-          .from('webhook_logs')
-          .update({ ...logData, processed_at: new Date().toISOString() })
-          .eq('id', existing.id);
-        return;
-      }
-    }
-
+    // Try direct insert first (most common path for new events)
     const { error: insertError } = await supabase.from('webhook_logs').insert(logData);
 
-    // Handle race condition: if unique constraint is violated, retry as update
     if (insertError && insertError.code === '23505') {
-      // Try to find by user_id first, then by email
-      let existing = null;
+      // Unique constraint violated - update the existing record
+      // Try by user_id first, then by email
+      let existingId: string | null = null;
+
       if (userId) {
         const { data } = await supabase
           .from('webhook_logs')
@@ -99,23 +65,23 @@ export async function logWebhookEvent(
           .eq('user_id', userId)
           .limit(1)
           .single();
-        existing = data;
+        existingId = data?.id || null;
       }
-      if (!existing && email) {
+      if (!existingId && email) {
         const { data } = await supabase
           .from('webhook_logs')
           .select('id')
           .eq('email_extracted', email)
           .limit(1)
           .single();
-        existing = data;
+        existingId = data?.id || null;
       }
 
-      if (existing) {
+      if (existingId) {
         await supabase
           .from('webhook_logs')
-          .update({ ...logData, processed_at: new Date().toISOString() })
-          .eq('id', existing.id);
+          .update(logData)
+          .eq('id', existingId);
       }
     }
   } catch (err) {
@@ -159,9 +125,31 @@ export async function findOrCreateUser(
       authError.message?.toLowerCase().includes('already') ||
       authError.message?.toLowerCase().includes('duplicate')
     ) {
-      const { data: users } = await supabase.auth.admin.listUsers();
-      const authUser = users?.users?.find((u) => u.email === email);
+      // Search for the existing auth user by email
+      // Use paginated call to avoid loading all users at once
+      let authUser: { id: string; email?: string } | undefined;
+      let page = 1;
+      while (!authUser && page <= 10) {
+        const { data: users } = await supabase.auth.admin.listUsers({
+          page,
+          perPage: 100,
+        });
+        authUser = users?.users?.find((u) => u.email === email);
+        if (!users?.users?.length || users.users.length < 100) break;
+        page++;
+      }
       if (authUser) {
+        // Create missing profile for existing auth user
+        const referralCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+        await supabase.from('profiles').upsert({
+          id: authUser.id,
+          email,
+          full_name: name || '',
+          plan: 'starter',
+          referral_code: referralCode,
+          webhook_source: webhookSource,
+          onboarding_completed: true,
+        }, { onConflict: 'id' });
         return { userId: authUser.id, created: false };
       }
     }
@@ -195,12 +183,13 @@ export async function findOrCreateUser(
  * Upgrades a user's plan. If user doesn't exist, creates them first.
  */
 export async function handlePurchase(
-  email: string,
+  rawEmail: string,
   name: string,
   plan: string,
   source: string,
   payload: Record<string, unknown>,
 ): Promise<{ userId: string; plan: string }> {
+  const email = rawEmail.toLowerCase().trim();
   const { userId, created } = await findOrCreateUser(email, name, source);
 
   const supabase = await createAdminClient();
@@ -241,11 +230,12 @@ export async function handlePurchase(
  * Downgrades a user's plan to starter on cancellation/refund.
  */
 export async function handleCancellation(
-  email: string,
+  rawEmail: string,
   source: string,
   eventType: string,
   payload: Record<string, unknown>,
 ): Promise<{ userId: string }> {
+  const email = rawEmail.toLowerCase().trim();
   const supabase = await createAdminClient();
 
   const { data: profile } = await supabase
