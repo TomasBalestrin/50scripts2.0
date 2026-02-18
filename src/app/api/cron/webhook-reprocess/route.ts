@@ -4,7 +4,7 @@ import { handlePurchase, handleCancellation } from '@/lib/webhooks/shared';
 import { getPlatformConfig, buildProductMap } from '@/lib/webhooks/platform-config';
 
 // Cron job to auto-reprocess unhandled/ignored webhooks.
-// Runs every 10 minutes via Vercel Cron.
+// Runs daily at 4 AM UTC via Vercel Cron.
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
