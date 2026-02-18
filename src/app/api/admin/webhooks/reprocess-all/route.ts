@@ -16,11 +16,11 @@ export async function POST() {
 
     const supabase = await createAdminClient();
 
-    // Fetch only unhandled/ignored webhooks (not errors or warnings)
+    // Fetch unhandled, ignored, and error webhooks for reprocessing
     const { data: logs, error: fetchError } = await supabase
       .from('webhook_logs')
       .select('*')
-      .in('status', ['unhandled', 'ignored'])
+      .in('status', ['unhandled', 'ignored', 'error'])
       .order('processed_at', { ascending: true });
 
     if (fetchError) {

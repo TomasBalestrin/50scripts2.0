@@ -101,6 +101,10 @@ export async function POST(request: NextRequest) {
 
     const productMap = buildProductMap(config);
 
+    if (Object.keys(productMap).length === 0) {
+      console.warn(`[webhook/pagtrust] No product IDs configured - all purchases will default to 'starter' plan`);
+    }
+
     // Classify event type using includes() for more robust matching
     const isPurchaseEvent =
       event === 'purchase' ||
@@ -169,7 +173,7 @@ export async function POST(request: NextRequest) {
         } catch (err) {
           await logWebhookEvent(SOURCE, event, body, 'error', buyerEmail, undefined,
             err instanceof Error ? err.message : 'Failed to process as purchase');
-          return NextResponse.json({ received: true, event: rawEvent });
+          return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500 });
         }
       }
       await logWebhookEvent(SOURCE, event, body, 'warning', '', undefined, 'No email to process');

@@ -34,27 +34,33 @@ export async function logWebhookEvent(
   errorMessage?: string,
   extra?: { planGranted?: string; userCreated?: boolean },
 ) {
-  try {
-    const supabase = await createAdminClient();
+  const row = {
+    source,
+    event_type: eventType,
+    payload: payload || {},
+    email_extracted: email || '',
+    status,
+    user_id: userId || null,
+    error_message: errorMessage || null,
+    plan_granted: extra?.planGranted || null,
+    user_created: extra?.userCreated ?? false,
+    processed_at: new Date().toISOString(),
+  };
 
-    const { error: insertError } = await supabase.from('webhook_logs').insert({
-      source,
-      event_type: eventType,
-      payload: payload || {},
-      email_extracted: email || '',
-      status,
-      user_id: userId || null,
-      error_message: errorMessage || null,
-      plan_granted: extra?.planGranted || null,
-      user_created: extra?.userCreated ?? false,
-      processed_at: new Date().toISOString(),
-    });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const supabase = await createAdminClient();
+      const { error: insertError } = await supabase.from('webhook_logs').insert(row);
 
-    if (insertError) {
-      console.error(`[webhook/${source}] Failed to insert log:`, insertError.message);
+      if (!insertError) return; // success
+
+      console.error(`[webhook/${source}] Log insert attempt ${attempt + 1} failed:`, insertError.message, insertError.code);
+
+      // Don't retry on constraint violations - they won't resolve
+      if (insertError.code === '23505') return;
+    } catch (err) {
+      console.error(`[webhook/${source}] Log insert attempt ${attempt + 1} exception:`, eventType, err);
     }
-  } catch (err) {
-    console.error(`[webhook/${source}] Failed to log event:`, eventType, err);
   }
 }
 
@@ -159,6 +165,7 @@ export async function handlePurchase(
   payload: Record<string, unknown>,
 ): Promise<{ userId: string; plan: string }> {
   const email = rawEmail.toLowerCase().trim();
+  console.log(`[webhook/${source}] Processing purchase: email=${email}, plan=${plan}, product_id=${payload.product_id || 'none'}`);
   const { userId, created } = await findOrCreateUser(email, name, source);
 
   const supabase = await createAdminClient();

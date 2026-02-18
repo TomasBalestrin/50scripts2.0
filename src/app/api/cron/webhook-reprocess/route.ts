@@ -14,10 +14,11 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createAdminClient();
 
+    // Include 'error' status to retry transient failures (e.g. DB timeouts)
     const { data: logs, error: fetchError } = await supabase
       .from('webhook_logs')
       .select('*')
-      .in('status', ['unhandled', 'ignored'])
+      .in('status', ['unhandled', 'ignored', 'error'])
       .order('processed_at', { ascending: true })
       .limit(100);
 
