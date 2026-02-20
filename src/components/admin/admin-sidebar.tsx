@@ -49,14 +49,14 @@ export function AdminSidebar() {
       <div className="flex h-16 items-center gap-3 border-b border-[#131B35] px-6">
         <Image
           src="/logo.png"
-          alt="50 Scripts"
+          alt="Script Go"
           width={36}
           height={36}
           className="rounded-lg"
           priority
         />
         <div>
-          <h1 className="text-base font-bold text-white">50 Scripts</h1>
+          <h1 className="text-base font-bold text-white">Script Go</h1>
           <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
             Painel Admin
           </p>

@@ -12,7 +12,7 @@ import { Check, Lock, Sparkles, Zap, Crown, Rocket, Loader2, CreditCard, CheckCi
 
 const PLAN_FEATURES: Record<Plan, string[]> = {
   starter: [
-    '50 Scripts em 8 Trilhas',
+    'Script Go em 8 Trilhas',
     'Copiar com 1 clique',
     'Modo Emergencia (FAB)',
     'Banco de Objecoes',

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Bell, Settings, User, Shield, LogOut } from "lucide-react";
+import { Shield, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,51 +11,43 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PlanBadge } from "@/components/shared/plan-badge";
 import { MobileSidebar } from "@/components/shared/sidebar";
-import type { Plan, Role } from "@/types/database";
+import type { Role } from "@/types/database";
 
 interface HeaderProps {
   userName?: string;
   userAvatar?: string | null;
-  plan: Plan;
   role?: Role;
 }
 
 const pageTitles: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/trilhas": "Trilhas",
-  "/buscar": "Buscar Scripts",
-  "/agenda": "Agenda de Vendas",
-  "/pipeline": "Pipeline",
-  "/ia-generator": "IA Generator",
-  "/colecoes": "Colecoes",
-  "/perfil": "Meu Perfil",
-  "/configuracoes": "Configuracoes",
+  "/": "Gestao",
+  "/trilhas": "Scripts",
+  "/personalizados": "Personalizados",
+  "/busca": "Buscar",
   "/admin": "Admin",
-  "/historico": "Histórico",
-  "/ai-generator": "IA Generator",
-  "/ai-copilot": "IA Copilot",
-  "/badges": "Gamificação",
 };
 
 function getPageTitle(pathname: string): string {
-  // Exact match first
   if (pageTitles[pathname]) {
     return pageTitles[pathname];
   }
 
-  // Check prefix matches for nested routes
   for (const [path, title] of Object.entries(pageTitles)) {
-    if (pathname.startsWith(`${path}/`)) {
+    if (path !== "/" && pathname.startsWith(`${path}/`)) {
       return title;
     }
   }
 
-  return "50 Scripts";
+  // Script detail pages
+  if (pathname.startsWith("/scripts/")) {
+    return "Script";
+  }
+
+  return "Script Go";
 }
 
-export function Header({ userName, userAvatar, plan, role }: HeaderProps) {
+export function Header({ userName, userAvatar, role }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const pageTitle = getPageTitle(pathname);
@@ -73,7 +65,6 @@ export function Header({ userName, userAvatar, plan, role }: HeaderProps) {
       {/* Left: Mobile menu + Page title */}
       <div className="flex items-center gap-2 min-w-0">
         <MobileSidebar
-          plan={plan}
           role={role}
           userName={userName}
           userAvatar={userAvatar}
@@ -83,19 +74,8 @@ export function Header({ userName, userAvatar, plan, role }: HeaderProps) {
         </h1>
       </div>
 
-      {/* Right: Notification + Avatar */}
+      {/* Right: Avatar */}
       <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-        {/* Notification bell */}
-        <button
-          type="button"
-          className="relative rounded-lg p-2 text-[#94A3B8] transition-colors hover:bg-[#131B35] hover:text-white"
-          aria-label="Notificacoes"
-        >
-          <Bell className="h-5 w-5" />
-          {/* Notification dot */}
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#1D4ED8]" />
-        </button>
-
         {/* User dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -109,37 +89,24 @@ export function Header({ userName, userAvatar, plan, role }: HeaderProps) {
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <PlanBadge plan={plan} className="hidden sm:inline-flex" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
             className="w-48 border-[#131B35] bg-[#0A0F1E] text-white"
           >
-            <DropdownMenuItem
-              className="cursor-pointer text-[#94A3B8] focus:bg-[#131B35] focus:text-white"
-              onClick={() => router.push("/perfil")}
-            >
-              <User className="mr-2 h-4 w-4" />
-              Perfil
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer text-[#94A3B8] focus:bg-[#131B35] focus:text-white"
-              onClick={() => router.push("/configuracoes")}
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Configuracoes
-            </DropdownMenuItem>
             {role === "admin" && (
-              <DropdownMenuItem
-                className="cursor-pointer text-[#94A3B8] focus:bg-[#131B35] focus:text-white"
-                onClick={() => router.push("/admin")}
-              >
-                <Shield className="mr-2 h-4 w-4" />
-                Admin
-              </DropdownMenuItem>
+              <>
+                <DropdownMenuItem
+                  className="cursor-pointer text-[#94A3B8] focus:bg-[#131B35] focus:text-white"
+                  onClick={() => router.push("/admin")}
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  Admin
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-[#131B35]" />
+              </>
             )}
-            <DropdownMenuSeparator className="bg-[#131B35]" />
             <DropdownMenuItem
               className="cursor-pointer text-[#1D4ED8] focus:bg-[#131B35] focus:text-[#1D4ED8]"
               onClick={async () => {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Route, Search, User } from "lucide-react";
+import { LayoutDashboard, Route, Search, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomNavItem {
@@ -12,10 +12,10 @@ interface BottomNavItem {
 }
 
 const navItems: BottomNavItem[] = [
+  { label: "Gestao", href: "/", icon: LayoutDashboard },
   { label: "Scripts", href: "/trilhas", icon: Route },
-  { label: "Progresso", href: "/", icon: LayoutDashboard },
+  { label: "Personalizados", href: "/personalizados", icon: Sparkles },
   { label: "Buscar", href: "/busca", icon: Search },
-  { label: "Perfil", href: "/perfil", icon: User },
 ];
 
 export function BottomNav() {
@@ -26,7 +26,8 @@ export function BottomNav() {
       <div className="mx-auto flex h-14 max-w-md items-center justify-around px-4">
         {navItems.map((item) => {
           const isActive =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
+            (item.href === "/" && pathname === "/") ||
+            (item.href !== "/" && (pathname === item.href || pathname.startsWith(`${item.href}/`)));
 
           return (
             <Link

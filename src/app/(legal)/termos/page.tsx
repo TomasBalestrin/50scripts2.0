@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Termos de Uso - 50 Scripts',
+  title: 'Termos de Uso - Script Go',
 };
 
 export default function TermosPage() {
@@ -12,13 +12,13 @@ export default function TermosPage() {
 
       <h2>1. Aceitação dos Termos</h2>
       <p>
-        Ao acessar e utilizar a plataforma <strong>50 Scripts</strong> (&quot;Plataforma&quot;), você concorda com estes
+        Ao acessar e utilizar a plataforma <strong>Script Go</strong> (&quot;Plataforma&quot;), você concorda com estes
         Termos de Uso. Se não concordar, não utilize a Plataforma.
       </p>
 
       <h2>2. Descrição do Serviço</h2>
       <p>
-        A 50 Scripts é uma plataforma de scripts persuasivos para vendas via WhatsApp. Os serviços incluem:
+        A Script Go é uma plataforma de scripts persuasivos para vendas via WhatsApp. Os serviços incluem:
       </p>
       <ul>
         <li>Acesso a scripts de vendas organizados por categoria</li>
@@ -52,13 +52,13 @@ export default function TermosPage() {
       <h2>5. Propriedade Intelectual</h2>
       <p>
         Todo o conteúdo da Plataforma, incluindo scripts, textos, design, código-fonte e marcas
-        registradas, é de propriedade exclusiva da 50 Scripts. Os scripts são licenciados para uso
+        registradas, é de propriedade exclusiva da Script Go. Os scripts são licenciados para uso
         pessoal e comercial do assinante, mas não podem ser redistribuídos ou revendidos.
       </p>
 
       <h2>6. Limitação de Responsabilidade</h2>
       <p>
-        A 50 Scripts fornece ferramentas e scripts como sugestões. Os resultados de vendas dependem
+        A Script Go fornece ferramentas e scripts como sugestões. Os resultados de vendas dependem
         de múltiplos fatores e não garantimos resultados específicos. A Plataforma não se
         responsabiliza por:
       </p>

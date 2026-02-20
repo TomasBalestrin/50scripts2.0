@@ -1,5 +1,5 @@
 /**
- * Service Worker for 50 Scripts PWA
+ * Service Worker for Script Go PWA
  * Multi-strategy caching: cache-first for static, network-first for API
  */
 
@@ -116,7 +116,7 @@ self.addEventListener('push', (event) => {
       tag: data.tag || 'default',
     };
     event.waitUntil(
-      self.registration.showNotification(data.title || '50 Scripts', options)
+      self.registration.showNotification(data.title || 'Script Go', options)
     );
   } catch {
     // Ignore malformed push data

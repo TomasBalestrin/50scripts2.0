@@ -151,7 +151,7 @@ function ExportContent() {
         <html lang="pt-BR">
         <head>
           <meta charset="UTF-8" />
-          <title>Relatorio 50 Scripts</title>
+          <title>Relatorio Script Go</title>
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
@@ -235,7 +235,7 @@ function ExportContent() {
         </head>
         <body>
           <div class="header">
-            <h1>50 Scripts</h1>
+            <h1>Script Go</h1>
             <p>Relatorio de Analytics${dateFrom || dateTo ? ` | ${dateFrom || '...'} a ${dateTo || '...'}` : ''}</p>
           </div>
 
@@ -276,7 +276,7 @@ function ExportContent() {
           </table>
 
           <div class="footer">
-            Gerado em ${new Date().toLocaleString('pt-BR')} | 50 Scripts
+            Gerado em ${new Date().toLocaleString('pt-BR')} | Script Go
           </div>
         </body>
         </html>

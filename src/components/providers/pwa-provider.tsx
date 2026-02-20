@@ -198,7 +198,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
                 <Download className="h-5 w-5 text-[#3B82F6]" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white">Instalar 50 Scripts</p>
+                <p className="text-sm font-semibold text-white">Instalar Script Go</p>
                 <p className="text-xs text-[#94A3B8]">Acesse rapido direto da tela inicial</p>
               </div>
               <button

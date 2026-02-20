@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidade - 50 Scripts',
+  title: 'Política de Privacidade - Script Go',
 };
 
 export default function PrivacidadePage() {
@@ -11,7 +11,7 @@ export default function PrivacidadePage() {
       <p className="text-sm text-[#94A3B8]">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
 
       <p>
-        Esta Política de Privacidade descreve como a <strong>50 Scripts</strong> (&quot;nós&quot;, &quot;nosso&quot;) coleta,
+        Esta Política de Privacidade descreve como a <strong>Script Go</strong> (&quot;nós&quot;, &quot;nosso&quot;) coleta,
         usa e protege seus dados pessoais, em conformidade com a Lei Geral de Proteção de Dados
         (LGPD - Lei nº 13.709/2018).
       </p>
