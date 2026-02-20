@@ -66,7 +66,7 @@ export function StepStrategic({ data, onChange }: StepStrategicProps) {
 
       {/* Tem socio */}
       <div className="space-y-2">
-        <Label className="text-sm text-white">Voce tem socio(a)?</Label>
+        <Label className="text-sm text-white">Você tem sócio(a)?</Label>
         <div className="flex gap-3">
           <button
             type="button"

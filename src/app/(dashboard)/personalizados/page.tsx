@@ -162,7 +162,7 @@ export default function PersonalizadosPage() {
       // Refresh history
       fetchHistory();
     } catch {
-      setError('Erro de conexao. Verifique sua internet e tente novamente.');
+      setError('Erro de conexão. Verifique sua internet e tente novamente.');
     } finally {
       if (loadingTimerRef.current) clearInterval(loadingTimerRef.current);
       if (stepTimerRef.current) clearInterval(stepTimerRef.current);
@@ -212,7 +212,7 @@ export default function PersonalizadosPage() {
           <div>
             <h1 className="text-2xl font-bold text-white md:text-3xl">
               <Sparkles className="mr-2 inline-block h-7 w-7 text-[#3B82F6]" />
-              Gere scripts personalizados para voce!
+              Gere scripts personalizados para você!
             </h1>
           </div>
           <div className="flex-shrink-0">
@@ -234,11 +234,11 @@ export default function PersonalizadosPage() {
           <CardContent className="space-y-6 p-6">
             <div className="space-y-2">
               <Label htmlFor="situation" className="text-sm font-medium text-white">
-                Situacao ou o que o cliente falou
+                Situação ou o que o cliente falou
               </Label>
               <Textarea
                 id="situation"
-                placeholder="Ex: Lead demonstrou interesse mas nao responde ha 3 dias..."
+                placeholder="Ex: Lead demonstrou interesse mas não responde há 3 dias..."
                 value={situation}
                 onChange={e => setSituation(e.target.value)}
                 disabled={generating}
@@ -248,7 +248,7 @@ export default function PersonalizadosPage() {
 
             <div className="space-y-2">
               <Label htmlFor="details" className="text-sm font-medium text-white">
-                Descreva o que voce quer gerar
+                Descreva o que você quer gerar
               </Label>
               <Textarea
                 id="details"
@@ -287,7 +287,7 @@ export default function PersonalizadosPage() {
 
             {remaining <= 0 && !generating && (
               <p className="text-center text-sm text-red-400">
-                Voce atingiu o limite de scripts deste mes. Continue usando a plataforma para ganhar bonus!
+                Você atingiu o limite de scripts deste mês. Continue usando a plataforma para ganhar bônus!
               </p>
             )}
           </CardContent>
@@ -362,7 +362,7 @@ export default function PersonalizadosPage() {
         <div className="space-y-4">
           <h2 className="flex items-center gap-2 text-xl font-semibold text-white">
             <History className="h-5 w-5 text-[#3B82F6]" />
-            Historico de Scripts Gerados
+            Histórico de Scripts Gerados
           </h2>
 
           {historyLoading ? (
@@ -372,7 +372,7 @@ export default function PersonalizadosPage() {
           ) : history.length === 0 ? (
             <Card className="border-[#1D4ED8]/10 bg-[#0A0F1E]">
               <CardContent className="py-8 text-center text-[#94A3B8]">
-                Nenhum script gerado ainda. Use o formulario acima para criar seu primeiro!
+                Nenhum script gerado ainda. Use o formulário acima para criar seu primeiro!
               </CardContent>
             </Card>
           ) : (
@@ -422,7 +422,7 @@ export default function PersonalizadosPage() {
                       {isExpanded && (
                         <div className="mt-4 space-y-3 border-t border-[#1D4ED8]/10 pt-4">
                           <div>
-                            <p className="mb-1 text-xs font-medium text-[#94A3B8]/60">Situacao</p>
+                            <p className="mb-1 text-xs font-medium text-[#94A3B8]/60">Situação</p>
                             <p className="text-sm text-[#94A3B8]">{script.situation}</p>
                           </div>
                           {script.details && (

@@ -33,7 +33,7 @@ export function OnboardingDetailModal({ userId, isOpen, onClose }: OnboardingDet
           .single();
 
         if (err) {
-          setError('Dados de onboarding nao encontrados para este usuario.');
+          setError('Dados de onboarding não encontrados para este usuário.');
           setData(null);
         } else {
           setData(onboarding as UserOnboarding);
@@ -74,7 +74,7 @@ export function OnboardingDetailModal({ userId, isOpen, onClose }: OnboardingDet
           <div className="mt-4 space-y-6">
             {/* Personal Info */}
             <div>
-              <h3 className="mb-3 text-sm font-semibold text-[#3B82F6]">Informacoes Pessoais</h3>
+              <h3 className="mb-3 text-sm font-semibold text-[#3B82F6]">Informações Pessoais</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <InfoField label="Nome Completo" value={data.full_name} />
                 <InfoField label="Telefone" value={data.phone} />
@@ -85,24 +85,24 @@ export function OnboardingDetailModal({ userId, isOpen, onClose }: OnboardingDet
 
             {/* Business Info */}
             <div>
-              <h3 className="mb-3 text-sm font-semibold text-[#3B82F6]">Informacoes do Negocio</h3>
+              <h3 className="mb-3 text-sm font-semibold text-[#3B82F6]">Informações do Negócio</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <InfoField label="Empresa" value={data.company_name} />
-                <InfoField label="Tipo de Negocio" value={data.business_type} />
+                <InfoField label="Tipo de Negócio" value={data.business_type} />
                 {data.business_type_custom && (
                   <InfoField label="Tipo (Personalizado)" value={data.business_type_custom} />
                 )}
                 <InfoField label="Cargo" value={data.role_in_business} />
-                <InfoField label="Ticket Medio" value={data.average_ticket} />
-                <InfoField label="Publico Alvo" value={data.target_audience} />
+                <InfoField label="Ticket Médio" value={data.average_ticket} />
+                <InfoField label="Público Alvo" value={data.target_audience} />
               </div>
             </div>
 
             {/* Strategic Info */}
             <div>
-              <h3 className="mb-3 text-sm font-semibold text-[#3B82F6]">Informacoes Estrategicas</h3>
+              <h3 className="mb-3 text-sm font-semibold text-[#3B82F6]">Informações Estratégicas</h3>
               <div className="space-y-3 text-sm">
-                <InfoField label="Principais Objecoes" value={data.main_objections} fullWidth />
+                <InfoField label="Principais Objeções" value={data.main_objections} fullWidth />
                 <div>
                   <p className="text-gray-400">Principais Desafios</p>
                   {data.main_challenges && data.main_challenges.length > 0 ? (
@@ -124,7 +124,7 @@ export function OnboardingDetailModal({ userId, isOpen, onClose }: OnboardingDet
                   <InfoField label="Desafios (Personalizado)" value={data.main_challenges_custom} fullWidth />
                 )}
                 <div className="grid grid-cols-2 gap-3">
-                  <InfoField label="Possui Socio" value={data.has_partner ? 'Sim' : 'Nao'} />
+                  <InfoField label="Possui Sócio" value={data.has_partner ? 'Sim' : 'Não'} />
                   <InfoField label="Tempo conhecendo Cleiton" value={data.time_knowing_cleiton} />
                 </div>
               </div>

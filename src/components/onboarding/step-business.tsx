@@ -36,10 +36,10 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
         />
       </div>
 
-      {/* Tipo de negocio */}
+      {/* Tipo de negócio */}
       <div className="space-y-2">
         <Label className="text-sm text-white">
-          Tipo de negocio <span className="text-red-400">*</span>
+          Tipo de negócio <span className="text-red-400">*</span>
         </Label>
         <Select
           value={data.business_type}
@@ -51,7 +51,7 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
           }
         >
           <SelectTrigger className="border-[#131B35] bg-[#131B35] text-white focus:border-[#1D4ED8] focus:ring-[#1D4ED8]">
-            <SelectValue placeholder="Selecione seu tipo de negocio" />
+            <SelectValue placeholder="Selecione seu tipo de negócio" />
           </SelectTrigger>
           <SelectContent className="border-[#131B35] bg-[#0A0F1E]">
             {BUSINESS_TYPES.map((type) => (
@@ -69,7 +69,7 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
         {data.business_type === 'Outros' && (
           <Input
             type="text"
-            placeholder="Descreva seu tipo de negocio"
+            placeholder="Descreva seu tipo de negócio"
             value={data.business_type_custom}
             onChange={(e) => onChange({ business_type_custom: e.target.value })}
             className="mt-2 border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8]"
@@ -79,13 +79,13 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
 
       {/* Funcao */}
       <div className="space-y-2">
-        <Label className="text-sm text-white">Funcao no negocio</Label>
+        <Label className="text-sm text-white">Função no negócio</Label>
         <Select
           value={data.role_in_business}
           onValueChange={(value) => onChange({ role_in_business: value })}
         >
           <SelectTrigger className="border-[#131B35] bg-[#131B35] text-white focus:border-[#1D4ED8] focus:ring-[#1D4ED8]">
-            <SelectValue placeholder="Selecione sua funcao" />
+            <SelectValue placeholder="Selecione sua função" />
           </SelectTrigger>
           <SelectContent className="border-[#131B35] bg-[#0A0F1E]">
             {BUSINESS_ROLES.map((role) => (
@@ -101,10 +101,10 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
         </Select>
       </div>
 
-      {/* Ticket medio */}
+      {/* Ticket médio */}
       <div className="space-y-2">
         <Label htmlFor="average_ticket" className="text-sm text-white">
-          Ticket medio
+          Ticket médio
         </Label>
         <Input
           id="average_ticket"
@@ -138,7 +138,7 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
         </Label>
         <Textarea
           id="main_objections"
-          placeholder="Quais as objecoes mais comuns que voce ouve?"
+          placeholder="Quais as objeções mais comuns que você ouve?"
           value={data.main_objections}
           onChange={(e) => onChange({ main_objections: e.target.value })}
           className="border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8] min-h-[80px]"

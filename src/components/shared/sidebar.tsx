@@ -32,7 +32,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    label: "Gestao",
+    label: "Gestão",
     href: "/",
     icon: LayoutDashboard,
     moduleKey: "gestao",

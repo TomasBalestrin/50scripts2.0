@@ -48,7 +48,7 @@ export default function BuscaPage() {
         <Input
           value={query}
           onChange={(e) => handleQueryChange(e.target.value)}
-          placeholder="O que voce precisa? Ex: 'cliente disse que esta caro'"
+          placeholder="O que você precisa? Ex: 'cliente disse que está caro'"
           className="pl-10 bg-[#0A0F1E] border-[#131B35] text-white h-12 text-lg"
           type="search"
           inputMode="search"
@@ -61,12 +61,12 @@ export default function BuscaPage() {
       {!debouncedQuery && (
         <div className="flex flex-wrap gap-2 mb-6">
           {[
-            'Cliente disse que esta caro',
-            'Follow-up pos proposta',
+            'Cliente disse que está caro',
+            'Follow-up pós proposta',
             'Reativar lead frio',
-            'Quebrar objecao de tempo',
+            'Quebrar objeção de tempo',
             'Primeiro contato',
-            'Pedir indicacao',
+            'Pedir indicação',
           ].map((suggestion) => (
             <button
               key={suggestion}

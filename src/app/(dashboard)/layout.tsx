@@ -39,7 +39,7 @@ export default async function DashboardLayout({
     <div className="min-h-screen bg-[#020617]">
       {/* Skip to content - accessibility */}
       <a href="#main-content" className="skip-link">
-        Pular para o conteudo
+        Pular para o conteúdo
       </a>
 
       {/* Desktop sidebar */}

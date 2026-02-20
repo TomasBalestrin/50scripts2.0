@@ -247,7 +247,7 @@ export default function DashboardPage() {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <p className="text-lg text-red-400">Erro ao carregar o painel</p>
             <p className="mt-1 text-sm text-[#94A3B8]">
-              Tente recarregar a pagina ou volte em alguns instantes.
+              Tente recarregar a página ou volte em alguns instantes.
             </p>
             <button
               onClick={fetchData}
@@ -281,7 +281,7 @@ export default function DashboardPage() {
             {greeting}, {userName}!
           </h1>
           <p className="mt-1 text-sm text-[#94A3B8]">
-            Bem-vindo ao seu painel de gestao!
+            Bem-vindo ao seu painel de gestão!
           </p>
         </motion.div>
 
@@ -300,7 +300,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="mb-0.5 text-xs font-semibold uppercase tracking-wider text-[#3B82F6]">
-                    Dica de gestao
+                    Dica de gestão
                   </p>
                   <p className="text-sm leading-relaxed text-white/90">
                     {tipText}

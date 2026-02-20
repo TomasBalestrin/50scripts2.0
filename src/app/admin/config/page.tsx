@@ -802,8 +802,8 @@ export default function AdminConfigPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between rounded-lg border border-[#131B35] bg-[#131B35]/50 p-4">
               <div>
-                <p className="text-sm font-medium text-white">Gestao</p>
-                <p className="text-xs text-gray-500">Dashboard de gestao e metricas</p>
+                <p className="text-sm font-medium text-white">Gestão</p>
+                <p className="text-xs text-gray-500">Dashboard de gestão e métricas</p>
               </div>
               <Switch
                 checked={moduleToggles.gestao}

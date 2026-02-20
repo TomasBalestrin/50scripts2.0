@@ -15,7 +15,7 @@ interface BottomNavItem {
 }
 
 const navItems: BottomNavItem[] = [
-  { label: "Gestao", href: "/", icon: LayoutDashboard, moduleKey: "gestao" },
+  { label: "Gestão", href: "/", icon: LayoutDashboard, moduleKey: "gestao" },
   { label: "Scripts", href: "/trilhas", icon: Route, moduleKey: "scripts" },
   { label: "Personalizados", href: "/personalizados", icon: Sparkles, moduleKey: "personalizados" },
   { label: "Buscar", href: "/busca", icon: Search, moduleKey: "buscar" },

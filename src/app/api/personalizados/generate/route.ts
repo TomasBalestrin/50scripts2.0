@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   const { situation, details } = body;
   if (!situation?.trim() || !details?.trim()) {
     return NextResponse.json(
-      { error: 'Situacao e detalhes sao obrigatorios.' },
+      { error: 'Situação e detalhes são obrigatórios.' },
       { status: 400 }
     );
   }
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
   if (countError || profileError) {
     return NextResponse.json(
-      { error: 'Erro ao verificar creditos.' },
+      { error: 'Erro ao verificar créditos.' },
       { status: 500 }
     );
   }
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
   if (remaining <= 0) {
     return NextResponse.json(
-      { error: 'Voce atingiu o limite de scripts deste mes. Continue usando a plataforma para ganhar bonus!' },
+      { error: 'Você atingiu o limite de scripts deste mês. Continue usando a plataforma para ganhar bônus!' },
       { status: 429 }
     );
   }
@@ -72,23 +72,23 @@ export async function POST(request: NextRequest) {
   if (onboarding) {
     if (onboarding.business_type) contextParts.push(`O vendedor trabalha com: ${onboarding.business_type}`);
     if (onboarding.company_name) contextParts.push(`Empresa: ${onboarding.company_name}`);
-    if (onboarding.role_in_business) contextParts.push(`Funcao: ${onboarding.role_in_business}`);
-    if (onboarding.average_ticket) contextParts.push(`Ticket medio: ${onboarding.average_ticket}`);
-    if (onboarding.target_audience) contextParts.push(`Publico-alvo: ${onboarding.target_audience}`);
-    if (onboarding.main_objections) contextParts.push(`Principais objecoes: ${onboarding.main_objections}`);
+    if (onboarding.role_in_business) contextParts.push(`Função: ${onboarding.role_in_business}`);
+    if (onboarding.average_ticket) contextParts.push(`Ticket médio: ${onboarding.average_ticket}`);
+    if (onboarding.target_audience) contextParts.push(`Público-alvo: ${onboarding.target_audience}`);
+    if (onboarding.main_objections) contextParts.push(`Principais objeções: ${onboarding.main_objections}`);
     if (onboarding.main_challenges) contextParts.push(`Desafios: ${onboarding.main_challenges}`);
   }
 
   const sellerContext = contextParts.length > 0
     ? contextParts.join('\n')
-    : 'Nenhuma informacao de perfil disponivel.';
+    : 'Nenhuma informação de perfil disponível.';
 
-  const systemPrompt = `Voce e um especialista em scripts de vendas pelo WhatsApp.
+  const systemPrompt = `Você é um especialista em scripts de vendas pelo WhatsApp.
 ${sellerContext}
 
-Gere um script personalizado, natural e persuasivo para a situacao descrita.
-Use variaveis {{NOME_LEAD}} e {{MEU_NOME}} onde apropriado.
-Maximo 300 palavras. Responda apenas com o script, sem explicacoes.`;
+Gere um script personalizado, natural e persuasivo para a situação descrita.
+Use variáveis {{NOME_LEAD}} e {{MEU_NOME}} onde apropriado.
+Máximo 300 palavras. Responda apenas com o script, sem explicações.`;
 
   const userPrompt = `Situacao: ${situation.trim()}\n\nDetalhes adicionais: ${details.trim()}`;
 

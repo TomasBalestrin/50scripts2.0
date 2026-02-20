@@ -20,7 +20,7 @@ interface LevelUpModalProps {
 export function LevelUpModal({ level, isOpen, onClose }: LevelUpModalProps) {
   const label = NEW_LEVEL_LABELS[level];
   const levelNumber = NEW_LEVEL_ORDER.indexOf(level) + 1;
-  const message = LEVEL_MOTIVATIONAL_MESSAGES[level] ?? 'Parabens! Voce subiu de nivel!';
+  const message = LEVEL_MOTIVATIONAL_MESSAGES[level] ?? 'Parabéns! Você subiu de nível!';
 
   const fireConfetti = useCallback(async () => {
     try {

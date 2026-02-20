@@ -33,7 +33,7 @@ export async function GET() {
   if (scriptsError || countError || profileError) {
     console.error('History fetch error:', { scriptsError, countError, profileError });
     return NextResponse.json(
-      { error: 'Erro ao carregar historico.' },
+      { error: 'Erro ao carregar histórico.' },
       { status: 500 }
     );
   }

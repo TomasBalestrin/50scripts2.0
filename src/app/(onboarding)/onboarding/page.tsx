@@ -141,8 +141,8 @@ export default function OnboardingPage() {
       <div className="space-y-1">
         <h1 className="font-heading text-xl font-bold text-white">
           {step === 1 && 'Dados pessoais'}
-          {step === 2 && 'Sobre seu negocio'}
-          {step === 3 && 'Estrategia e desafios'}
+          {step === 2 && 'Sobre seu negócio'}
+          {step === 3 && 'Estratégia e desafios'}
         </h1>
         <p className="text-sm text-[#94A3B8]">
           Preencha para melhorar seus scripts e adequar a sua realidade

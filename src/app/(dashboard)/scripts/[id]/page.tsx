@@ -361,10 +361,10 @@ export default function ScriptDetailPage() {
         setSaleValueRating('');
         setFeedbackNote('');
       } else {
-        toast('Erro ao enviar avaliacao', 'error');
+        toast('Erro ao enviar avaliação', 'error');
       }
     } catch {
-      toast('Erro ao enviar avaliacao', 'error');
+      toast('Erro ao enviar avaliação', 'error');
     } finally {
       setSubmittingRating(false);
     }
@@ -386,7 +386,7 @@ export default function ScriptDetailPage() {
             Voltar
           </button>
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-lg text-[#94A3B8]">Script nao encontrado</p>
+            <p className="text-lg text-[#94A3B8]">Script não encontrado</p>
           </div>
         </div>
       </div>
@@ -689,7 +689,7 @@ export default function ScriptDetailPage() {
                       disabled={rating === 0 || submittingRating}
                       className="w-full rounded-lg bg-[#3B82F6] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#3B82F6]/90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {submittingRating ? 'Enviando...' : 'Enviar avaliacao'}
+                      {submittingRating ? 'Enviando...' : 'Enviar avaliação'}
                     </button>
                   </div>
                 </motion.div>
