@@ -31,7 +31,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push('/trilhas');
+      router.push('/');
     } catch {
       setError('Erro inesperado. Tente novamente.');
     } finally {

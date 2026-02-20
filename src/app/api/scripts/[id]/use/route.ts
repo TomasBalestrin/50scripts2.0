@@ -76,8 +76,8 @@ export async function POST(
       console.error('[scripts/id/use] Error incrementing usage count:', incrementError);
     }
 
-    // 6. Add 10 XP
-    await supabase.rpc('add_xp', { p_user_id: userId, p_xp: 10 });
+    // 6. Add +5 cyclic XP for copying a script
+    await supabase.rpc('add_cyclic_xp', { p_user_id: userId, p_xp: 5 });
 
     return NextResponse.json(
       { usage },
