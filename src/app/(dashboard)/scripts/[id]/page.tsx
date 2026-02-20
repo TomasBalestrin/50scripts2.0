@@ -27,6 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { XpToast } from '@/components/gamification/xp-toast';
 
 const TONE_LABELS: Record<string, string> = {
   casual: 'Casual',
@@ -110,6 +111,10 @@ export default function ScriptDetailPage() {
     sale_value: '',
   });
   const [submittingSale, setSubmittingSale] = useState(false);
+
+  // XP toast trigger
+  const [xpTrigger, setXpTrigger] = useState(0);
+  const [xpAmount, setXpAmount] = useState(5);
 
   // Rating state
   const [rateExpanded, setRateExpanded] = useState(false);
@@ -238,13 +243,15 @@ export default function ScriptDetailPage() {
       localStorage.setItem(`cooldown_script_${scriptId}`, endTime.toString());
       setCooldownRemaining(SCRIPT_COPY_COOLDOWN_MS);
 
-      // Register usage
+      // Register usage + award XP
       try {
         await fetch(`/api/scripts/${script.id}/use`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tone_used: activeTone }),
         });
+        setXpAmount(5);
+        setXpTrigger((t) => t + 1);
       } catch {
         // Non-blocking
       }
@@ -293,10 +300,14 @@ export default function ScriptDetailPage() {
       });
 
       if (res.ok) {
-        toast(editingSale ? 'Venda atualizada!' : 'Venda registrada! +5 XP', 'success');
+        toast(editingSale ? 'Venda atualizada!' : 'Venda registrada!', 'success');
         setSaleDialogOpen(false);
         setEditingSale(null);
         fetchSales();
+        if (!editingSale) {
+          setXpAmount(5);
+          setXpTrigger((t) => t + 1);
+        }
       } else {
         toast('Erro ao salvar venda', 'error');
       }
@@ -784,6 +795,8 @@ export default function ScriptDetailPage() {
           ))}
         </AnimatePresence>
       </div>
+
+      <XpToast amount={xpAmount} trigger={xpTrigger} />
     </div>
   );
 }

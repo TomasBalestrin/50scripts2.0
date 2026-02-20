@@ -19,6 +19,7 @@ import { LevelProgress } from '@/components/gamification/level-progress';
 import { StreakReward } from '@/components/gamification/streak-reward';
 import { LevelUpModal } from '@/components/gamification/level-up-modal';
 import { Card, CardContent } from '@/components/ui/card';
+import { XpToast } from '@/components/gamification/xp-toast';
 import type { NewLevel } from '@/types/database';
 
 // ---------------------------------------------------------------------------
@@ -136,6 +137,9 @@ export default function DashboardPage() {
   const [levelUpModalOpen, setLevelUpModalOpen] = useState(false);
   const [levelUpLevel, setLevelUpLevel] = useState<NewLevel>('iniciante');
 
+  // XP toast
+  const [xpTrigger, setXpTrigger] = useState(0);
+
   // Streak pending (local, so we can toggle after collection)
   const [streakPending, setStreakPending] = useState(false);
 
@@ -164,6 +168,9 @@ export default function DashboardPage() {
       });
       if (res.ok) {
         const result = await res.json();
+        if (result.cyclic_xp_added) {
+          setXpTrigger((t) => t + 1);
+        }
         if (result.leveled_up && result.level) {
           setLevelUpLevel(result.level as NewLevel);
           setLevelUpModalOpen(true);
@@ -478,6 +485,7 @@ export default function DashboardPage() {
         isOpen={levelUpModalOpen}
         onClose={() => setLevelUpModalOpen(false)}
       />
+      <XpToast amount={10} trigger={xpTrigger} />
     </div>
   );
 }

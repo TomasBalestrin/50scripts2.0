@@ -11,6 +11,7 @@ import {
   ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { BASE_MONTHLY_SCRIPTS } from '@/lib/constants';
+import { XpToast } from '@/components/gamification/xp-toast';
 
 interface HistoryScript {
   id: string;
@@ -61,6 +62,9 @@ export default function PersonalizadosPage() {
   const [history, setHistory] = useState<HistoryScript[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [historyLoading, setHistoryLoading] = useState(true);
+
+  // XP toast
+  const [xpTrigger, setXpTrigger] = useState(0);
 
   const loadingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const stepTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -153,6 +157,7 @@ export default function PersonalizadosPage() {
       setLoadingProgress(100);
       setResult(generatedData.content);
       setCreditsUsed(prev => prev + 1);
+      setXpTrigger(t => t + 1);
 
       // Refresh history
       fetchHistory();
@@ -442,6 +447,8 @@ export default function PersonalizadosPage() {
           )}
         </div>
       </div>
+
+      <XpToast amount={10} trigger={xpTrigger} />
     </div>
   );
 }
