@@ -1,0 +1,149 @@
+'use client';
+
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
+import { BUSINESS_TYPES, BUSINESS_ROLES } from '@/lib/constants';
+import type { OnboardingFormData } from '@/app/(onboarding)/onboarding/page';
+
+interface StepBusinessProps {
+  data: OnboardingFormData;
+  onChange: (fields: Partial<OnboardingFormData>) => void;
+}
+
+export function StepBusiness({ data, onChange }: StepBusinessProps) {
+  return (
+    <div className="space-y-4">
+      {/* Nome da empresa */}
+      <div className="space-y-2">
+        <Label htmlFor="company_name" className="text-sm text-white">
+          Nome da empresa
+        </Label>
+        <Input
+          id="company_name"
+          type="text"
+          placeholder="Nome da sua empresa"
+          value={data.company_name}
+          onChange={(e) => onChange({ company_name: e.target.value })}
+          className="border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8]"
+        />
+      </div>
+
+      {/* Tipo de negocio */}
+      <div className="space-y-2">
+        <Label className="text-sm text-white">
+          Tipo de negocio <span className="text-red-400">*</span>
+        </Label>
+        <Select
+          value={data.business_type}
+          onValueChange={(value) =>
+            onChange({
+              business_type: value,
+              business_type_custom: value !== 'Outros' ? '' : data.business_type_custom,
+            })
+          }
+        >
+          <SelectTrigger className="border-[#131B35] bg-[#131B35] text-white focus:border-[#1D4ED8] focus:ring-[#1D4ED8]">
+            <SelectValue placeholder="Selecione seu tipo de negocio" />
+          </SelectTrigger>
+          <SelectContent className="border-[#131B35] bg-[#0A0F1E]">
+            {BUSINESS_TYPES.map((type) => (
+              <SelectItem
+                key={type}
+                value={type}
+                className="text-white hover:bg-[#131B35]"
+              >
+                {type}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {data.business_type === 'Outros' && (
+          <Input
+            type="text"
+            placeholder="Descreva seu tipo de negocio"
+            value={data.business_type_custom}
+            onChange={(e) => onChange({ business_type_custom: e.target.value })}
+            className="mt-2 border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8]"
+          />
+        )}
+      </div>
+
+      {/* Funcao */}
+      <div className="space-y-2">
+        <Label className="text-sm text-white">Funcao no negocio</Label>
+        <Select
+          value={data.role_in_business}
+          onValueChange={(value) => onChange({ role_in_business: value })}
+        >
+          <SelectTrigger className="border-[#131B35] bg-[#131B35] text-white focus:border-[#1D4ED8] focus:ring-[#1D4ED8]">
+            <SelectValue placeholder="Selecione sua funcao" />
+          </SelectTrigger>
+          <SelectContent className="border-[#131B35] bg-[#0A0F1E]">
+            {BUSINESS_ROLES.map((role) => (
+              <SelectItem
+                key={role}
+                value={role}
+                className="text-white hover:bg-[#131B35]"
+              >
+                {role}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Ticket medio */}
+      <div className="space-y-2">
+        <Label htmlFor="average_ticket" className="text-sm text-white">
+          Ticket medio
+        </Label>
+        <Input
+          id="average_ticket"
+          type="text"
+          placeholder="Ex: R$ 500"
+          value={data.average_ticket}
+          onChange={(e) => onChange({ average_ticket: e.target.value })}
+          className="border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8]"
+        />
+      </div>
+
+      {/* Publico-alvo */}
+      <div className="space-y-2">
+        <Label htmlFor="target_audience" className="text-sm text-white">
+          Publico-alvo
+        </Label>
+        <Input
+          id="target_audience"
+          type="text"
+          placeholder="Quem e seu cliente ideal?"
+          value={data.target_audience}
+          onChange={(e) => onChange({ target_audience: e.target.value })}
+          className="border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8]"
+        />
+      </div>
+
+      {/* Principais objecoes */}
+      <div className="space-y-2">
+        <Label htmlFor="main_objections" className="text-sm text-white">
+          Principais objecoes dos clientes
+        </Label>
+        <Textarea
+          id="main_objections"
+          placeholder="Quais as objecoes mais comuns que voce ouve?"
+          value={data.main_objections}
+          onChange={(e) => onChange({ main_objections: e.target.value })}
+          className="border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8] min-h-[80px]"
+        />
+      </div>
+    </div>
+  );
+}
