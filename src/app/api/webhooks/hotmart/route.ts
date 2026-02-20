@@ -70,6 +70,10 @@ export async function POST(request: NextRequest) {
 
     const productMap = buildProductMap(config);
 
+    if (Object.keys(productMap).length === 0) {
+      console.warn(`[webhook/hotmart] No product IDs configured - all purchases will default to 'starter' plan`);
+    }
+
     // 4. Normalize and classify event
     const normalizedEvent = event.toLowerCase().trim().replace(/\./g, '_');
 
@@ -134,7 +138,7 @@ export async function POST(request: NextRequest) {
         } catch (err) {
           await logWebhookEvent(SOURCE, normalizedEvent, body, 'error', buyerEmail, undefined,
             err instanceof Error ? err.message : 'Failed to process as purchase');
-          return NextResponse.json({ received: true, event });
+          return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500 });
         }
       }
       await logWebhookEvent(SOURCE, normalizedEvent, body, 'warning', '', undefined, 'No email to process');

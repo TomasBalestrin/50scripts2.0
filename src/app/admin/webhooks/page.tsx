@@ -161,7 +161,7 @@ export default function AdminWebhooksPage() {
           ) : (
             <RefreshCw className="mr-2 h-4 w-4" />
           )}
-          {reprocessingAll ? 'Reprocessando...' : 'Reprocessar Não Processados'}
+          {reprocessingAll ? 'Reprocessando...' : 'Reprocessar Pendentes'}
         </Button>
       </div>
 
