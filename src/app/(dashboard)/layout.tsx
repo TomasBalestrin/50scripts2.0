@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server';
 import { Sidebar } from '@/components/shared/sidebar';
 import { BottomNav } from '@/components/shared/bottom-nav';
 import { Header } from '@/components/shared/header';
-import { ActivityTracker } from '@/components/activity/activity-tracker';
 
 // Cache auth+profile per request to avoid duplicate calls across components
 const getAuthProfile = cache(async () => {
@@ -56,9 +55,6 @@ export default async function DashboardLayout({
 
       {/* Mobile bottom nav */}
       <BottomNav />
-
-      {/* Activity tracking - invisible, tracks page views + session duration */}
-      <ActivityTracker />
     </div>
   );
 }
