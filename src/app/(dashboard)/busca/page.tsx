@@ -7,7 +7,8 @@ import { Script } from '@/types/database';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Star, Copy, Check } from 'lucide-react';
+import { Search, Star, Copy, Check, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 export default function BuscaPage() {
   const [query, setQuery] = useState('');
@@ -47,7 +48,7 @@ export default function BuscaPage() {
         <Input
           value={query}
           onChange={(e) => handleQueryChange(e.target.value)}
-          placeholder="Busque por título, conteúdo ou situação..."
+          placeholder="O que voce precisa? Ex: 'cliente disse que esta caro'"
           className="pl-10 bg-[#0A0F1E] border-[#131B35] text-white h-12 text-lg"
           type="search"
           inputMode="search"
@@ -56,6 +57,27 @@ export default function BuscaPage() {
           role="searchbox"
         />
       </div>
+
+      {!debouncedQuery && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {[
+            'Cliente disse que esta caro',
+            'Follow-up pos proposta',
+            'Reativar lead frio',
+            'Quebrar objecao de tempo',
+            'Primeiro contato',
+            'Pedir indicacao',
+          ].map((suggestion) => (
+            <button
+              key={suggestion}
+              onClick={() => handleQueryChange(suggestion)}
+              className="px-3 py-1.5 text-sm rounded-full bg-[#131B35] text-[#94A3B8] border border-[#1E2A52] hover:bg-[#1D4ED8] hover:text-white transition-colors"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      )}
 
       {loading && (
         <div className="space-y-3" aria-label="Carregando resultados">
@@ -68,7 +90,14 @@ export default function BuscaPage() {
       {!loading && debouncedQuery.length >= 2 && results.length === 0 && (
         <div className="text-center py-12" role="status">
           <Search className="w-12 h-12 mx-auto text-gray-600 mb-4" />
-          <p className="text-gray-400">Nenhum script encontrado para &quot;{debouncedQuery}&quot;</p>
+          <p className="text-gray-400 mb-4">Nenhum script encontrado para &quot;{debouncedQuery}&quot;</p>
+          <Link
+            href={`/personalizados?situacao=${encodeURIComponent(query)}`}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1D4ED8] hover:bg-[#1E40AF] text-white font-medium transition-colors"
+          >
+            <Sparkles className="w-4 h-4" />
+            Gerar Script Personalizado
+          </Link>
         </div>
       )}
 

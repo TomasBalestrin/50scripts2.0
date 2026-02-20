@@ -14,7 +14,8 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Role } from "@/types/database";
+import { useModuleToggles } from "@/hooks/use-module-toggles";
+import type { Role, ModuleToggles } from "@/types/database";
 
 interface SidebarProps {
   role?: Role;
@@ -26,6 +27,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  moduleKey: keyof ModuleToggles;
 }
 
 const navItems: NavItem[] = [
@@ -33,21 +35,25 @@ const navItems: NavItem[] = [
     label: "Gestao",
     href: "/",
     icon: LayoutDashboard,
+    moduleKey: "gestao",
   },
   {
     label: "Scripts",
     href: "/trilhas",
     icon: Route,
+    moduleKey: "scripts",
   },
   {
     label: "Personalizados",
     href: "/personalizados",
     icon: Sparkles,
+    moduleKey: "personalizados",
   },
   {
     label: "Buscar",
     href: "/busca",
     icon: Search,
+    moduleKey: "buscar",
   },
 ];
 
@@ -55,11 +61,15 @@ function SidebarNav({
   role,
   pathname,
   onNavigate,
+  toggles,
 }: {
   role?: Role;
   pathname: string;
   onNavigate?: () => void;
+  toggles: ModuleToggles;
 }) {
+  const filteredNavItems = navItems.filter((item) => toggles[item.moduleKey]);
+
   return (
     <>
       {/* Logo */}
@@ -79,7 +89,7 @@ function SidebarNav({
 
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4 scrollbar-thin">
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const isActive =
             (item.href === "/" && pathname === "/") ||
             (item.href !== "/" &&
@@ -147,12 +157,14 @@ function SidebarNav({
 /** Desktop sidebar — hidden on mobile */
 export function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
+  const { toggles } = useModuleToggles();
 
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-[#131B35]/50 bg-[#0A0F1E] lg:flex">
       <SidebarNav
         role={role}
         pathname={pathname}
+        toggles={toggles}
       />
     </aside>
   );
@@ -164,6 +176,7 @@ export function MobileSidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { toggles } = useModuleToggles();
 
   return (
     <>
@@ -206,6 +219,7 @@ export function MobileSidebar({
           role={role}
           pathname={pathname}
           onNavigate={() => setOpen(false)}
+          toggles={toggles}
         />
       </aside>
     </>
