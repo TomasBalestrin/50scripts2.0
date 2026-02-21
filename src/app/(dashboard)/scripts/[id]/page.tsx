@@ -290,7 +290,7 @@ export default function ScriptDetailPage() {
         ...(editingSale ? { id: editingSale.id } : {}),
         product_name: saleForm.product_name,
         sale_date: saleForm.sale_date,
-        sale_value: parseFloat(saleForm.sale_value),
+        sale_value: parseFloat(saleForm.sale_value.replace(',', '.')),
       };
 
       const res = await fetch(`/api/scripts/${scriptId}/sale`, {
@@ -328,7 +328,7 @@ export default function ScriptDetailPage() {
       });
 
       if (res.ok) {
-        toast('Venda excluida', 'success');
+        toast('Venda excluída', 'success');
         fetchSales();
       } else {
         toast('Erro ao excluir venda', 'error');
@@ -348,13 +348,13 @@ export default function ScriptDetailPage() {
         body: JSON.stringify({
           effectiveness_rating: rating,
           resulted_in_sale: resultedInSale,
-          sale_value: resultedInSale && saleValueRating ? parseFloat(saleValueRating) : null,
+          sale_value: resultedInSale && saleValueRating ? parseFloat(saleValueRating.replace(',', '.')) : null,
           feedback_note: feedbackNote || null,
         }),
       });
 
       if (res.ok) {
-        toast('Avaliacao enviada!', 'success');
+        toast('Avaliação enviada!', 'success');
         setRateExpanded(false);
         setRating(0);
         setResultedInSale(false);
@@ -452,7 +452,7 @@ export default function ScriptDetailPage() {
 
           {/* Script Content */}
           <div className="rounded-xl border border-[#131B35] bg-[#0A0F1E] p-6">
-            <p className="whitespace-pre-wrap text-base leading-relaxed text-white/90">
+            <p className="whitespace-pre-wrap break-words text-base leading-relaxed text-white/90">
               {highlightVariables(activeContent)}
             </p>
           </div>
@@ -640,7 +640,7 @@ export default function ScriptDetailPage() {
                               : 'bg-[#131B35] text-[#94A3B8] hover:text-white'
                           }`}
                         >
-                          Nao
+                          Não
                         </button>
                       </div>
                     </div>
@@ -672,12 +672,12 @@ export default function ScriptDetailPage() {
                     {/* Feedback Note */}
                     <div>
                       <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
-                        Observacao (opcional)
+                        Observação (opcional)
                       </label>
                       <textarea
                         value={feedbackNote}
                         onChange={(e) => setFeedbackNote(e.target.value)}
-                        placeholder="Como foi a experiencia com este script?"
+                        placeholder="Como foi a experiência com este script?"
                         rows={3}
                         className="w-full resize-none rounded-lg border border-[#131B35] bg-[#020617] px-4 py-2.5 text-sm text-white placeholder-[#94A3B8]/50 outline-none transition-colors focus:border-[#1D4ED8]"
                       />

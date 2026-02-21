@@ -32,7 +32,7 @@ export default async function DashboardLayout({
     redirect('/login');
   }
 
-  const userName = profile?.full_name || user.email?.split('@')[0] || 'Usuario';
+  const userName = profile?.full_name || user.email?.split('@')[0] || 'Usuário';
   const role = profile?.role || 'user';
 
   return (

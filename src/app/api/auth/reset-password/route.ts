@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     // Always return success to avoid email enumeration attacks
     return NextResponse.json(
-      { success: true, message: 'Se o email existir em nossa base, voce recebera um link de redefinicao.' },
+      { success: true, message: 'Se o email existir em nossa base, você receberá um link de redefinição.' },
       { status: 200 }
     );
   } catch (error) {

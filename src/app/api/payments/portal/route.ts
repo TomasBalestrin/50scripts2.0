@@ -10,7 +10,7 @@ export async function POST() {
 
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Nao autorizado. Faca login para continuar.' },
+        { error: 'Não autorizado. Faça login para continuar.' },
         { status: 401 }
       );
     }
@@ -24,14 +24,14 @@ export async function POST() {
 
     if (profileError || !profile) {
       return NextResponse.json(
-        { error: 'Perfil nao encontrado.' },
+        { error: 'Perfil não encontrado.' },
         { status: 404 }
       );
     }
 
     if (!profile.stripe_customer_id) {
       return NextResponse.json(
-        { error: 'Voce nao possui uma assinatura ativa no Stripe. Nenhum portal disponivel.' },
+        { error: 'Você não possui uma assinatura ativa no Stripe. Nenhum portal disponível.' },
         { status: 400 }
       );
     }

@@ -150,7 +150,7 @@ export default function TrilhasPage() {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <p className="text-lg text-[#94A3B8]">Nenhuma trilha encontrada</p>
             <p className="mt-1 text-sm text-[#94A3B8]/70">
-              As trilhas serao adicionadas em breve.
+              As trilhas serão adicionadas em breve.
             </p>
           </div>
         )}
