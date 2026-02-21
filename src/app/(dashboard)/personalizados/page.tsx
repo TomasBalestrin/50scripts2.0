@@ -68,6 +68,7 @@ export default function PersonalizadosPage() {
 
   const loadingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const stepTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Pre-fill situation from URL params
   useEffect(() => {
@@ -115,6 +116,8 @@ export default function PersonalizadosPage() {
     setLoadingStep(0);
     setLoadingProgress(0);
 
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
     const startTime = Date.now();
 
     // Animate progress bar over 5 seconds
@@ -137,6 +140,7 @@ export default function PersonalizadosPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ situation: situation.trim(), details: details.trim() }),
+        signal: abortController.signal,
       });
 
       const data = await res.json();
@@ -161,13 +165,29 @@ export default function PersonalizadosPage() {
 
       // Refresh history
       fetchHistory();
-    } catch {
-      setError('Erro de conexão. Verifique sua internet e tente novamente.');
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        // User cancelled - don't show error
+      } else {
+        setError('Erro de conexão. Verifique sua internet e tente novamente.');
+      }
     } finally {
+      abortControllerRef.current = null;
       if (loadingTimerRef.current) clearInterval(loadingTimerRef.current);
       if (stepTimerRef.current) clearInterval(stepTimerRef.current);
       setGenerating(false);
     }
+  };
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    if (loadingTimerRef.current) clearInterval(loadingTimerRef.current);
+    if (stepTimerRef.current) clearInterval(stepTimerRef.current);
+    setGenerating(false);
+    setLoadingProgress(0);
+    setLoadingStep(0);
   };
 
   const handleCopy = async (text: string, id: string) => {
@@ -322,6 +342,14 @@ export default function PersonalizadosPage() {
                   style={{ width: `${loadingProgress}%` }}
                 />
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCancel}
+                className="mt-2 w-full border-red-500/30 bg-transparent text-red-400 hover:bg-red-500/10 hover:text-red-300"
+              >
+                Cancelar
+              </Button>
             </CardContent>
           </Card>
         )}

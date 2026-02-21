@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Nao autorizado. Faca login para continuar.' },
+        { error: 'Não autorizado. Faça login para continuar.' },
         { status: 401 }
       );
     }
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const priceId = PLAN_PRICES[plan];
     if (!priceId) {
       return NextResponse.json(
-        { error: 'Preco do plano nao configurado. Contate o suporte.' },
+        { error: 'Preço do plano não configurado. Contate o suporte.' },
         { status: 500 }
       );
     }

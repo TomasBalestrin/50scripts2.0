@@ -634,7 +634,7 @@ export default function AdminScriptsPage() {
                     objection_keywords: e.target.value,
                   }))
                 }
-                placeholder="caro, sem dinheiro, nao preciso"
+                placeholder="caro, sem dinheiro, não preciso"
                 className="mt-1 border-[#131B35] bg-[#131B35] text-white placeholder:text-gray-500"
               />
             </div>
@@ -788,7 +788,7 @@ export default function AdminScriptsPage() {
             <DialogTitle className="text-white">Confirmar Exclusao</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-gray-400">
-            Tem certeza que deseja excluir este script? Esta acao nao pode ser
+            Tem certeza que deseja excluir este script? Esta ação não pode ser
             desfeita.
           </p>
           <div className="mt-4 flex justify-end gap-3">

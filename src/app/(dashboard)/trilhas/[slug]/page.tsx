@@ -182,7 +182,7 @@ export default function TrailScriptsPage() {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <p className="text-lg text-[#94A3B8]">Nenhum script nesta trilha</p>
             <p className="mt-1 text-sm text-[#94A3B8]/70">
-              Scripts serao adicionados em breve.
+              Scripts serão adicionados em breve.
             </p>
           </div>
         )}

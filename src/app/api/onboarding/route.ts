@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     if (onboardingError) {
       console.error('Onboarding save error:', onboardingError);
       return NextResponse.json(
-        { error: 'Erro ao salvar dados do onboarding' },
+        { error: `Erro ao salvar dados do onboarding: ${onboardingError.message}` },
         { status: 500 }
       );
     }

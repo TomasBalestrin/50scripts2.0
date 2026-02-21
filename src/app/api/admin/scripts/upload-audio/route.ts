@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     ];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Tipo de arquivo nao permitido. Use MP3, WAV, OGG, M4A ou WebM.' },
+        { error: 'Tipo de arquivo não permitido. Use MP3, WAV, OGG, M4A ou WebM.' },
         { status: 400 }
       );
     }
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     if (scriptError || !script) {
       return NextResponse.json(
-        { error: 'Script nao encontrado' },
+        { error: 'Script não encontrado' },
         { status: 404 }
       );
     }

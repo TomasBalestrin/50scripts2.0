@@ -754,7 +754,7 @@ export default function AdminExperimentsPage() {
                       <Users className="h-8 w-8" />
                       <p className="text-sm">Nenhuma atribuicao ainda</p>
                       <p className="text-xs">
-                        Os usuarios serao atribuidos automaticamente ao acessar o sistema
+                        Os usuários serão atribuídos automaticamente ao acessar o sistema
                       </p>
                     </div>
                   )}
@@ -841,11 +841,11 @@ export default function AdminExperimentsPage() {
           <div className="mt-4 space-y-4">
             <p className="text-sm text-gray-300">
               Tem certeza que deseja remover todas as atribuicoes deste
-              experimento? Todos os usuarios serao reatribuidos
+              experimento? Todos os usuários serão reatribuídos
               automaticamente na proxima visita.
             </p>
             <p className="text-xs text-gray-500">
-              Esta acao nao pode ser desfeita.
+              Esta ação não pode ser desfeita.
             </p>
             <div className="flex gap-2">
               <Button
