@@ -2,6 +2,7 @@ export type Plan = 'starter' | 'pro' | 'premium' | 'copilot';
 export type Role = 'user' | 'admin';
 export type Tone = 'formal' | 'casual' | 'direct';
 export type Level = 'iniciante' | 'vendedor' | 'closer' | 'topseller' | 'elite';
+export type NewLevel = 'iniciante' | 'aprendiz' | 'executor' | 'estrategista' | 'especialista' | 'referencia' | 'lenda';
 export type LeadStage = 'novo' | 'abordado' | 'qualificado' | 'proposta' | 'fechado' | 'perdido';
 export type AIPromptType = 'generation' | 'conversation' | 'analysis' | 'objection';
 export type AILogType = 'generation' | 'conversation' | 'analysis';
@@ -40,6 +41,13 @@ export interface Profile {
   last_login_at: string | null;
   created_at: string;
   updated_at: string;
+  // Script Go gamification fields
+  active_days: number;
+  new_level: NewLevel;
+  cyclic_xp: number;
+  bonus_scripts: number;
+  streak_reward_pending: boolean;
+  last_active_date: string | null;
 }
 
 export interface ScriptCategory {
@@ -220,4 +228,60 @@ export interface SalesAgenda {
   suggested_script_id: string | null;
   completed: boolean;
   created_at: string;
+}
+
+// ============================================================
+// Script Go - New Types
+// ============================================================
+
+export interface UserOnboarding {
+  id: string;
+  user_id: string;
+  full_name: string;
+  phone: string | null;
+  email: string | null;
+  instagram: string | null;
+  company_name: string | null;
+  business_type: string;
+  business_type_custom: string | null;
+  role_in_business: string | null;
+  average_ticket: string | null;
+  target_audience: string | null;
+  main_objections: string | null;
+  main_challenges: string[];
+  main_challenges_custom: string | null;
+  has_partner: boolean;
+  time_knowing_cleiton: string | null;
+  faturamento_mensal: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ScriptSale {
+  id: string;
+  user_id: string;
+  script_id: string;
+  product_name: string;
+  sale_date: string;
+  sale_value: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PersonalizedScript {
+  id: string;
+  user_id: string;
+  situation: string;
+  description: string;
+  generated_content: string;
+  model_used: string | null;
+  tokens_used: number;
+  created_at: string;
+}
+
+export interface ModuleToggles {
+  gestao: boolean;
+  scripts: boolean;
+  personalizados: boolean;
+  buscar: boolean;
 }

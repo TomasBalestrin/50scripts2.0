@@ -48,7 +48,7 @@ export async function GET() {
       events: ['PURCHASE_APPROVED', 'PURCHASE_COMPLETE', 'PURCHASE_CANCELED', 'PURCHASE_REFUNDED', 'PURCHASE_CHARGEBACK', 'SUBSCRIPTION_CANCELLATION'],
       description: 'Recebe eventos de compra, cancelamento e reembolso da Hotmart',
       products: {
-        starter: { label: '50 Scripts (Acesso Base)', envVar: 'HOTMART_PRODUCT_STARTER', configured: !!effectiveConfigs.hotmart.products.starter },
+        starter: { label: 'Script Go (Acesso Base)', envVar: 'HOTMART_PRODUCT_STARTER', configured: !!effectiveConfigs.hotmart.products.starter },
         pro: { label: 'Plus (R$19,90)', envVar: 'HOTMART_PRODUCT_PRO', configured: !!effectiveConfigs.hotmart.products.pro },
         premium: { label: 'Pro (R$39,90)', envVar: 'HOTMART_PRODUCT_PREMIUM', configured: !!effectiveConfigs.hotmart.products.premium },
         copilot: { label: 'Premium (R$99,90)', envVar: 'HOTMART_PRODUCT_COPILOT', configured: !!effectiveConfigs.hotmart.products.copilot },
@@ -70,7 +70,7 @@ export async function GET() {
       events: ['order_paid', 'order_refunded', 'subscription_canceled', 'chargeback'],
       description: 'Recebe eventos de compra, cancelamento e reembolso da Kiwify',
       products: {
-        starter: { label: '50 Scripts (Acesso Base)', envVar: 'KIWIFY_PRODUCT_STARTER', configured: !!effectiveConfigs.kiwify.products.starter },
+        starter: { label: 'Script Go (Acesso Base)', envVar: 'KIWIFY_PRODUCT_STARTER', configured: !!effectiveConfigs.kiwify.products.starter },
         pro: { label: 'Plus (R$19,90)', envVar: 'KIWIFY_PRODUCT_PRO', configured: !!effectiveConfigs.kiwify.products.pro },
         premium: { label: 'Pro (R$39,90)', envVar: 'KIWIFY_PRODUCT_PREMIUM', configured: !!effectiveConfigs.kiwify.products.premium },
         copilot: { label: 'Premium (R$99,90)', envVar: 'KIWIFY_PRODUCT_COPILOT', configured: !!effectiveConfigs.kiwify.products.copilot },
@@ -92,7 +92,7 @@ export async function GET() {
       events: ['PAYMENT_APPROVED', 'PAYMENT_REFUNDED', 'PAYMENT_CHARGEBACK', 'SUBSCRIPTION_CANCELED'],
       description: 'Recebe eventos de compra, cancelamento e reembolso da PagTrust',
       products: {
-        starter: { label: '50 Scripts (Acesso Base)', envVar: 'PAGTRUST_PRODUCT_STARTER', configured: !!effectiveConfigs.pagtrust.products.starter },
+        starter: { label: 'Script Go (Acesso Base)', envVar: 'PAGTRUST_PRODUCT_STARTER', configured: !!effectiveConfigs.pagtrust.products.starter },
         pro: { label: 'Plus (R$19,90)', envVar: 'PAGTRUST_PRODUCT_PRO', configured: !!effectiveConfigs.pagtrust.products.pro },
         premium: { label: 'Pro (R$39,90)', envVar: 'PAGTRUST_PRODUCT_PREMIUM', configured: !!effectiveConfigs.pagtrust.products.premium },
         copilot: { label: 'Premium (R$99,90)', envVar: 'PAGTRUST_PRODUCT_COPILOT', configured: !!effectiveConfigs.pagtrust.products.copilot },

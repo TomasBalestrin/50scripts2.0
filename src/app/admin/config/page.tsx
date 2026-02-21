@@ -17,6 +17,7 @@ import {
   ExternalLink,
   AlertCircle,
   CircleDot,
+  Blocks,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
+import type { ModuleToggles } from '@/types/database';
 
 interface AppConfig {
   webhook_secret: string;
@@ -128,6 +130,12 @@ export default function AdminConfigPage() {
     pagtrust: { token: '', products: { starter: '', pro: '', premium: '', copilot: '' } },
   });
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
+  const [moduleToggles, setModuleToggles] = useState<ModuleToggles>({
+    gestao: true,
+    scripts: true,
+    personalizados: true,
+    buscar: true,
+  });
 
   const supabase = createClient();
 
@@ -146,6 +154,7 @@ export default function AdminConfigPage() {
           'platform_hotmart',
           'platform_kiwify',
           'platform_pagtrust',
+          'module_toggles',
         ]);
 
       if (data && data.length > 0) {
@@ -191,6 +200,17 @@ export default function AdminConfigPage() {
           }
         }
         setPlatformConfigs(platforms);
+
+        // Load module toggles
+        if (configMap.module_toggles) {
+          const mt = configMap.module_toggles as ModuleToggles;
+          setModuleToggles({
+            gestao: mt.gestao ?? true,
+            scripts: mt.scripts ?? true,
+            personalizados: mt.personalizados ?? true,
+            buscar: mt.buscar ?? true,
+          });
+        }
       }
     } catch (err) {
       console.error('Erro ao carregar configurações:', err);
@@ -229,6 +249,7 @@ export default function AdminConfigPage() {
         { key: 'default_password', value: { value: config.default_password } },
         { key: 'feature_flags', value: config.feature_flags },
         { key: 'referral_rewards', value: config.referral_rewards },
+        { key: 'module_toggles', value: moduleToggles },
       ];
 
       // Save platform configs
@@ -765,6 +786,68 @@ export default function AdminConfigPage() {
                 }))
               }
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Module Toggles */}
+      <Card className="border-[#131B35] bg-[#0A0F1E]">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base text-white">
+            <Blocks className="h-5 w-5 text-[#1D4ED8]" />
+            Modulos
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-lg border border-[#131B35] bg-[#131B35]/50 p-4">
+              <div>
+                <p className="text-sm font-medium text-white">Gestão</p>
+                <p className="text-xs text-gray-500">Dashboard de gestão e métricas</p>
+              </div>
+              <Switch
+                checked={moduleToggles.gestao}
+                onCheckedChange={(checked) =>
+                  setModuleToggles((prev) => ({ ...prev, gestao: checked }))
+                }
+              />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-[#131B35] bg-[#131B35]/50 p-4">
+              <div>
+                <p className="text-sm font-medium text-white">Scripts</p>
+                <p className="text-xs text-gray-500">Trilhas e biblioteca de scripts</p>
+              </div>
+              <Switch
+                checked={moduleToggles.scripts}
+                onCheckedChange={(checked) =>
+                  setModuleToggles((prev) => ({ ...prev, scripts: checked }))
+                }
+              />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-[#131B35] bg-[#131B35]/50 p-4">
+              <div>
+                <p className="text-sm font-medium text-white">Personalizados</p>
+                <p className="text-xs text-gray-500">Scripts personalizados com IA</p>
+              </div>
+              <Switch
+                checked={moduleToggles.personalizados}
+                onCheckedChange={(checked) =>
+                  setModuleToggles((prev) => ({ ...prev, personalizados: checked }))
+                }
+              />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-[#131B35] bg-[#131B35]/50 p-4">
+              <div>
+                <p className="text-sm font-medium text-white">Buscar</p>
+                <p className="text-xs text-gray-500">Busca de scripts por palavra-chave</p>
+              </div>
+              <Switch
+                checked={moduleToggles.buscar}
+                onCheckedChange={(checked) =>
+                  setModuleToggles((prev) => ({ ...prev, buscar: checked }))
+                }
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

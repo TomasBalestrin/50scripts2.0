@@ -5,7 +5,7 @@ import { SWRProvider } from "@/components/providers/swr-provider";
 import { PWAProvider } from "@/components/providers/pwa-provider";
 
 export const metadata: Metadata = {
-  title: "50 Scripts",
+  title: "Script Go",
   description: "Sistema Inteligente de Scripts Persuasivos para WhatsApp",
   manifest: "/manifest.json",
   icons: {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "50 Scripts",
+    title: "Script Go",
   },
 };
 

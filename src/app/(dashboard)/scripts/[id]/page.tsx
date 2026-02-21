@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -12,11 +12,22 @@ import {
   MessageSquare,
   Clock,
   Tag,
+  DollarSign,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
-import { Script, Tone } from '@/types/database';
+import { Script, ScriptSale, Tone } from '@/types/database';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { StarRating } from '@/components/scripts/star-rating';
+import { SCRIPT_COPY_COOLDOWN_MS } from '@/lib/constants';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { XpToast } from '@/components/gamification/xp-toast';
 
 const TONE_LABELS: Record<string, string> = {
   casual: 'Casual',
@@ -39,6 +50,13 @@ function highlightVariables(text: string): React.ReactNode[] {
     }
     return <span key={i}>{part}</span>;
   });
+}
+
+function formatCooldownTime(ms: number): string {
+  const totalSeconds = Math.ceil(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 function SkeletonDetail() {
@@ -78,14 +96,84 @@ export default function ScriptDetailPage() {
   const [activeTone, setActiveTone] = useState<'casual' | 'formal' | 'direct'>('casual');
   const [copied, setCopied] = useState(false);
 
+  // Cooldown state
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const cooldownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Sales state
+  const [sales, setSales] = useState<ScriptSale[]>([]);
+  const [salesLoading, setSalesLoading] = useState(false);
+  const [saleDialogOpen, setSaleDialogOpen] = useState(false);
+  const [editingSale, setEditingSale] = useState<ScriptSale | null>(null);
+  const [saleForm, setSaleForm] = useState({
+    product_name: '',
+    sale_date: new Date().toISOString().split('T')[0],
+    sale_value: '',
+  });
+  const [submittingSale, setSubmittingSale] = useState(false);
+
+  // XP toast trigger
+  const [xpTrigger, setXpTrigger] = useState(0);
+  const [xpAmount, setXpAmount] = useState(5);
+
   // Rating state
   const [rateExpanded, setRateExpanded] = useState(false);
   const [rating, setRating] = useState(0);
   const [resultedInSale, setResultedInSale] = useState(false);
-  const [saleValue, setSaleValue] = useState('');
+  const [saleValueRating, setSaleValueRating] = useState('');
   const [feedbackNote, setFeedbackNote] = useState('');
   const [submittingRating, setSubmittingRating] = useState(false);
 
+  // Initialize cooldown from localStorage
+  useEffect(() => {
+    if (!scriptId) return;
+    const key = `cooldown_script_${scriptId}`;
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      const endTime = parseInt(stored, 10);
+      const remaining = endTime - Date.now();
+      if (remaining > 0) {
+        setCooldownRemaining(remaining);
+      } else {
+        localStorage.removeItem(key);
+      }
+    }
+  }, [scriptId]);
+
+  // Cooldown timer interval
+  useEffect(() => {
+    if (cooldownRemaining <= 0) {
+      if (cooldownIntervalRef.current) {
+        clearInterval(cooldownIntervalRef.current);
+        cooldownIntervalRef.current = null;
+      }
+      return;
+    }
+
+    cooldownIntervalRef.current = setInterval(() => {
+      setCooldownRemaining((prev) => {
+        const key = `cooldown_script_${scriptId}`;
+        const stored = localStorage.getItem(key);
+        if (!stored) return 0;
+        const endTime = parseInt(stored, 10);
+        const remaining = endTime - Date.now();
+        if (remaining <= 0) {
+          localStorage.removeItem(key);
+          return 0;
+        }
+        return remaining;
+      });
+    }, 1000);
+
+    return () => {
+      if (cooldownIntervalRef.current) {
+        clearInterval(cooldownIntervalRef.current);
+        cooldownIntervalRef.current = null;
+      }
+    };
+  }, [cooldownRemaining > 0, scriptId]);
+
+  // Fetch script
   useEffect(() => {
     async function fetchScript() {
       try {
@@ -106,6 +194,29 @@ export default function ScriptDetailPage() {
     }
   }, [scriptId]);
 
+  // Fetch sales
+  const fetchSales = useCallback(async () => {
+    if (!scriptId) return;
+    setSalesLoading(true);
+    try {
+      const res = await fetch(`/api/scripts/${scriptId}/sale`);
+      if (res.ok) {
+        const data = await res.json();
+        setSales(data.sales ?? []);
+      }
+    } catch (err) {
+      console.error('Error fetching sales:', err);
+    } finally {
+      setSalesLoading(false);
+    }
+  }, [scriptId]);
+
+  useEffect(() => {
+    if (scriptId) {
+      fetchSales();
+    }
+  }, [scriptId, fetchSales]);
+
   const activeContent = useMemo(() => {
     if (!script) return '';
     switch (activeTone) {
@@ -118,20 +229,29 @@ export default function ScriptDetailPage() {
     }
   }, [script, activeTone]);
 
+  const isCooldownActive = cooldownRemaining > 0;
+
   const handleCopy = useCallback(async () => {
-    if (!script) return;
+    if (!script || isCooldownActive) return;
     try {
       await navigator.clipboard.writeText(activeContent);
       setCopied(true);
       toast('Copiado!', 'success');
 
-      // Register usage
+      // Start cooldown
+      const endTime = Date.now() + SCRIPT_COPY_COOLDOWN_MS;
+      localStorage.setItem(`cooldown_script_${scriptId}`, endTime.toString());
+      setCooldownRemaining(SCRIPT_COPY_COOLDOWN_MS);
+
+      // Register usage + award XP
       try {
         await fetch(`/api/scripts/${script.id}/use`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tone_used: activeTone }),
         });
+        setXpAmount(5);
+        setXpTrigger((t) => t + 1);
       } catch {
         // Non-blocking
       }
@@ -140,7 +260,83 @@ export default function ScriptDetailPage() {
     } catch {
       toast('Erro ao copiar', 'error');
     }
-  }, [script, activeContent, activeTone, toast]);
+  }, [script, activeContent, activeTone, toast, isCooldownActive, scriptId]);
+
+  // Sale form handlers
+  const openSaleDialog = useCallback((sale?: ScriptSale) => {
+    if (sale) {
+      setEditingSale(sale);
+      setSaleForm({
+        product_name: sale.product_name,
+        sale_date: sale.sale_date,
+        sale_value: sale.sale_value.toString(),
+      });
+    } else {
+      setEditingSale(null);
+      setSaleForm({
+        product_name: '',
+        sale_date: new Date().toISOString().split('T')[0],
+        sale_value: '',
+      });
+    }
+    setSaleDialogOpen(true);
+  }, []);
+
+  const handleSaleSubmit = useCallback(async () => {
+    if (!scriptId || !saleForm.product_name || !saleForm.sale_date || !saleForm.sale_value) return;
+    setSubmittingSale(true);
+    try {
+      const payload = {
+        ...(editingSale ? { id: editingSale.id } : {}),
+        product_name: saleForm.product_name,
+        sale_date: saleForm.sale_date,
+        sale_value: parseFloat(saleForm.sale_value),
+      };
+
+      const res = await fetch(`/api/scripts/${scriptId}/sale`, {
+        method: editingSale ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        toast(editingSale ? 'Venda atualizada!' : 'Venda registrada!', 'success');
+        setSaleDialogOpen(false);
+        setEditingSale(null);
+        fetchSales();
+        if (!editingSale) {
+          setXpAmount(5);
+          setXpTrigger((t) => t + 1);
+        }
+      } else {
+        toast('Erro ao salvar venda', 'error');
+      }
+    } catch {
+      toast('Erro ao salvar venda', 'error');
+    } finally {
+      setSubmittingSale(false);
+    }
+  }, [scriptId, saleForm, editingSale, toast, fetchSales]);
+
+  const handleDeleteSale = useCallback(async (saleId: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta venda?')) return;
+    try {
+      const res = await fetch(`/api/scripts/${scriptId}/sale`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: saleId }),
+      });
+
+      if (res.ok) {
+        toast('Venda excluida', 'success');
+        fetchSales();
+      } else {
+        toast('Erro ao excluir venda', 'error');
+      }
+    } catch {
+      toast('Erro ao excluir venda', 'error');
+    }
+  }, [scriptId, toast, fetchSales]);
 
   const handleSubmitRating = useCallback(async () => {
     if (!script || rating === 0) return;
@@ -152,7 +348,7 @@ export default function ScriptDetailPage() {
         body: JSON.stringify({
           effectiveness_rating: rating,
           resulted_in_sale: resultedInSale,
-          sale_value: resultedInSale && saleValue ? parseFloat(saleValue) : null,
+          sale_value: resultedInSale && saleValueRating ? parseFloat(saleValueRating) : null,
           feedback_note: feedbackNote || null,
         }),
       });
@@ -162,17 +358,17 @@ export default function ScriptDetailPage() {
         setRateExpanded(false);
         setRating(0);
         setResultedInSale(false);
-        setSaleValue('');
+        setSaleValueRating('');
         setFeedbackNote('');
       } else {
-        toast('Erro ao enviar avaliacao', 'error');
+        toast('Erro ao enviar avaliação', 'error');
       }
     } catch {
-      toast('Erro ao enviar avaliacao', 'error');
+      toast('Erro ao enviar avaliação', 'error');
     } finally {
       setSubmittingRating(false);
     }
-  }, [script, rating, resultedInSale, saleValue, feedbackNote, toast]);
+  }, [script, rating, resultedInSale, saleValueRating, feedbackNote, toast]);
 
   if (loading) {
     return <SkeletonDetail />;
@@ -190,7 +386,7 @@ export default function ScriptDetailPage() {
             Voltar
           </button>
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-lg text-[#94A3B8]">Script nao encontrado</p>
+            <p className="text-lg text-[#94A3B8]">Script não encontrado</p>
           </div>
         </div>
       </div>
@@ -261,15 +457,25 @@ export default function ScriptDetailPage() {
             </p>
           </div>
 
-          {/* Copy Button */}
+          {/* Copy Button with Cooldown */}
           <button
             onClick={handleCopy}
-            className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#1D4ED8] py-4 text-base font-bold text-white transition-colors hover:bg-[#1D4ED8]/90 active:scale-[0.98]"
+            disabled={isCooldownActive}
+            className={`flex w-full items-center justify-center gap-3 rounded-xl py-4 text-base font-bold text-white transition-colors active:scale-[0.98] ${
+              isCooldownActive
+                ? 'bg-[#1D4ED8]/50 cursor-not-allowed'
+                : 'bg-[#1D4ED8] hover:bg-[#1D4ED8]/90'
+            }`}
           >
             {copied ? (
               <>
                 <Check className="h-5 w-5" />
                 Copiado!
+              </>
+            ) : isCooldownActive ? (
+              <>
+                <Clock className="h-5 w-5" />
+                Copiar ({formatCooldownTime(cooldownRemaining)})
               </>
             ) : (
               <>
@@ -278,6 +484,66 @@ export default function ScriptDetailPage() {
               </>
             )}
           </button>
+
+          {/* Gerou Venda Button */}
+          <button
+            onClick={() => openSaleDialog()}
+            className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#10B981] py-4 text-base font-bold text-white transition-colors hover:bg-[#10B981]/90 active:scale-[0.98]"
+          >
+            <DollarSign className="h-5 w-5" />
+            Gerou Venda
+          </button>
+
+          {/* Sales List */}
+          {salesLoading ? (
+            <div className="space-y-3 animate-pulse">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-20 rounded-xl bg-[#0A0F1E]" />
+              ))}
+            </div>
+          ) : sales.length > 0 ? (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-[#94A3B8]">
+                Vendas registradas ({sales.length})
+              </h3>
+              {sales.map((sale) => (
+                <div
+                  key={sale.id}
+                  className="flex items-center justify-between rounded-xl border border-[#131B35] bg-[#0A0F1E] p-4"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-white">
+                      {sale.product_name}
+                    </p>
+                    <div className="mt-1 flex items-center gap-3 text-xs text-[#94A3B8]">
+                      <span>
+                        {new Date(sale.sale_date + 'T12:00:00').toLocaleDateString('pt-BR')}
+                      </span>
+                      <span className="font-semibold text-[#10B981]">
+                        R$ {Number(sale.sale_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-3 flex items-center gap-2">
+                    <button
+                      onClick={() => openSaleDialog(sale)}
+                      className="rounded-lg p-2 text-[#94A3B8] transition-colors hover:bg-[#131B35] hover:text-white"
+                      title="Editar venda"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteSale(sale.id)}
+                      className="rounded-lg p-2 text-[#94A3B8] transition-colors hover:bg-red-500/10 hover:text-red-400"
+                      title="Excluir venda"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
 
           {/* Context Card */}
           {script.context_description && (
@@ -366,7 +632,7 @@ export default function ScriptDetailPage() {
                         <button
                           onClick={() => {
                             setResultedInSale(false);
-                            setSaleValue('');
+                            setSaleValueRating('');
                           }}
                           className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                             !resultedInSale
@@ -394,8 +660,8 @@ export default function ScriptDetailPage() {
                           <input
                             type="number"
                             inputMode="decimal"
-                            value={saleValue}
-                            onChange={(e) => setSaleValue(e.target.value)}
+                            value={saleValueRating}
+                            onChange={(e) => setSaleValueRating(e.target.value)}
                             placeholder="0,00"
                             className="w-full rounded-lg border border-[#131B35] bg-[#020617] px-4 py-2.5 text-sm text-white placeholder-[#94A3B8]/50 outline-none transition-colors focus:border-[#1D4ED8]"
                           />
@@ -423,7 +689,7 @@ export default function ScriptDetailPage() {
                       disabled={rating === 0 || submittingRating}
                       className="w-full rounded-lg bg-[#3B82F6] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#3B82F6]/90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {submittingRating ? 'Enviando...' : 'Enviar avaliacao'}
+                      {submittingRating ? 'Enviando...' : 'Enviar avaliação'}
                     </button>
                   </div>
                 </motion.div>
@@ -432,6 +698,79 @@ export default function ScriptDetailPage() {
           </div>
         </motion.div>
       </div>
+
+      {/* Sale Dialog */}
+      <Dialog open={saleDialogOpen} onOpenChange={setSaleDialogOpen}>
+        <DialogContent className="border-[#131B35] bg-[#0A0F1E]">
+          <DialogHeader>
+            <DialogTitle className="text-white">
+              {editingSale ? 'Editar Venda' : 'Registrar Venda'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 space-y-4">
+            <div>
+              <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
+                O que foi vendido
+              </label>
+              <input
+                type="text"
+                value={saleForm.product_name}
+                onChange={(e) =>
+                  setSaleForm((prev) => ({ ...prev, product_name: e.target.value }))
+                }
+                placeholder="Ex: Consultoria, Produto X..."
+                className="w-full rounded-lg border border-[#131B35] bg-[#020617] px-4 py-2.5 text-sm text-white placeholder-[#94A3B8]/50 outline-none transition-colors focus:border-[#1D4ED8]"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
+                Data da venda
+              </label>
+              <input
+                type="date"
+                value={saleForm.sale_date}
+                onChange={(e) =>
+                  setSaleForm((prev) => ({ ...prev, sale_date: e.target.value }))
+                }
+                className="w-full rounded-lg border border-[#131B35] bg-[#020617] px-4 py-2.5 text-sm text-white placeholder-[#94A3B8]/50 outline-none transition-colors focus:border-[#1D4ED8] [color-scheme:dark]"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
+                Valor da venda (R$)
+              </label>
+              <input
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0"
+                value={saleForm.sale_value}
+                onChange={(e) =>
+                  setSaleForm((prev) => ({ ...prev, sale_value: e.target.value }))
+                }
+                placeholder="0,00"
+                className="w-full rounded-lg border border-[#131B35] bg-[#020617] px-4 py-2.5 text-sm text-white placeholder-[#94A3B8]/50 outline-none transition-colors focus:border-[#1D4ED8]"
+              />
+            </div>
+            <button
+              onClick={handleSaleSubmit}
+              disabled={
+                submittingSale ||
+                !saleForm.product_name ||
+                !saleForm.sale_date ||
+                !saleForm.sale_value
+              }
+              className="w-full rounded-lg bg-[#10B981] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#10B981]/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {submittingSale
+                ? 'Salvando...'
+                : editingSale
+                ? 'Atualizar Venda'
+                : 'Registrar Venda'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Toast container – offset above bottom nav on mobile */}
       <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-2 lg:bottom-6 lg:right-6">
@@ -456,6 +795,8 @@ export default function ScriptDetailPage() {
           ))}
         </AnimatePresence>
       </div>
+
+      <XpToast amount={xpAmount} trigger={xpTrigger} />
     </div>
   );
 }

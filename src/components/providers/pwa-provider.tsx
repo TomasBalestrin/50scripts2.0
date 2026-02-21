@@ -149,7 +149,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
             className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-center gap-2 bg-amber-600 px-4 py-2 text-sm font-medium text-white shadow-lg"
           >
             <WifiOff className="h-4 w-4" />
-            <span>Sem conexao - modo offline</span>
+            <span>Sem conexão - modo offline</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -198,7 +198,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
                 <Download className="h-5 w-5 text-[#3B82F6]" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white">Instalar 50 Scripts</p>
+                <p className="text-sm font-semibold text-white">Instalar Script Go</p>
                 <p className="text-xs text-[#94A3B8]">Acesse rapido direto da tela inicial</p>
               </div>
               <button

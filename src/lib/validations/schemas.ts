@@ -64,3 +64,40 @@ export type WebhookPlanUpgradeInput = z.infer<typeof webhookPlanUpgradeSchema>;
 export type ObjectionSearchInput = z.infer<typeof objectionSearchSchema>;
 export type AIGenerateInput = z.infer<typeof aiGenerateSchema>;
 export type AIConversationInput = z.infer<typeof aiConversationSchema>;
+
+// ============================================================
+// Script Go - New Schemas
+// ============================================================
+
+export const onboardingSchema = z.object({
+  full_name: z.string().min(2, 'Nome obrigatorio'),
+  phone: z.string().min(10, 'Telefone obrigatorio'),
+  email: z.string().email('Email invalido'),
+  instagram: z.string().optional(),
+  company_name: z.string().optional(),
+  business_type: z.string().min(1, 'Selecione seu tipo de negocio'),
+  business_type_custom: z.string().optional(),
+  role_in_business: z.string().optional(),
+  average_ticket: z.string().optional(),
+  target_audience: z.string().optional(),
+  main_objections: z.string().optional(),
+  main_challenges: z.array(z.string()).min(1, 'Selecione pelo menos um desafio'),
+  main_challenges_custom: z.string().optional(),
+  has_partner: z.boolean().default(false),
+  time_knowing_cleiton: z.string().optional(),
+});
+
+export const scriptSaleSchema = z.object({
+  product_name: z.string().min(1, 'Informe o que foi vendido').max(200),
+  sale_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data invalida'),
+  sale_value: z.number().positive('Valor deve ser positivo').max(10_000_000),
+});
+
+export const personalizedGenerateSchema = z.object({
+  situation: z.string().min(5, 'Descreva a situacao').max(1000),
+  description: z.string().max(2000).optional(),
+});
+
+export type OnboardingInput = z.infer<typeof onboardingSchema>;
+export type ScriptSaleInput = z.infer<typeof scriptSaleSchema>;
+export type PersonalizedGenerateInput = z.infer<typeof personalizedGenerateSchema>;

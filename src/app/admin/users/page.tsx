@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { OnboardingDetailModal } from '@/components/admin/onboarding-detail-modal';
 import type { Profile, Plan } from '@/types/database';
 
 const PLAN_COLORS: Record<string, string> = {
@@ -64,6 +65,9 @@ export default function AdminUsersPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteUser, setDeleteUser] = useState<Profile | null>(null);
   const [deleteError, setDeleteError] = useState('');
+
+  // Onboarding detail modal
+  const [onboardingUserId, setOnboardingUserId] = useState<string | null>(null);
 
   // Action toast
   const [actionToast, setActionToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -491,6 +495,15 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-gray-400 hover:text-[#3B82F6]"
+                            title="Ver Onboarding"
+                            onClick={() => setOnboardingUserId(user.id)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                           <Button
                             size="icon"
                             variant="ghost"
@@ -1009,6 +1022,15 @@ export default function AdminUsersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ===== Onboarding Detail Modal ===== */}
+      {onboardingUserId && (
+        <OnboardingDetailModal
+          userId={onboardingUserId}
+          isOpen={!!onboardingUserId}
+          onClose={() => setOnboardingUserId(null)}
+        />
+      )}
     </div>
   );
 }

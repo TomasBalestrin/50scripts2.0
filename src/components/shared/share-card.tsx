@@ -86,7 +86,7 @@ export function ShareCard({
               className="text-lg font-bold tracking-wider"
               style={{ color: '#1D4ED8' }}
             >
-              50 Scripts
+              Script Go
             </span>
           </div>
           <div
@@ -145,7 +145,7 @@ export function ShareCard({
                 }}
               >
                 <p className="mb-0.5 text-[10px] uppercase tracking-wider text-gray-400">
-                  Use meu codigo
+                  Use meu código
                 </p>
                 <p
                   className="text-lg font-bold tracking-widest"

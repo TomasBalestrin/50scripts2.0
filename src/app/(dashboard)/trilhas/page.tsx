@@ -74,7 +74,7 @@ export default function TrilhasPage() {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <p className="text-lg text-red-400">Erro ao carregar trilhas</p>
             <p className="mt-1 text-sm text-[#94A3B8]">
-              Tente recarregar a pagina ou volte em alguns instantes.
+              Tente recarregar a página ou volte em alguns instantes.
             </p>
             <button
               onClick={() => mutate()}

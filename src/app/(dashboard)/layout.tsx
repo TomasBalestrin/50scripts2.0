@@ -4,8 +4,6 @@ import { createClient } from '@/lib/supabase/server';
 import { Sidebar } from '@/components/shared/sidebar';
 import { BottomNav } from '@/components/shared/bottom-nav';
 import { Header } from '@/components/shared/header';
-import { LazyEmergencyFAB } from '@/components/emergency-fab/lazy-emergency-fab';
-import { ActivityTracker } from '@/components/activity/activity-tracker';
 
 // Cache auth+profile per request to avoid duplicate calls across components
 const getAuthProfile = cache(async () => {
@@ -16,7 +14,7 @@ const getAuthProfile = cache(async () => {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, plan, role')
+    .select('full_name, role')
     .eq('id', user.id)
     .single();
 
@@ -34,8 +32,7 @@ export default async function DashboardLayout({
     redirect('/login');
   }
 
-  const userName = profile?.full_name || user.email?.split('@')[0] || 'Usuário';
-  const plan = profile?.plan || 'starter';
+  const userName = profile?.full_name || user.email?.split('@')[0] || 'Usuario';
   const role = profile?.role || 'user';
 
   return (
@@ -46,11 +43,11 @@ export default async function DashboardLayout({
       </a>
 
       {/* Desktop sidebar */}
-      <Sidebar plan={plan} role={role} userName={userName} userAvatar={null} />
+      <Sidebar role={role} userName={userName} userAvatar={null} />
 
       {/* Main content area */}
       <div className="flex flex-col lg:pl-64">
-        <Header userName={userName} userAvatar={null} plan={plan} role={role} />
+        <Header userName={userName} userAvatar={null} role={role} />
         <main id="main-content" className="flex-1 pb-24 lg:pb-6" role="main">
           {children}
         </main>
@@ -58,12 +55,6 @@ export default async function DashboardLayout({
 
       {/* Mobile bottom nav */}
       <BottomNav />
-
-      {/* Emergency FAB - lazy loaded client component */}
-      <LazyEmergencyFAB />
-
-      {/* Activity tracking - invisible, tracks page views + session duration */}
-      <ActivityTracker />
     </div>
   );
 }

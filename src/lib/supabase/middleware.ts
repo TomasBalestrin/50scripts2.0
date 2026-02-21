@@ -41,19 +41,21 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Redirect logged-in users from /login to home
   if (user && pathname === '/login') {
     const url = request.nextUrl.clone();
-    url.pathname = '/trilhas';
+    url.pathname = '/';
     return NextResponse.redirect(url);
   }
 
   // Only check profile for page routes, not API calls
   const isApiRoute = pathname.startsWith('/api/');
+  const isOnboardingRoute = pathname.startsWith('/onboarding');
 
   if (user && !isApiRoute && pathname !== '/login') {
     const isAdminRoute = pathname.startsWith('/admin');
 
-    // Admin route protection - only query profile for admin routes
+    // Admin route protection
     if (isAdminRoute) {
       const { data: profile } = await supabase
         .from('profiles')
@@ -65,6 +67,36 @@ export async function updateSession(request: NextRequest) {
         const url = request.nextUrl.clone();
         url.pathname = '/';
         return NextResponse.redirect(url);
+      }
+    }
+
+    // Onboarding enforcement: redirect to /onboarding if not completed
+    // Skip if already on onboarding route or admin route
+    if (!isOnboardingRoute && !isAdminRoute) {
+      const onboardingDone = request.cookies.get('_onboarding_done');
+
+      if (!onboardingDone || onboardingDone.value !== user.id) {
+        // Check database for onboarding completion
+        const { data: onboarding } = await supabase
+          .from('user_onboarding')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (onboarding) {
+          // Onboarding exists, set cookie to avoid future queries
+          supabaseResponse.cookies.set('_onboarding_done', user.id, {
+            path: '/',
+            maxAge: 60 * 60 * 24 * 365, // 1 year
+            httpOnly: false,
+            sameSite: 'lax',
+          });
+        } else {
+          // No onboarding data — redirect to onboarding form
+          const url = request.nextUrl.clone();
+          url.pathname = '/onboarding';
+          return NextResponse.redirect(url);
+        }
       }
     }
   }

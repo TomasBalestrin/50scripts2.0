@@ -120,7 +120,7 @@ export default function TrailScriptsPage() {
             Voltar para Trilhas
           </button>
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-lg text-[#94A3B8]">Trilha nao encontrada</p>
+            <p className="text-lg text-[#94A3B8]">Trilha não encontrada</p>
           </div>
         </div>
       </div>

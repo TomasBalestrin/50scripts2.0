@@ -31,7 +31,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push('/trilhas');
+      router.push('/');
     } catch {
       setError('Erro inesperado. Tente novamente.');
     } finally {
@@ -48,14 +48,14 @@ export default function LoginPage() {
             <div className="flex flex-col items-center gap-3">
               <Image
                 src="/logo.png"
-                alt="50 Scripts"
+                alt="Script Go"
                 width={64}
                 height={64}
                 className="rounded-xl"
                 priority
               />
               <h1 className="text-2xl font-heading font-bold text-white">
-                50 Scripts
+                Script Go
               </h1>
             </div>
             <CardDescription className="text-[#94A3B8]">
