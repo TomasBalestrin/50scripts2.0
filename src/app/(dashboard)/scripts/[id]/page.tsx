@@ -7,9 +7,6 @@ import {
   ArrowLeft,
   Copy,
   Check,
-  ChevronDown,
-  ChevronUp,
-  MessageSquare,
   Clock,
   Tag,
   DollarSign,
@@ -116,13 +113,6 @@ export default function ScriptDetailPage() {
   const [xpTrigger, setXpTrigger] = useState(0);
   const [xpAmount, setXpAmount] = useState(5);
 
-  // Rating state
-  const [rateExpanded, setRateExpanded] = useState(false);
-  const [rating, setRating] = useState(0);
-  const [resultedInSale, setResultedInSale] = useState(false);
-  const [saleValueRating, setSaleValueRating] = useState('');
-  const [feedbackNote, setFeedbackNote] = useState('');
-  const [submittingRating, setSubmittingRating] = useState(false);
 
   // Initialize cooldown from localStorage
   useEffect(() => {
@@ -338,37 +328,6 @@ export default function ScriptDetailPage() {
     }
   }, [scriptId, toast, fetchSales]);
 
-  const handleSubmitRating = useCallback(async () => {
-    if (!script || rating === 0) return;
-    setSubmittingRating(true);
-    try {
-      const res = await fetch(`/api/scripts/${script.id}/rate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          effectiveness_rating: rating,
-          resulted_in_sale: resultedInSale,
-          sale_value: resultedInSale && saleValueRating ? parseFloat(saleValueRating.replace(',', '.')) : null,
-          feedback_note: feedbackNote || null,
-        }),
-      });
-
-      if (res.ok) {
-        toast('Avaliação enviada!', 'success');
-        setRateExpanded(false);
-        setRating(0);
-        setResultedInSale(false);
-        setSaleValueRating('');
-        setFeedbackNote('');
-      } else {
-        toast('Erro ao enviar avaliação', 'error');
-      }
-    } catch {
-      toast('Erro ao enviar avaliação', 'error');
-    } finally {
-      setSubmittingRating(false);
-    }
-  }, [script, rating, resultedInSale, saleValueRating, feedbackNote, toast]);
 
   if (loading) {
     return <SkeletonDetail />;
@@ -578,124 +537,6 @@ export default function ScriptDetailPage() {
             </div>
           )}
 
-          {/* Rate Section */}
-          <div className="rounded-xl border border-[#131B35] bg-[#0A0F1E] overflow-hidden">
-            <button
-              onClick={() => setRateExpanded(!rateExpanded)}
-              className="flex w-full items-center justify-between p-5 text-left"
-            >
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-[#1D4ED8]" />
-                <h3 className="text-sm font-semibold text-white">Avaliar este script</h3>
-              </div>
-              {rateExpanded ? (
-                <ChevronUp className="h-4 w-4 text-[#94A3B8]" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-[#94A3B8]" />
-              )}
-            </button>
-
-            <AnimatePresence>
-              {rateExpanded && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <div className="space-y-5 px-5 pb-5">
-                    {/* Star Rating */}
-                    <div>
-                      <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
-                        Efetividade
-                      </label>
-                      <StarRating value={rating} onChange={setRating} size={28} />
-                    </div>
-
-                    {/* Sale Toggle */}
-                    <div>
-                      <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
-                        Resultou em venda?
-                      </label>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setResultedInSale(true)}
-                          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                            resultedInSale
-                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                              : 'bg-[#131B35] text-[#94A3B8] hover:text-white'
-                          }`}
-                        >
-                          Sim
-                        </button>
-                        <button
-                          onClick={() => {
-                            setResultedInSale(false);
-                            setSaleValueRating('');
-                          }}
-                          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                            !resultedInSale
-                              ? 'bg-[#1D4ED8]/20 text-[#1D4ED8] border border-[#1D4ED8]/30'
-                              : 'bg-[#131B35] text-[#94A3B8] hover:text-white'
-                          }`}
-                        >
-                          Não
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Sale Value */}
-                    <AnimatePresence>
-                      {resultedInSale && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
-                            Valor da venda (R$)
-                          </label>
-                          <input
-                            type="number"
-                            inputMode="decimal"
-                            value={saleValueRating}
-                            onChange={(e) => setSaleValueRating(e.target.value)}
-                            placeholder="0,00"
-                            className="w-full rounded-lg border border-[#131B35] bg-[#020617] px-4 py-2.5 text-sm text-white placeholder-[#94A3B8]/50 outline-none transition-colors focus:border-[#1D4ED8]"
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    {/* Feedback Note */}
-                    <div>
-                      <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
-                        Observação (opcional)
-                      </label>
-                      <textarea
-                        value={feedbackNote}
-                        onChange={(e) => setFeedbackNote(e.target.value)}
-                        placeholder="Como foi a experiência com este script?"
-                        rows={3}
-                        className="w-full resize-none rounded-lg border border-[#131B35] bg-[#020617] px-4 py-2.5 text-sm text-white placeholder-[#94A3B8]/50 outline-none transition-colors focus:border-[#1D4ED8]"
-                      />
-                    </div>
-
-                    {/* Submit */}
-                    <button
-                      onClick={handleSubmitRating}
-                      disabled={rating === 0 || submittingRating}
-                      className="w-full rounded-lg bg-[#3B82F6] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#3B82F6]/90 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {submittingRating ? 'Enviando...' : 'Enviar avaliação'}
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
         </motion.div>
       </div>
 
