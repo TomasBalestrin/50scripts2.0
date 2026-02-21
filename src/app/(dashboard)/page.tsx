@@ -261,7 +261,7 @@ export default function DashboardPage() {
     );
   }
 
-  const userName = data.userName?.split(' ')[0] || 'Vendedor';
+  const userName = data.userName?.split(' ')[0] || 'Usuário';
   const greeting = getGreeting();
   const tipText = tipIndex !== null ? GESTAO_TIPS[tipIndex] : null;
 
