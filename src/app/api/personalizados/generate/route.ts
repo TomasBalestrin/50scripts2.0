@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
     if (onboarding.business_type) contextParts.push(`O vendedor trabalha com: ${onboarding.business_type}`);
     if (onboarding.company_name) contextParts.push(`Empresa: ${onboarding.company_name}`);
     if (onboarding.role_in_business) contextParts.push(`Função: ${onboarding.role_in_business}`);
+    if (onboarding.faturamento_mensal) contextParts.push(`Faturamento mensal: ${onboarding.faturamento_mensal}`);
     if (onboarding.average_ticket) contextParts.push(`Ticket médio: ${onboarding.average_ticket}`);
     if (onboarding.target_audience) contextParts.push(`Público-alvo: ${onboarding.target_audience}`);
     if (onboarding.main_objections) contextParts.push(`Principais objeções: ${onboarding.main_objections}`);
@@ -113,7 +114,7 @@ Máximo 300 palavras. Responda apenas com o script, sem explicações.`;
     .insert({
       user_id: user.id,
       situation: situation.trim(),
-      details: details.trim(),
+      description: details.trim(),
       generated_content: aiResult.content,
     });
 

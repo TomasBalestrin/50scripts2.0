@@ -14,7 +14,7 @@ export async function GET() {
     await Promise.all([
       supabase
         .from('personalized_scripts')
-        .select('id, situation, details, generated_content, created_at')
+        .select('id, situation, description, generated_content, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50),

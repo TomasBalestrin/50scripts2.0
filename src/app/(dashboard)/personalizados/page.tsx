@@ -16,7 +16,7 @@ import { XpToast } from '@/components/gamification/xp-toast';
 interface HistoryScript {
   id: string;
   situation: string;
-  details: string;
+  description: string;
   generated_content: string;
   created_at: string;
 }
@@ -425,10 +425,10 @@ export default function PersonalizadosPage() {
                             <p className="mb-1 text-xs font-medium text-[#94A3B8]/60">Situação</p>
                             <p className="text-sm text-[#94A3B8]">{script.situation}</p>
                           </div>
-                          {script.details && (
+                          {script.description && (
                             <div>
                               <p className="mb-1 text-xs font-medium text-[#94A3B8]/60">Detalhes</p>
-                              <p className="text-sm text-[#94A3B8]">{script.details}</p>
+                              <p className="text-sm text-[#94A3B8]">{script.description}</p>
                             </div>
                           )}
                           <div>
