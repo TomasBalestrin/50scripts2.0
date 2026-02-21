@@ -1,47 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-
-async function sendToGoogleSheets(data: Record<string, unknown>) {
-  const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
-  if (!webhookUrl) {
-    console.warn('GOOGLE_SHEETS_WEBHOOK_URL not configured, skipping sheets sync');
-    return;
-  }
-
-  try {
-    const now = new Date();
-    const timestamp = now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-
-    await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        timestamp,
-        full_name: data.full_name || '',
-        phone: data.phone || '',
-        email: data.email || '',
-        instagram: data.instagram || '',
-        company_name: data.company_name || '',
-        business_type: data.business_type || '',
-        business_type_custom: data.business_type_custom || '',
-        role_in_business: data.role_in_business || '',
-        faturamento_mensal: data.faturamento_mensal || '',
-        average_ticket: data.average_ticket || '',
-        target_audience: data.target_audience || '',
-        main_objections: data.main_objections || '',
-        main_challenges: Array.isArray(data.main_challenges)
-          ? (data.main_challenges as string[]).join(', ')
-          : '',
-        main_challenges_custom: data.main_challenges_custom || '',
-        has_partner: data.has_partner ? 'Sim' : 'Não',
-        time_knowing_cleiton: data.time_knowing_cleiton || '',
-      }),
-    });
-  } catch (err) {
-    // Fire-and-forget: don't block onboarding if Sheets fails
-    console.error('Google Sheets sync error:', err);
-  }
-}
+import { appendToSheet } from '@/lib/google-sheets';
 
 export async function POST(request: NextRequest) {
   try {
@@ -141,7 +100,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Send to Google Sheets (fire-and-forget)
-    sendToGoogleSheets(body);
+    const now = new Date();
+    const timestamp = now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    const challengesStr = Array.isArray(main_challenges) ? main_challenges.join(', ') : '';
+
+    appendToSheet([
+      timestamp,
+      full_name || '',
+      phone || '',
+      email || '',
+      instagram || '',
+      company_name || '',
+      business_type || '',
+      business_type_custom || '',
+      role_in_business || '',
+      faturamento_mensal || '',
+      average_ticket || '',
+      target_audience || '',
+      main_objections || '',
+      challengesStr,
+      main_challenges_custom || '',
+      has_partner ? 'Sim' : 'Não',
+      time_knowing_cleiton || '',
+    ]);
 
     return NextResponse.json({ success: true });
   } catch (err) {
