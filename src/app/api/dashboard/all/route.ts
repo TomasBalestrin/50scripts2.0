@@ -67,6 +67,17 @@ export async function GET() {
     const sales = salesRes.data ?? [];
     const personalizedCount = personalizedRes.count ?? 0;
 
+    // If profile has no full_name, try user_onboarding as fallback
+    let resolvedName = profile?.full_name || '';
+    if (!resolvedName) {
+      const { data: onboarding } = await supabase
+        .from('user_onboarding')
+        .select('full_name')
+        .eq('user_id', userId)
+        .single();
+      resolvedName = onboarding?.full_name || user.email?.split('@')[0] || '';
+    }
+
     // We need script -> category mapping for trail breakdown.
     // Collect all unique script IDs from usage + sales.
     const allScriptIds = new Set<string>();
@@ -136,7 +147,7 @@ export async function GET() {
     const salesTotal = sales.reduce((sum, s) => sum + (s.sale_value ?? 0), 0);
 
     const response = NextResponse.json({
-      userName: profile?.full_name || '',
+      userName: resolvedName,
       // Gamification
       activeDays: profile?.active_days ?? 0,
       level: profile?.new_level ?? 'iniciante',
