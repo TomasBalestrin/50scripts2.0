@@ -217,12 +217,31 @@ export const BUSINESS_ROLES = [
 ] as const;
 
 export const MAIN_CHALLENGES = [
-  'Atracao de clientes',
+  'Atração de clientes',
   'Vendas',
-  'Lideranca',
-  'Pensamento estrategico',
+  'Liderança',
+  'Pensamento estratégico',
   'Processo comercial',
   'Outro',
+] as const;
+
+export const FATURAMENTO_OPTIONS = [
+  'Até R$ 5.000',
+  'De R$ 5.000 até R$ 10.000',
+  'De R$ 10.000 até R$ 15.000',
+  'De R$ 15.000 até R$ 20.000',
+  'De R$ 20.000 até R$ 50.000',
+  'De R$ 50.000 até R$ 100.000',
+  'De R$ 100.000 até R$ 500.000',
+  'Acima de R$ 500.000',
+] as const;
+
+export const TIME_KNOWING_CLEITON_OPTIONS = [
+  'Entre 1 a 3 semanas',
+  'Entre 1 a 3 meses',
+  'Entre 3 a 6 meses',
+  'Entre 6 a 12 meses',
+  'Acima de 1 ano',
 ] as const;
 
 // ============================================================

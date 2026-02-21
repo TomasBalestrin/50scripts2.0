@@ -252,6 +252,7 @@ export interface UserOnboarding {
   main_challenges_custom: string | null;
   has_partner: boolean;
   time_knowing_cleiton: string | null;
+  faturamento_mensal: string | null;
   created_at: string;
   updated_at: string;
 }

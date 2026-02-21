@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS user_onboarding (
   main_challenges_custom TEXT,
   has_partner BOOLEAN DEFAULT FALSE,
   time_knowing_cleiton TEXT,
+  faturamento_mensal TEXT,
   -- Timestamps
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),

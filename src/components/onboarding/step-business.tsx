@@ -10,7 +10,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
-import { BUSINESS_TYPES, BUSINESS_ROLES } from '@/lib/constants';
+import { BUSINESS_TYPES, BUSINESS_ROLES, FATURAMENTO_OPTIONS } from '@/lib/constants';
 import type { OnboardingFormData } from '@/app/(onboarding)/onboarding/page';
 
 interface StepBusinessProps {
@@ -39,7 +39,7 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
       {/* Tipo de negócio */}
       <div className="space-y-2">
         <Label className="text-sm text-white">
-          Tipo de negócio <span className="text-red-400">*</span>
+          Qual é o seu negócio? <span className="text-red-400">*</span>
         </Label>
         <Select
           value={data.business_type}
@@ -77,7 +77,7 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
         )}
       </div>
 
-      {/* Funcao */}
+      {/* Função */}
       <div className="space-y-2">
         <Label className="text-sm text-white">Função no negócio</Label>
         <Select
@@ -101,6 +101,30 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
         </Select>
       </div>
 
+      {/* Faturamento mensal */}
+      <div className="space-y-2">
+        <Label className="text-sm text-white">Faturamento mensal</Label>
+        <Select
+          value={data.faturamento_mensal}
+          onValueChange={(value) => onChange({ faturamento_mensal: value })}
+        >
+          <SelectTrigger className="border-[#131B35] bg-[#131B35] text-white focus:border-[#1D4ED8] focus:ring-[#1D4ED8]">
+            <SelectValue placeholder="Selecione sua faixa de faturamento" />
+          </SelectTrigger>
+          <SelectContent className="border-[#131B35] bg-[#0A0F1E]">
+            {FATURAMENTO_OPTIONS.map((option) => (
+              <SelectItem
+                key={option}
+                value={option}
+                className="text-white hover:bg-[#131B35]"
+              >
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Ticket médio */}
       <div className="space-y-2">
         <Label htmlFor="average_ticket" className="text-sm text-white">
@@ -116,25 +140,25 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
         />
       </div>
 
-      {/* Publico-alvo */}
+      {/* Público-alvo */}
       <div className="space-y-2">
         <Label htmlFor="target_audience" className="text-sm text-white">
-          Publico-alvo
+          Público-alvo
         </Label>
         <Input
           id="target_audience"
           type="text"
-          placeholder="Quem e seu cliente ideal?"
+          placeholder="Quem é seu cliente ideal?"
           value={data.target_audience}
           onChange={(e) => onChange({ target_audience: e.target.value })}
           className="border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8]"
         />
       </div>
 
-      {/* Principais objecoes */}
+      {/* Principais objeções */}
       <div className="space-y-2">
         <Label htmlFor="main_objections" className="text-sm text-white">
-          Principais objecoes dos clientes
+          Principais objeções dos clientes
         </Label>
         <Textarea
           id="main_objections"

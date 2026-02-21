@@ -3,7 +3,14 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MAIN_CHALLENGES } from '@/lib/constants';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
+import { MAIN_CHALLENGES, TIME_KNOWING_CLEITON_OPTIONS } from '@/lib/constants';
 import type { OnboardingFormData } from '@/app/(onboarding)/onboarding/page';
 
 interface StepStrategicProps {
@@ -64,7 +71,7 @@ export function StepStrategic({ data, onChange }: StepStrategicProps) {
         )}
       </div>
 
-      {/* Tem socio */}
+      {/* Tem sócio */}
       <div className="space-y-2">
         <Label className="text-sm text-white">Você tem sócio(a)?</Label>
         <div className="flex gap-3">
@@ -88,26 +95,35 @@ export function StepStrategic({ data, onChange }: StepStrategicProps) {
                 : 'border-[#131B35] bg-[#131B35] text-[#94A3B8] hover:border-[#94A3B8]/30'
             }`}
           >
-            Nao
+            Não
           </button>
         </div>
       </div>
 
       {/* Tempo conhecendo Cleiton */}
       <div className="space-y-2">
-        <Label htmlFor="time_knowing_cleiton" className="text-sm text-white">
-          Ha quanto tempo conhece o Cleiton?
+        <Label className="text-sm text-white">
+          Há quanto tempo conhece o Cleiton?
         </Label>
-        <Input
-          id="time_knowing_cleiton"
-          type="text"
-          placeholder="Ex: 6 meses, 1 ano..."
+        <Select
           value={data.time_knowing_cleiton}
-          onChange={(e) =>
-            onChange({ time_knowing_cleiton: e.target.value })
-          }
-          className="border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8]"
-        />
+          onValueChange={(value) => onChange({ time_knowing_cleiton: value })}
+        >
+          <SelectTrigger className="border-[#131B35] bg-[#131B35] text-white focus:border-[#1D4ED8] focus:ring-[#1D4ED8]">
+            <SelectValue placeholder="Selecione uma opção" />
+          </SelectTrigger>
+          <SelectContent className="border-[#131B35] bg-[#0A0F1E]">
+            {TIME_KNOWING_CLEITON_OPTIONS.map((option) => (
+              <SelectItem
+                key={option}
+                value={option}
+                className="text-white hover:bg-[#131B35]"
+              >
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

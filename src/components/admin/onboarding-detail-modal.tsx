@@ -93,6 +93,7 @@ export function OnboardingDetailModal({ userId, isOpen, onClose }: OnboardingDet
                   <InfoField label="Tipo (Personalizado)" value={data.business_type_custom} />
                 )}
                 <InfoField label="Cargo" value={data.role_in_business} />
+                <InfoField label="Faturamento Mensal" value={data.faturamento_mensal} />
                 <InfoField label="Ticket Médio" value={data.average_ticket} />
                 <InfoField label="Público Alvo" value={data.target_audience} />
               </div>

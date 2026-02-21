@@ -20,6 +20,7 @@ export interface OnboardingFormData {
   business_type_custom: string;
   role_in_business: string;
   average_ticket: string;
+  faturamento_mensal: string;
   target_audience: string;
   main_objections: string;
   // Step 3 - Strategic
@@ -39,6 +40,7 @@ const INITIAL_DATA: OnboardingFormData = {
   business_type_custom: '',
   role_in_business: '',
   average_ticket: '',
+  faturamento_mensal: '',
   target_audience: '',
   main_objections: '',
   main_challenges: [],
@@ -50,7 +52,7 @@ const INITIAL_DATA: OnboardingFormData = {
 export default function OnboardingPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0); // 0 = intro, 1-3 = form steps
   const [formData, setFormData] = useState<OnboardingFormData>(INITIAL_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -91,7 +93,7 @@ export default function OnboardingPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        setError('Sessao expirada. Faca login novamente.');
+        setError('Sessão expirada. Faça login novamente.');
         setIsSubmitting(false);
         return;
       }
@@ -107,7 +109,7 @@ export default function OnboardingPage() {
         throw new Error(data.error || 'Erro ao salvar dados');
       }
 
-      router.push('/dashboard');
+      router.push('/');
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Erro inesperado. Tente novamente.'
@@ -116,6 +118,77 @@ export default function OnboardingPage() {
       setIsSubmitting(false);
     }
   };
+
+  // Intro screen
+  if (step === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-4 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1D4ED8]/10 border border-[#1D4ED8]/20">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#3B82F6"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <h1 className="font-heading text-2xl font-bold text-white">
+            Bem-vindo ao Script Go!
+          </h1>
+          <p className="text-[#94A3B8] leading-relaxed">
+            Antes de começar, precisamos conhecer um pouco sobre você e seu negócio.
+            Essas informações são essenciais para personalizar seus scripts
+            e oferecer a melhor experiência possível.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-[#131B35] bg-[#0A0F1E] p-5 space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1D4ED8]/20 text-xs font-bold text-[#3B82F6]">1</div>
+            <div>
+              <p className="text-sm font-medium text-white">Dados pessoais</p>
+              <p className="text-xs text-[#94A3B8]">Seu nome, contato e redes sociais</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1D4ED8]/20 text-xs font-bold text-[#3B82F6]">2</div>
+            <div>
+              <p className="text-sm font-medium text-white">Sobre seu negócio</p>
+              <p className="text-xs text-[#94A3B8]">Tipo de negócio, faturamento e público</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1D4ED8]/20 text-xs font-bold text-[#3B82F6]">3</div>
+            <div>
+              <p className="text-sm font-medium text-white">Estratégia e desafios</p>
+              <p className="text-xs text-[#94A3B8]">Seus principais desafios e objetivos</p>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-xs text-[#94A3B8] text-center">
+          Leva menos de 2 minutos para preencher
+        </p>
+
+        <Button
+          type="button"
+          className="w-full bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90"
+          onClick={() => setStep(1)}
+        >
+          Começar
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -145,7 +218,9 @@ export default function OnboardingPage() {
           {step === 3 && 'Estratégia e desafios'}
         </h1>
         <p className="text-sm text-[#94A3B8]">
-          Preencha para melhorar seus scripts e adequar a sua realidade
+          {step === 1 && 'Informe seus dados de contato'}
+          {step === 2 && 'Conte-nos sobre sua empresa e mercado'}
+          {step === 3 && 'Seus desafios nos ajudam a personalizar seus scripts'}
         </p>
       </div>
 
@@ -188,7 +263,7 @@ export default function OnboardingPage() {
             onClick={handleNext}
             disabled={step === 1 ? !canAdvanceStep1 : !canAdvanceStep2}
           >
-            Proximo
+            Próximo
           </Button>
         ) : (
           <Button
