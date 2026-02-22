@@ -83,9 +83,9 @@ export async function POST(
       .single();
 
     if (error) {
-      console.error('[scripts/id/sale] POST error:', error);
+      console.error('[scripts/id/sale] POST error:', error.message, error.code);
       return NextResponse.json(
-        { error: 'Failed to create sale' },
+        { error: `Erro ao salvar venda: ${error.message}` },
         { status: 500 }
       );
     }

@@ -43,8 +43,10 @@ export async function POST(request: NextRequest) {
     ]);
 
   if (countError || profileError) {
+    const errMsg = countError?.message || profileError?.message || 'Unknown';
+    console.error('[personalizados/generate] Credit check error:', errMsg);
     return NextResponse.json(
-      { error: 'Erro ao verificar créditos.' },
+      { error: `Erro ao verificar créditos: ${errMsg}` },
       { status: 500 }
     );
   }
