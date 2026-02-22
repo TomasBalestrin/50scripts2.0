@@ -20,7 +20,7 @@ export function CyclicXpBar({ xp, max = CYCLIC_XP_MAX }: CyclicXpBarProps) {
       {/* Header */}
       <div className="flex items-center gap-2">
         <Zap className="h-4 w-4 text-[#3B82F6]" />
-        <span className="text-sm font-semibold text-white">XP Ciclico</span>
+        <span className="text-sm font-semibold text-white">XP</span>
       </div>
 
       {/* Progress bar */}

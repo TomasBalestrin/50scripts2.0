@@ -190,18 +190,18 @@ export function MobileSidebar({
         <Menu className="h-5 w-5" />
       </button>
 
-      {/* Overlay - z-[60] to stay above bottom nav */}
+      {/* Overlay */}
       {open && (
         <div
-          className="fixed inset-0 z-[60] bg-black/60 lg:hidden"
+          className="fixed inset-0 z-[70] bg-black/60 lg:hidden"
           onClick={() => setOpen(false)}
         />
       )}
 
-      {/* Drawer - z-[60] to stay above bottom nav */}
+      {/* Drawer */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-[60] flex w-72 flex-col border-r border-[#131B35]/50 bg-[#0A0F1E] transition-transform duration-200 ease-in-out lg:hidden",
+          "fixed inset-y-0 left-0 z-[80] flex w-72 flex-col border-r border-[#131B35]/50 bg-[#0A0F1E] transition-transform duration-200 ease-in-out lg:hidden",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >

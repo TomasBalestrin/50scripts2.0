@@ -1,7 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { hasAccess } from '@/lib/plans/gate';
-import type { Plan } from '@/types/database';
+
+// Portuguese stop words to filter out from search queries
+const STOP_WORDS = new Set([
+  'a', 'o', 'e', 'é', 'de', 'do', 'da', 'dos', 'das', 'em', 'no', 'na',
+  'nos', 'nas', 'que', 'um', 'uma', 'para', 'com', 'por', 'se', 'ao',
+  'os', 'as', 'eu', 'ele', 'ela', 'nós', 'me', 'te', 'lhe', 'isso',
+  'este', 'esta', 'esse', 'essa', 'está', 'foi', 'ser', 'ter', 'como',
+  'mais', 'mas', 'seu', 'sua', 'não', 'sim', 'já', 'só', 'bem', 'muito',
+  'disse', 'diz', 'quando', 'onde', 'qual',
+]);
+
+function extractKeywords(query: string): string[] {
+  return query
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => w.replace(/[^a-záàãâéêíóôõúç]/g, ''))
+    .filter((w) => w.length >= 3 && !STOP_WORDS.has(w));
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,24 +32,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 1. Get user plan
     const { data: { user } } = await supabase.auth.getUser();
-
-    let userPlan: Plan = 'starter';
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('plan')
-        .eq('id', user.id)
-        .single();
-
-      if (profile) {
-        userPlan = profile.plan as Plan;
-      }
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
     }
 
-    // 2. Search scripts by title and content using ILIKE
-    const searchTerm = `%${query.trim()}%`;
+    // Extract meaningful keywords from the query
+    const keywords = extractKeywords(query);
+
+    // Fallback: if all words were stop words, use the full trimmed query
+    if (keywords.length === 0) {
+      keywords.push(query.trim().toLowerCase());
+    }
+
+    // Build OR conditions: for each keyword, search title and content
+    const conditions = keywords
+      .flatMap((kw) => [
+        `title.ilike.%${kw}%`,
+        `content.ilike.%${kw}%`,
+      ])
+      .join(',');
 
     const { data: scripts, error } = await supabase
       .from('scripts')
@@ -42,7 +63,7 @@ export async function GET(request: NextRequest) {
         category:script_categories(*)
       `)
       .eq('is_active', true)
-      .or(`title.ilike.${searchTerm},content.ilike.${searchTerm}`)
+      .or(conditions)
       .order('global_effectiveness', { ascending: false })
       .limit(20);
 
@@ -54,15 +75,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 3. Filter by user plan and mark locked scripts
-    const results = (scripts ?? []).map((script) => ({
-      ...script,
-      is_locked: !hasAccess(userPlan, script.min_plan as Plan),
-    }));
-
     return NextResponse.json({
-      scripts: results,
-      total: results.length,
+      scripts: scripts ?? [],
+      total: (scripts ?? []).length,
       query: query.trim(),
     });
   } catch (error) {
