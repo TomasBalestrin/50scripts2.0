@@ -66,7 +66,10 @@ export default function OnboardingPage() {
     []
   );
 
-  const canAdvanceStep1 = formData.full_name.trim().length > 0;
+  const phoneDigits = formData.phone.replace(/\D/g, '').length;
+  const emailValid = !formData.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+  const phoneValid = !formData.phone || phoneDigits >= 10;
+  const canAdvanceStep1 = formData.full_name.trim().length > 0 && emailValid && phoneValid;
   const canAdvanceStep2 = formData.business_type.length > 0;
 
   const handleNext = () => {
