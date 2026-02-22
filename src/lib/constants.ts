@@ -226,14 +226,15 @@ export const MAIN_CHALLENGES = [
 ] as const;
 
 export const FATURAMENTO_OPTIONS = [
-  'Até R$ 5.000',
-  'De R$ 5.000 até R$ 10.000',
-  'De R$ 10.000 até R$ 15.000',
-  'De R$ 15.000 até R$ 20.000',
-  'De R$ 20.000 até R$ 50.000',
-  'De R$ 50.000 até R$ 100.000',
-  'De R$ 100.000 até R$ 500.000',
-  'Acima de R$ 500.000',
+  'Até R$ 5.000,00',
+  'De R$ 5.000,00 até R$ 10.000,00',
+  'De R$ 10.000,00 até R$ 20.000,00',
+  'De R$ 20.000,00 até R$ 50.000,00',
+  'De R$ 50.000,00 até R$ 100.000,00',
+  'De R$ 100.000,00 até R$ 250.000,00',
+  'De R$ 250.000,00 até R$ 500.000,00',
+  'De R$ 500.000,00 até R$ 1.000.000,00',
+  'Acima de R$ 1.000.000,00',
 ] as const;
 
 export const TIME_KNOWING_CLEITON_OPTIONS = [

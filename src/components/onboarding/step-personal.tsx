@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { OnboardingFormData } from '@/app/(onboarding)/onboarding/page';
@@ -9,7 +10,31 @@ interface StepPersonalProps {
   onChange: (fields: Partial<OnboardingFormData>) => void;
 }
 
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) return `(${digits}`;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+function isValidEmail(email: string): boolean {
+  if (!email) return true; // empty is ok (not required)
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function getPhoneDigits(phone: string): number {
+  return phone.replace(/\D/g, '').length;
+}
+
 export function StepPersonal({ data, onChange }: StepPersonalProps) {
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+
+  const phoneDigits = getPhoneDigits(data.phone);
+  const phoneError = phoneTouched && data.phone && phoneDigits < 10;
+  const emailError = emailTouched && data.email && !isValidEmail(data.email);
+
   return (
     <div className="space-y-4">
       {/* Nome */}
@@ -35,11 +60,16 @@ export function StepPersonal({ data, onChange }: StepPersonalProps) {
         <Input
           id="phone"
           type="tel"
+          inputMode="numeric"
           placeholder="(00) 00000-0000"
           value={data.phone}
-          onChange={(e) => onChange({ phone: e.target.value })}
-          className="border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8]"
+          onChange={(e) => onChange({ phone: formatPhone(e.target.value) })}
+          onBlur={() => setPhoneTouched(true)}
+          className={`border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8] ${phoneError ? 'border-red-500' : ''}`}
         />
+        {phoneError && (
+          <p className="text-xs text-red-400">Informe um telefone válido com DDD. Ex: (49) 99912-3456</p>
+        )}
       </div>
 
       {/* Email */}
@@ -53,8 +83,12 @@ export function StepPersonal({ data, onChange }: StepPersonalProps) {
           placeholder="seu@email.com"
           value={data.email}
           onChange={(e) => onChange({ email: e.target.value })}
-          className="border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8]"
+          onBlur={() => setEmailTouched(true)}
+          className={`border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8] ${emailError ? 'border-red-500' : ''}`}
         />
+        {emailError && (
+          <p className="text-xs text-red-400">Informe um email válido. Ex: nome@email.com</p>
+        )}
       </div>
 
       {/* Instagram */}

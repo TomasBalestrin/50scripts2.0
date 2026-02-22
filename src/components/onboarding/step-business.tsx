@@ -125,21 +125,6 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
         </Select>
       </div>
 
-      {/* Ticket médio */}
-      <div className="space-y-2">
-        <Label htmlFor="average_ticket" className="text-sm text-white">
-          Ticket médio
-        </Label>
-        <Input
-          id="average_ticket"
-          type="text"
-          placeholder="Ex: R$ 500"
-          value={data.average_ticket}
-          onChange={(e) => onChange({ average_ticket: e.target.value })}
-          className="border-[#131B35] bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#1D4ED8] focus:ring-[#1D4ED8]"
-        />
-      </div>
-
       {/* Público-alvo */}
       <div className="space-y-2">
         <Label htmlFor="target_audience" className="text-sm text-white">
