@@ -28,7 +28,8 @@ export async function appendToSheet(row: string[]) {
   try {
     const sheets = google.sheets({ version: 'v4', auth });
 
-    await sheets.spreadsheets.values.append({
+    // Timeout after 8 seconds to avoid blocking the caller
+    const appendPromise = sheets.spreadsheets.values.append({
       spreadsheetId: SPREADSHEET_ID,
       range: `${SHEET_NAME}!A:A`,
       valueInputOption: 'USER_ENTERED',
@@ -36,6 +37,12 @@ export async function appendToSheet(row: string[]) {
         values: [row],
       },
     });
+
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Google Sheets timeout after 8s')), 8000)
+    );
+
+    await Promise.race([appendPromise, timeout]);
   } catch (err: unknown) {
     const errObj = err as { message?: string; code?: number; response?: { data?: unknown } };
     console.error('Google Sheets append error:', {
