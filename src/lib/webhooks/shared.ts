@@ -222,8 +222,8 @@ export async function handleCancellation(
 
   if (!profile) {
     // User not found is normal for cancel webhooks - platforms send cancels
-    // for all their users, including those who never registered in our system
-    await logWebhookEvent(source, 'cancel', payload, 'info', email, undefined, 'User not found - no action needed');
+    // for all their users, including those who never registered in our system.
+    // Do NOT log these - they generate thousands of useless 'info' rows.
     return { userId: '' };
   }
 
