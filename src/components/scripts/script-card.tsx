@@ -1,18 +1,18 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Lock } from 'lucide-react';
+import { Lock, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Script } from '@/types/database';
-import { StarRating } from '@/components/scripts/star-rating';
 
 interface ScriptCardProps {
   script: Script;
   locked?: boolean;
+  hasSale?: boolean;
   onClick?: () => void;
 }
 
-export function ScriptCard({ script, locked = false, onClick }: ScriptCardProps) {
+export function ScriptCard({ script, locked = false, hasSale = false, onClick }: ScriptCardProps) {
   const preview = script.content.length > 80
     ? script.content.slice(0, 80) + '...'
     : script.content;
@@ -27,7 +27,8 @@ export function ScriptCard({ script, locked = false, onClick }: ScriptCardProps)
       aria-disabled={locked}
       className={cn(
         'relative cursor-pointer overflow-hidden rounded-xl border border-[#131B35] bg-[#0A0F1E] p-5 transition-colors hover:border-[#1D4ED8]/30 focus-visible:ring-2 focus-visible:ring-[#1D4ED8] focus-visible:outline-none',
-        locked && 'cursor-not-allowed'
+        locked && 'cursor-not-allowed',
+        hasSale && 'border-[#10B981]/40'
       )}
       onClick={() => {
         if (!locked && onClick) onClick();
@@ -39,6 +40,14 @@ export function ScriptCard({ script, locked = false, onClick }: ScriptCardProps)
         }
       }}
     >
+      {/* Sale indicator */}
+      {hasSale && !locked && (
+        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-[#10B981]/20 px-2 py-0.5">
+          <DollarSign className="h-3 w-3 text-[#10B981]" />
+          <span className="text-[10px] font-semibold text-[#10B981]">Venda</span>
+        </div>
+      )}
+
       {/* Lock overlay */}
       {locked && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 backdrop-blur-sm bg-[#020617]/60">
@@ -65,11 +74,6 @@ export function ScriptCard({ script, locked = false, onClick }: ScriptCardProps)
 
         {/* Preview */}
         <p className="mb-3 text-xs leading-relaxed text-[#94A3B8]">{preview}</p>
-
-        {/* Effectiveness */}
-        <div className="mb-3">
-          <StarRating value={Math.round(script.global_effectiveness)} readonly size={14} />
-        </div>
 
         {/* Tags */}
         {script.tags && script.tags.length > 0 && (
