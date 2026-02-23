@@ -67,10 +67,23 @@ export default function OnboardingPage() {
   );
 
   const phoneDigits = formData.phone.replace(/\D/g, '').length;
-  const emailValid = !formData.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
-  const phoneValid = !formData.phone || phoneDigits >= 10;
-  const canAdvanceStep1 = formData.full_name.trim().length > 0 && emailValid && phoneValid;
-  const canAdvanceStep2 = formData.business_type.length > 0;
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+  const phoneValid = phoneDigits >= 10;
+  const canAdvanceStep1 =
+    formData.full_name.trim().length > 0 &&
+    emailValid &&
+    phoneValid &&
+    formData.instagram.trim().length > 0;
+  const canAdvanceStep2 =
+    formData.company_name.trim().length > 0 &&
+    formData.business_type.length > 0 &&
+    formData.role_in_business.length > 0 &&
+    formData.faturamento_mensal.length > 0 &&
+    formData.target_audience.trim().length > 0 &&
+    formData.main_objections.trim().length > 0;
+  const canAdvanceStep3 =
+    formData.main_challenges.length > 0 &&
+    formData.time_knowing_cleiton.length > 0;
 
   const handleNext = () => {
     if (step < totalSteps) {
@@ -273,7 +286,7 @@ export default function OnboardingPage() {
             type="button"
             className="flex-1 bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90 disabled:opacity-40"
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !canAdvanceStep3}
           >
             {isSubmitting ? 'Salvando...' : 'Finalizar'}
           </Button>

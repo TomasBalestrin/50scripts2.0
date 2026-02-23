@@ -36,7 +36,7 @@ export function StepStrategic({ data, onChange }: StepStrategicProps) {
     <div className="space-y-5">
       {/* Principais desafios */}
       <div className="space-y-3">
-        <Label className="text-sm text-white">Principais desafios</Label>
+        <Label className="text-sm text-white">Principais desafios <span className="text-red-400">*</span></Label>
         <p className="text-xs text-[#94A3B8]">
           Selecione todos que se aplicam
         </p>
@@ -73,7 +73,7 @@ export function StepStrategic({ data, onChange }: StepStrategicProps) {
 
       {/* Tem sócio */}
       <div className="space-y-2">
-        <Label className="text-sm text-white">Você tem sócio(a)?</Label>
+        <Label className="text-sm text-white">Você tem sócio(a)? <span className="text-red-400">*</span></Label>
         <div className="flex gap-3">
           <button
             type="button"
@@ -103,7 +103,7 @@ export function StepStrategic({ data, onChange }: StepStrategicProps) {
       {/* Tempo conhecendo Cleiton */}
       <div className="space-y-2">
         <Label className="text-sm text-white">
-          Há quanto tempo conhece o Cleiton?
+          Há quanto tempo conhece o Cleiton? <span className="text-red-400">*</span>
         </Label>
         <Select
           value={data.time_knowing_cleiton}
