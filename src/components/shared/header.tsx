@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Shield, LogOut } from "lucide-react";
+import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -107,6 +108,10 @@ export function Header({ userName, userAvatar, role }: HeaderProps) {
                 <DropdownMenuSeparator className="bg-[#131B35]" />
               </>
             )}
+            <div className="px-1 py-0.5">
+              <PushNotificationToggle />
+            </div>
+            <DropdownMenuSeparator className="bg-[#131B35]" />
             <DropdownMenuItem
               className="cursor-pointer text-[#1D4ED8] focus:bg-[#131B35] focus:text-[#1D4ED8]"
               onClick={async () => {

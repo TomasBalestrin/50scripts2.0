@@ -119,9 +119,11 @@ export async function GET(request: NextRequest) {
     const newSignups = profiles.filter((p) => p.created_at >= since).length;
 
     // ---- Onboarding completion stats ----
+    // Compare against users who actually logged in (have last_login_at), not all 938
+    const usersWhoLoggedIn = profiles.filter((p) => p.last_login_at).length;
     const onboardingCompleted = onboardings.length;
-    const onboardingRate = profiles.length > 0
-      ? Math.round((onboardingCompleted / profiles.length) * 100)
+    const onboardingRate = usersWhoLoggedIn > 0
+      ? Math.round((onboardingCompleted / usersWhoLoggedIn) * 100)
       : 0;
 
     // ---- DAU trend (daily unique users from ALL sources) ----
@@ -329,6 +331,7 @@ export async function GET(request: NextRequest) {
       // Onboarding
       onboarding_completed: onboardingCompleted,
       onboarding_rate: onboardingRate,
+      users_who_logged_in: usersWhoLoggedIn,
 
       // Feature usage stats
       scripts_used: scriptUsages.length,

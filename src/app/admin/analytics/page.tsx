@@ -43,6 +43,7 @@ interface AnalyticsData {
   avg_session_minutes: number;
   onboarding_completed: number;
   onboarding_rate: number;
+  users_who_logged_in: number;
   scripts_used: number;
   personalized_generated: number;
   total_sales: number;
@@ -209,7 +210,7 @@ export default function AnalyticsPage() {
         <MetricCard
           title="Onboarding"
           value={`${data.onboarding_rate}%`}
-          subtitle={`${data.onboarding_completed} de ${data.total_users}`}
+          subtitle={`${data.onboarding_completed} de ${data.users_who_logged_in} que logaram`}
           icon={<ClipboardCheck className="h-5 w-5" />}
           color="#8B5CF6"
         />
