@@ -9,10 +9,14 @@ import {
   Loader2,
   TrendingUp,
   Monitor,
-  Target,
+  UserPlus,
+  ClipboardCheck,
+  FileText,
+  Sparkles,
+  DollarSign,
+  Eye,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   BarChart,
   Bar,
@@ -33,28 +37,67 @@ interface AnalyticsData {
   dau: number;
   wau: number;
   mau: number;
-  avg_session_minutes: number;
   total_users: number;
   active_users: number;
+  new_signups: number;
+  avg_session_minutes: number;
+  onboarding_completed: number;
+  onboarding_rate: number;
+  scripts_used: number;
+  personalized_generated: number;
+  total_sales: number;
+  total_revenue: number;
   dau_trend: { date: string; count: number }[];
-  logins_trend: { date: string; logins: number }[];
   top_pages: { path: string; label: string; views: number }[];
   peak_hours: { hour: string; count: number }[];
   feature_usage: { feature: string; count: number }[];
   engagement: { high: number; medium: number; low: number };
-  top_users: { id: string; name: string; plan: string; events: number }[];
-  tone_preference: { tone: string; count: number }[];
-  script_stats: { total_uses: number; sales: number; conversion_rate: number };
+  level_distribution: { level: string; count: number }[];
+  top_users: {
+    id: string;
+    name: string;
+    email: string;
+    level: string;
+    active_days: number;
+    events: number;
+    last_seen: string;
+  }[];
+  recent_users: {
+    id: string;
+    name: string;
+    email: string;
+    last_seen: string;
+    last_action: string;
+  }[];
 }
 
-const FEATURE_COLORS = ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#EF4444', '#EC4899'];
+const MODULE_COLORS = ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981'];
 const ENGAGEMENT_COLORS = ['#10B981', '#F59E0B', '#EF4444'];
-const PLAN_COLORS: Record<string, string> = {
-  starter: '#6B7280',
-  pro: '#3B82F6',
-  premium: '#8B5CF6',
-  copilot: '#F59E0B',
+const LEVEL_COLORS: Record<string, string> = {
+  iniciante: '#6B7280',
+  aprendiz: '#3B82F6',
+  executor: '#8B5CF6',
+  estrategista: '#F59E0B',
+  especialista: '#EF4444',
+  referencia: '#EC4899',
+  lenda: '#FFD700',
 };
+
+function formatTimeAgo(isoStr: string): string {
+  if (!isoStr) return '-';
+  const diff = Date.now() - new Date(isoStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'agora';
+  if (mins < 60) return `${mins}min atrás`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h atrás`;
+  const days = Math.floor(hours / 24);
+  return `${days}d atrás`;
+}
+
+function formatCurrency(value: number): string {
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
@@ -99,7 +142,12 @@ export default function AnalyticsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Analytics & Usabilidade</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-white">Analytics & Usabilidade</h1>
+          <p className="mt-1 text-sm text-gray-400">
+            {data.total_users} usuários cadastrados | {data.active_users} ativos
+          </p>
+        </div>
         <div className="flex gap-2">
           {[7, 14, 30].map((d) => (
             <button
@@ -117,62 +165,83 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Top Metric Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Row 1: User Metrics */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          title="DAU (Hoje)"
+          title="Ativos Hoje"
           value={data.dau.toString()}
           subtitle={`de ${data.total_users} total`}
           icon={<Users className="h-5 w-5" />}
+          color="#1D4ED8"
         />
         <MetricCard
-          title="WAU (7 dias)"
+          title="Ativos 7 dias"
           value={data.wau.toString()}
           subtitle={`${data.total_users > 0 ? Math.round((data.wau / data.total_users) * 100) : 0}% dos usuários`}
           icon={<Calendar className="h-5 w-5" />}
+          color="#8B5CF6"
         />
         <MetricCard
-          title="MAU (30 dias)"
+          title="Ativos 30 dias"
           value={data.mau.toString()}
           subtitle={`${data.total_users > 0 ? Math.round((data.mau / data.total_users) * 100) : 0}% dos usuários`}
           icon={<Activity className="h-5 w-5" />}
+          color="#10B981"
         />
         <MetricCard
-          title="Tempo Médio Sessão"
-          value={data.avg_session_minutes > 0 ? `${data.avg_session_minutes} min` : '-'}
+          title="Sessão Média"
+          value={data.avg_session_minutes > 0 ? `${data.avg_session_minutes}min` : '-'}
           subtitle="por sessão/dia"
           icon={<Clock className="h-5 w-5" />}
+          color="#F59E0B"
         />
       </div>
 
-      {/* Script Stats Row */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      {/* Row 2: Growth + Feature Stats */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
         <MetricCard
-          title="Usos de Scripts"
-          value={data.script_stats.total_uses.toString()}
-          subtitle={`no período de ${period} dias`}
-          icon={<TrendingUp className="h-5 w-5" />}
+          title="Novos Cadastros"
+          value={data.new_signups.toString()}
+          subtitle={`últimos ${period} dias`}
+          icon={<UserPlus className="h-5 w-5" />}
+          color="#3B82F6"
         />
         <MetricCard
-          title="Vendas via Scripts"
-          value={data.script_stats.sales.toString()}
-          subtitle={`de ${data.script_stats.total_uses} usos`}
-          icon={<Target className="h-5 w-5" />}
+          title="Onboarding"
+          value={`${data.onboarding_rate}%`}
+          subtitle={`${data.onboarding_completed} de ${data.total_users}`}
+          icon={<ClipboardCheck className="h-5 w-5" />}
+          color="#8B5CF6"
         />
         <MetricCard
-          title="Taxa de Conversão"
-          value={`${data.script_stats.conversion_rate}%`}
-          subtitle="scripts que geraram venda"
-          icon={<Activity className="h-5 w-5" />}
+          title="Scripts Usados"
+          value={data.scripts_used.toString()}
+          subtitle={`no período`}
+          icon={<FileText className="h-5 w-5" />}
+          color="#10B981"
+        />
+        <MetricCard
+          title="Personalizados"
+          value={data.personalized_generated.toString()}
+          subtitle="gerados com IA"
+          icon={<Sparkles className="h-5 w-5" />}
+          color="#F59E0B"
+        />
+        <MetricCard
+          title="Vendas"
+          value={data.total_sales.toString()}
+          subtitle={formatCurrency(data.total_revenue)}
+          icon={<DollarSign className="h-5 w-5" />}
+          color="#EF4444"
         />
       </div>
 
-      {/* DAU Trend + Peak Hours */}
+      {/* Charts Row 1: DAU Trend + Peak Hours */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardHeader>
             <CardTitle className="text-base text-white">
-              Usuários Ativos Diários ({period} dias)
+              Usuários Ativos por Dia ({period}d)
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -212,7 +281,6 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Peak Hours */}
         <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardHeader>
             <CardTitle className="text-base text-white">Horários de Pico</CardTitle>
@@ -245,12 +313,12 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
-      {/* Feature Usage + Engagement + Top Pages */}
+      {/* Charts Row 2: Module Usage + Engagement + Level Distribution */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Feature Usage */}
+        {/* Module Usage */}
         <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardHeader>
-            <CardTitle className="text-base text-white">Uso de Features</CardTitle>
+            <CardTitle className="text-base text-white">Uso por Módulo</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -271,7 +339,7 @@ export default function AnalyticsPage() {
                       }
                     >
                       {data.feature_usage.map((_, i) => (
-                        <Cell key={i} fill={FEATURE_COLORS[i % FEATURE_COLORS.length]} />
+                        <Cell key={i} fill={MODULE_COLORS[i % MODULE_COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip
@@ -293,10 +361,10 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* User Engagement Tiers */}
+        {/* Engagement Tiers */}
         <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardHeader>
-            <CardTitle className="text-base text-white">Engajamento</CardTitle>
+            <CardTitle className="text-base text-white">Engajamento (30d)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -315,9 +383,7 @@ export default function AnalyticsPage() {
                       outerRadius={80}
                       paddingAngle={2}
                       dataKey="value"
-                      label={({ name, value }: { name?: string; value?: number }) =>
-                        `${value}`
-                      }
+                      label={({ value }: { value?: number }) => `${value}`}
                     >
                       {[data.engagement.high, data.engagement.medium, data.engagement.low]
                         .map((val, i) => val > 0 ? <Cell key={i} fill={ENGAGEMENT_COLORS[i]} /> : null)
@@ -347,41 +413,45 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Top Pages */}
+        {/* Level Distribution */}
         <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base text-white">
-              <Monitor className="h-4 w-4" />
-              Páginas Mais Visitadas
-            </CardTitle>
+            <CardTitle className="text-base text-white">Distribuição de Níveis</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {data.top_pages.length > 0 ? (
-                data.top_pages.slice(0, 8).map((page, i) => {
-                  const maxViews = data.top_pages[0]?.views || 1;
-                  const pct = Math.round((page.views / maxViews) * 100);
-                  return (
-                    <div key={page.path} className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-300">
-                          <span className="mr-2 text-gray-600">{i + 1}.</span>
-                          {page.label}
-                        </span>
-                        <span className="font-medium text-white">{page.views}</span>
-                      </div>
-                      <div className="h-1.5 w-full rounded-full bg-[#131B35]">
-                        <div
-                          className="h-1.5 rounded-full bg-[#1D4ED8]"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })
+            <div className="h-64">
+              {data.level_distribution.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data.level_distribution} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#131B35" />
+                    <XAxis type="number" stroke="#6B7280" tick={{ fill: '#9CA3AF', fontSize: 11 }} />
+                    <YAxis
+                      type="category"
+                      dataKey="level"
+                      stroke="#6B7280"
+                      tick={{ fill: '#9CA3AF', fontSize: 11 }}
+                      width={85}
+                      tickFormatter={(val: string) => val.charAt(0).toUpperCase() + val.slice(1)}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#0A0F1E',
+                        border: '1px solid #131B35',
+                        borderRadius: 8,
+                        color: '#fff',
+                      }}
+                      formatter={(value) => [value, 'Usuários']}
+                    />
+                    <Bar dataKey="count" radius={[0, 4, 4, 0]} name="Usuários">
+                      {data.level_distribution.map((entry, i) => (
+                        <Cell key={i} fill={LEVEL_COLORS[entry.level] || '#6B7280'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               ) : (
-                <div className="flex h-48 items-center justify-center text-gray-500">
-                  Sem dados de navegação
+                <div className="flex h-full items-center justify-center text-gray-500">
+                  Sem dados de nível
                 </div>
               )}
             </div>
@@ -389,8 +459,96 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
-      {/* Top Users Table + Tone Preference */}
+      {/* Top Pages */}
+      <Card className="border-[#131B35] bg-[#0A0F1E]">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base text-white">
+            <Monitor className="h-4 w-4" />
+            Páginas Mais Visitadas
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {data.top_pages.length > 0 ? (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {data.top_pages.slice(0, 10).map((page, i) => {
+                const maxViews = data.top_pages[0]?.views || 1;
+                const pct = Math.round((page.views / maxViews) * 100);
+                return (
+                  <div key={page.path} className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-300">
+                        <span className="mr-2 text-gray-600">{i + 1}.</span>
+                        {page.label}
+                      </span>
+                      <span className="font-medium text-white">{page.views}</span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-[#131B35]">
+                      <div
+                        className="h-1.5 rounded-full bg-[#1D4ED8]"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex h-24 items-center justify-center text-gray-500">
+              Sem dados de navegação ainda
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Tables: Recent Users + Top Users */}
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent Active Users */}
+        <Card className="border-[#131B35] bg-[#0A0F1E]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base text-white">
+              <Eye className="h-4 w-4" />
+              Últimos Acessos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#131B35] text-left text-gray-400">
+                    <th className="pb-3 pr-4">Usuário</th>
+                    <th className="pb-3 pr-4">Última Ação</th>
+                    <th className="pb-3 text-right">Quando</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.recent_users.map((user) => (
+                    <tr
+                      key={user.id}
+                      className="border-b border-[#131B35]/50"
+                    >
+                      <td className="py-2.5 pr-4">
+                        <div className="font-medium text-white">{user.name}</div>
+                        <div className="text-xs text-gray-500">{user.email}</div>
+                      </td>
+                      <td className="py-2.5 pr-4 text-gray-300">{user.last_action}</td>
+                      <td className="py-2.5 text-right text-gray-400">
+                        {formatTimeAgo(user.last_seen)}
+                      </td>
+                    </tr>
+                  ))}
+                  {data.recent_users.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="py-8 text-center text-gray-500">
+                        Sem atividade recente.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Top Users */}
         <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardHeader>
@@ -406,7 +564,8 @@ export default function AnalyticsPage() {
                   <tr className="border-b border-[#131B35] text-left text-gray-400">
                     <th className="pb-3 pr-4">#</th>
                     <th className="pb-3 pr-4">Usuário</th>
-                    <th className="pb-3 pr-4">Plano</th>
+                    <th className="pb-3 pr-4">Nível</th>
+                    <th className="pb-3 pr-4 text-right">Dias</th>
                     <th className="pb-3 text-right">Eventos</th>
                   </tr>
                 </thead>
@@ -414,73 +573,37 @@ export default function AnalyticsPage() {
                   {data.top_users.map((user, i) => (
                     <tr
                       key={user.id}
-                      className="border-b border-[#131B35]/50 text-white"
+                      className="border-b border-[#131B35]/50"
                     >
                       <td className="py-2.5 pr-4 text-gray-500">{i + 1}</td>
-                      <td className="py-2.5 pr-4 font-medium">{user.name}</td>
                       <td className="py-2.5 pr-4">
-                        <Badge
-                          className="text-xs"
+                        <div className="font-medium text-white">{user.name}</div>
+                        <div className="text-xs text-gray-500">{user.email}</div>
+                      </td>
+                      <td className="py-2.5 pr-4">
+                        <span
+                          className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                           style={{
-                            backgroundColor: `${PLAN_COLORS[user.plan] || '#6B7280'}20`,
-                            color: PLAN_COLORS[user.plan] || '#6B7280',
-                            borderColor: `${PLAN_COLORS[user.plan] || '#6B7280'}40`,
+                            backgroundColor: `${LEVEL_COLORS[user.level] || '#6B7280'}20`,
+                            color: LEVEL_COLORS[user.level] || '#6B7280',
                           }}
                         >
-                          {user.plan}
-                        </Badge>
+                          {user.level.charAt(0).toUpperCase() + user.level.slice(1)}
+                        </span>
                       </td>
-                      <td className="py-2.5 text-right">{user.events}</td>
+                      <td className="py-2.5 pr-4 text-right text-gray-300">{user.active_days}</td>
+                      <td className="py-2.5 text-right text-white">{user.events}</td>
                     </tr>
                   ))}
                   {data.top_users.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-gray-500">
+                      <td colSpan={5} className="py-8 text-center text-gray-500">
                         Sem dados de atividade ainda.
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tone Preference */}
-        <Card className="border-[#131B35] bg-[#0A0F1E]">
-          <CardHeader>
-            <CardTitle className="text-base text-white">Preferência de Tom</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64">
-              {data.tone_preference.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.tone_preference} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#131B35" />
-                    <XAxis type="number" stroke="#6B7280" tick={{ fill: '#9CA3AF', fontSize: 11 }} />
-                    <YAxis
-                      type="category"
-                      dataKey="tone"
-                      stroke="#6B7280"
-                      tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                      width={80}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#0A0F1E',
-                        border: '1px solid #131B35',
-                        borderRadius: 8,
-                        color: '#fff',
-                      }}
-                    />
-                    <Bar dataKey="count" fill="#8B5CF6" radius={[0, 4, 4, 0]} name="Usos" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex h-full items-center justify-center text-gray-500">
-                  Sem dados de tom ainda
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -494,24 +617,29 @@ function MetricCard({
   value,
   subtitle,
   icon,
+  color = '#1D4ED8',
 }: {
   title: string;
   value: string;
   subtitle: string;
   icon: React.ReactNode;
+  color?: string;
 }) {
   return (
     <Card className="border-[#131B35] bg-[#0A0F1E]">
-      <CardContent className="p-5">
+      <CardContent className="p-4">
         <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+          <div className="min-w-0 space-y-1">
+            <p className="truncate text-xs font-medium uppercase tracking-wider text-gray-400">
               {title}
             </p>
             <p className="text-2xl font-bold text-white">{value}</p>
-            <p className="text-xs text-gray-500">{subtitle}</p>
+            <p className="truncate text-xs text-gray-500">{subtitle}</p>
           </div>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#1D4ED8]/10 text-[#1D4ED8]">
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+            style={{ backgroundColor: `${color}15`, color }}
+          >
             {icon}
           </div>
         </div>

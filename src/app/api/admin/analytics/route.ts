@@ -3,12 +3,12 @@ import { getAdminUser } from '@/lib/admin/auth';
 
 /**
  * GET /api/admin/analytics?days=30
- * Returns user activity analytics using ALL available data sources:
- * - user_activity (page views, heartbeats - new tracking)
- * - script_usage (historical script interactions)
- * - ai_generation_logs (historical AI usage)
- * - daily_challenges (gamification engagement)
- * - profiles.last_login_at (login fallback)
+ * Returns usability-focused analytics:
+ * - User engagement: DAU/WAU/MAU, new signups, onboarding completion
+ * - Feature usage: Scripts, Personalizados, Vendas, Busca
+ * - Behavior: peak hours, top pages, session duration
+ * - Top users by activity (last seen, events)
+ * - Recent active users with timestamps
  */
 export async function GET(request: NextRequest) {
   try {
@@ -22,8 +22,15 @@ export async function GET(request: NextRequest) {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Run ALL queries in parallel - use every data source available
-    const [activityRes, profilesRes, scriptUsageRes, aiLogsRes, challengesRes, leadsRes] = await Promise.all([
+    // Run ALL queries in parallel
+    const [
+      activityRes,
+      profilesRes,
+      scriptUsageRes,
+      personalizedRes,
+      salesRes,
+      onboardingRes,
+    ] = await Promise.all([
       supabase
         .from('user_activity')
         .select('user_id, event_type, page_path, created_at')
@@ -32,38 +39,36 @@ export async function GET(request: NextRequest) {
 
       supabase
         .from('profiles')
-        .select('id, email, full_name, plan, last_login_at, created_at, is_active'),
+        .select('id, email, full_name, last_login_at, last_active_date, created_at, is_active, onboarding_completed, new_level, active_days'),
 
       supabase
         .from('script_usage')
-        .select('user_id, script_id, tone_used, used_at, resulted_in_sale')
+        .select('user_id, script_id, used_at')
         .gte('used_at', since),
 
       supabase
-        .from('ai_generation_logs')
-        .select('user_id, type, created_at')
-        .gte('created_at', since),
-
-      supabase
-        .from('daily_challenges')
-        .select('user_id, completed, challenge_date')
-        .gte('challenge_date', since.split('T')[0]),
-
-      supabase
-        .from('leads')
+        .from('personalized_scripts')
         .select('user_id, created_at')
         .gte('created_at', since),
+
+      supabase
+        .from('script_sales')
+        .select('user_id, sale_value, sale_date, created_at')
+        .gte('created_at', since),
+
+      supabase
+        .from('user_onboarding')
+        .select('user_id, created_at'),
     ]);
 
     const activities = activityRes.data ?? [];
     const profiles = profilesRes.data ?? [];
     const scriptUsages = scriptUsageRes.data ?? [];
-    const aiLogs = aiLogsRes.data ?? [];
-    const challenges = challengesRes.data ?? [];
-    const leads = leadsRes.data ?? [];
+    const personalized = personalizedRes.data ?? [];
+    const sales = salesRes.data ?? [];
+    const onboardings = onboardingRes.data ?? [];
 
     // ---- Build unified activity timeline from ALL sources ----
-    // Each entry: { user_id, timestamp, source }
     type ActivityEntry = { user_id: string; timestamp: string; source: string };
     const allActivity: ActivityEntry[] = [];
 
@@ -73,14 +78,11 @@ export async function GET(request: NextRequest) {
     for (const s of scriptUsages) {
       allActivity.push({ user_id: s.user_id, timestamp: s.used_at, source: 'script' });
     }
-    for (const a of aiLogs) {
-      allActivity.push({ user_id: a.user_id, timestamp: a.created_at, source: 'ai' });
+    for (const p of personalized) {
+      allActivity.push({ user_id: p.user_id, timestamp: p.created_at, source: 'personalized' });
     }
-    for (const c of challenges) {
-      allActivity.push({ user_id: c.user_id, timestamp: c.challenge_date, source: 'challenge' });
-    }
-    for (const l of leads) {
-      allActivity.push({ user_id: l.user_id, timestamp: l.created_at, source: 'lead' });
+    for (const s of sales) {
+      allActivity.push({ user_id: s.user_id, timestamp: s.created_at, source: 'sale' });
     }
 
     // ---- DAU/WAU/MAU from ALL sources ----
@@ -95,7 +97,8 @@ export async function GET(request: NextRequest) {
       if (a.timestamp >= monthAgo) uniqueUsersMonth.add(a.user_id);
     }
 
-    // Also count from profiles.last_login_at
+    // Also count from profiles.last_login_at and last_active_date
+    const todayStr = todayStart.toISOString().split('T')[0];
     for (const p of profiles) {
       if (p.last_login_at) {
         const loginDate = new Date(p.last_login_at);
@@ -103,11 +106,23 @@ export async function GET(request: NextRequest) {
         if (p.last_login_at >= weekAgo) uniqueUsersWeek.add(p.id);
         if (p.last_login_at >= monthAgo) uniqueUsersMonth.add(p.id);
       }
+      if (p.last_active_date === todayStr) {
+        uniqueUsersToday.add(p.id);
+      }
     }
 
     const dau = uniqueUsersToday.size;
     const wau = uniqueUsersWeek.size;
     const mau = uniqueUsersMonth.size;
+
+    // ---- New signups in period ----
+    const newSignups = profiles.filter((p) => p.created_at >= since).length;
+
+    // ---- Onboarding completion stats ----
+    const onboardingCompleted = onboardings.length;
+    const onboardingRate = profiles.length > 0
+      ? Math.round((onboardingCompleted / profiles.length) * 100)
+      : 0;
 
     // ---- DAU trend (daily unique users from ALL sources) ----
     const dauByDay: Record<string, Set<string>> = {};
@@ -127,10 +142,7 @@ export async function GET(request: NextRequest) {
       count: users.size,
     }));
 
-    // ---- Daily logins (unique users with any activity per day) ----
-    const loginsTrend = dauTrend.map((d) => ({ date: d.date, logins: d.count }));
-
-    // ---- Most visited pages (from user_activity only) ----
+    // ---- Most visited pages (from user_activity) ----
     const pageCounts: Record<string, number> = {};
     for (const a of activities) {
       if (a.event_type === 'page_view' && a.page_path) {
@@ -155,7 +167,7 @@ export async function GET(request: NextRequest) {
         const hour = new Date(a.timestamp).getHours();
         if (!isNaN(hour)) hourCounts[hour]++;
       } catch {
-        // skip invalid timestamps (e.g., date-only from daily_challenges)
+        // skip invalid timestamps
       }
     }
 
@@ -164,16 +176,29 @@ export async function GET(request: NextRequest) {
       count,
     }));
 
-    // ---- Feature usage breakdown (from real data) ----
+    // ---- Feature/Module usage breakdown ----
+    // Count page views by module from user_activity
+    let gestaoViews = 0;
+    let scriptsViews = 0;
+    let personalizadosViews = 0;
+    let buscaViews = 0;
+
+    for (const a of activities) {
+      if (a.event_type === 'page_view' && a.page_path) {
+        const p = a.page_path;
+        if (p === '/' || p === '/dashboard') gestaoViews++;
+        else if (p.startsWith('/trilhas') || p.startsWith('/scripts')) scriptsViews++;
+        else if (p.startsWith('/personalizados')) personalizadosViews++;
+        else if (p.startsWith('/busca')) buscaViews++;
+      }
+    }
+
+    // Add actual usage data from tables
     const featureUsage = [
-      { feature: 'Scripts', count: scriptUsages.length },
-      { feature: 'IA Copilot', count: aiLogs.length },
-      { feature: 'Leads/CRM', count: leads.length },
-      { feature: 'Desafios', count: challenges.length },
-      {
-        feature: 'Agenda',
-        count: activities.filter((a) => a.page_path?.startsWith('/today') || a.page_path?.startsWith('/agenda')).length,
-      },
+      { feature: 'Gestão', count: gestaoViews },
+      { feature: 'Scripts', count: scriptsViews + scriptUsages.length },
+      { feature: 'Personalizados', count: personalizadosViews + personalized.length },
+      { feature: 'Buscar', count: buscaViews },
     ].filter((f) => f.count > 0)
     .sort((a, b) => b.count - a.count);
 
@@ -199,7 +224,7 @@ export async function GET(request: NextRequest) {
       ? Math.round(sessionDurations.reduce((a, b) => a + b, 0) / sessionDurations.length)
       : 0;
 
-    // ---- User engagement tiers (from ALL sources) ----
+    // ---- User engagement tiers (from ALL sources in last 30d) ----
     const userEventCounts: Record<string, number> = {};
     for (const a of allActivity) {
       if (a.timestamp >= monthAgo) {
@@ -216,10 +241,25 @@ export async function GET(request: NextRequest) {
       else lowEngagement++;
     }
 
-    // ---- Top active users (from ALL sources) ----
+    // ---- Top active users (from ALL sources) with last seen ----
+    const userLastSeen: Record<string, string> = {};
+    for (const a of allActivity) {
+      if (!userLastSeen[a.user_id] || a.timestamp > userLastSeen[a.user_id]) {
+        userLastSeen[a.user_id] = a.timestamp;
+      }
+    }
+    // Also check profiles.last_login_at
+    for (const p of profiles) {
+      if (p.last_login_at) {
+        if (!userLastSeen[p.id] || p.last_login_at > userLastSeen[p.id]) {
+          userLastSeen[p.id] = p.last_login_at;
+        }
+      }
+    }
+
     const topUserEntries = Object.entries(userEventCounts)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 10);
+      .slice(0, 15);
 
     const profileMap = new Map(profiles.map((p) => [p.id, p]));
     const topUsers = topUserEntries.map(([userId, eventCount]) => {
@@ -227,38 +267,77 @@ export async function GET(request: NextRequest) {
       return {
         id: userId,
         name: p?.full_name || p?.email || 'Desconhecido',
-        plan: p?.plan || 'starter',
+        email: p?.email || '',
+        level: p?.new_level || 'iniciante',
+        active_days: p?.active_days || 0,
         events: eventCount,
+        last_seen: userLastSeen[userId] || '',
       };
     });
 
-    // ---- Tone preference (from script_usage) ----
-    const toneCounts: Record<string, number> = {};
-    for (const s of scriptUsages) {
-      const tone = s.tone_used || 'casual';
-      toneCounts[tone] = (toneCounts[tone] || 0) + 1;
+    // ---- Recent active users (last 20 unique) ----
+    const recentSeen: { user_id: string; timestamp: string; source: string }[] = [];
+    const seenUsers = new Set<string>();
+    // Sort all activity by timestamp desc
+    const sortedActivity = [...allActivity].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    for (const a of sortedActivity) {
+      if (!seenUsers.has(a.user_id)) {
+        seenUsers.add(a.user_id);
+        recentSeen.push(a);
+        if (recentSeen.length >= 20) break;
+      }
     }
 
-    const tonePreference = Object.entries(toneCounts)
-      .map(([tone, count]) => ({ tone, count }))
-      .sort((a, b) => b.count - a.count);
+    const recentUsers = recentSeen.map((r) => {
+      const p = profileMap.get(r.user_id);
+      return {
+        id: r.user_id,
+        name: p?.full_name || p?.email || 'Desconhecido',
+        email: p?.email || '',
+        last_seen: r.timestamp,
+        last_action: getActionLabel(r.source),
+      };
+    });
 
-    // ---- Script conversion rate ----
-    const totalScriptUses = scriptUsages.length;
-    const salesFromScripts = scriptUsages.filter((s) => s.resulted_in_sale).length;
-    const scriptConversionRate = totalScriptUses > 0
-      ? Math.round((salesFromScripts / totalScriptUses) * 1000) / 10
-      : 0;
+    // ---- Sales stats ----
+    const totalSales = sales.length;
+    const totalRevenue = sales.reduce((sum, s) => sum + Number(s.sale_value || 0), 0);
+
+    // ---- Level distribution ----
+    const levelCounts: Record<string, number> = {};
+    for (const p of profiles) {
+      const lvl = p.new_level || 'iniciante';
+      levelCounts[lvl] = (levelCounts[lvl] || 0) + 1;
+    }
+    const levelDistribution = Object.entries(levelCounts)
+      .map(([level, count]) => ({ level, count }))
+      .sort((a, b) => {
+        const order = ['iniciante', 'aprendiz', 'executor', 'estrategista', 'especialista', 'referencia', 'lenda'];
+        return order.indexOf(a.level) - order.indexOf(b.level);
+      });
 
     const response = NextResponse.json({
+      // Core metrics
       dau,
       wau,
       mau,
-      avg_session_minutes: avgSessionMinutes,
       total_users: profiles.length,
       active_users: profiles.filter((p) => p.is_active).length,
+      new_signups: newSignups,
+      avg_session_minutes: avgSessionMinutes,
+
+      // Onboarding
+      onboarding_completed: onboardingCompleted,
+      onboarding_rate: onboardingRate,
+
+      // Feature usage stats
+      scripts_used: scriptUsages.length,
+      personalized_generated: personalized.length,
+      total_sales: totalSales,
+      total_revenue: totalRevenue,
+
+      // Charts
       dau_trend: dauTrend,
-      logins_trend: loginsTrend,
       top_pages: topPages,
       peak_hours: peakHours,
       feature_usage: featureUsage,
@@ -267,13 +346,11 @@ export async function GET(request: NextRequest) {
         medium: mediumEngagement,
         low: lowEngagement,
       },
+      level_distribution: levelDistribution,
+
+      // Tables
       top_users: topUsers,
-      tone_preference: tonePreference,
-      script_stats: {
-        total_uses: totalScriptUses,
-        sales: salesFromScripts,
-        conversion_rate: scriptConversionRate,
-      },
+      recent_users: recentUsers,
     });
 
     response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
@@ -286,18 +363,25 @@ export async function GET(request: NextRequest) {
 
 function getPageLabel(path: string): string {
   const labels: Record<string, string> = {
-    '/': 'Home',
-    '/scripts': 'Scripts',
-    '/today': 'Hoje',
-    '/agenda': 'Agenda',
-    '/ai-copilot': 'IA Copilot',
-    '/leads': 'Leads/CRM',
-    '/challenges': 'Desafios',
-    '/ranking': 'Ranking',
-    '/profile': 'Perfil',
-    '/settings': 'Configurações',
-    '/emergency': 'Emergência',
-    '/referral': 'Indicações',
+    '/': 'Gestão (Home)',
+    '/dashboard': 'Gestão',
+    '/trilhas': 'Scripts / Trilhas',
+    '/scripts': 'Script Detalhe',
+    '/personalizados': 'Personalizados',
+    '/busca': 'Buscar',
+    '/onboarding': 'Onboarding',
+    '/admin': 'Admin',
+    '/login': 'Login',
   };
   return labels[path] || path;
+}
+
+function getActionLabel(source: string): string {
+  const labels: Record<string, string> = {
+    page_view: 'Navegação',
+    script: 'Usou Script',
+    personalized: 'Gerou Personalizado',
+    sale: 'Registrou Venda',
+  };
+  return labels[source] || source;
 }

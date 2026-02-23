@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { appendToSheet } from '@/lib/google-sheets';
 
@@ -99,30 +100,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send to Google Sheets (fire-and-forget)
-    const now = new Date();
-    const timestamp = now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    // Send to Google Sheets AFTER the response (non-blocking)
+    // after() runs code after the response is sent but Vercel keeps the function alive
     const challengesStr = Array.isArray(main_challenges) ? main_challenges.join(', ') : '';
+    const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
-    appendToSheet([
-      timestamp,
-      full_name || '',
-      phone || '',
-      email || '',
-      instagram || '',
-      company_name || '',
-      business_type || '',
-      business_type_custom || '',
-      role_in_business || '',
-      faturamento_mensal || '',
-      average_ticket || '',
-      target_audience || '',
-      main_objections || '',
-      challengesStr,
-      main_challenges_custom || '',
-      has_partner ? 'Sim' : 'Não',
-      time_knowing_cleiton || '',
-    ]);
+    after(async () => {
+      try {
+        await appendToSheet([
+          timestamp,
+          full_name || '',
+          phone || '',
+          email || '',
+          instagram || '',
+          company_name || '',
+          business_type || '',
+          business_type_custom || '',
+          role_in_business || '',
+          faturamento_mensal || '',
+          average_ticket || '',
+          target_audience || '',
+          main_objections || '',
+          challengesStr,
+          main_challenges_custom || '',
+          has_partner ? 'Sim' : 'Não',
+          time_knowing_cleiton || '',
+        ]);
+      } catch (sheetErr) {
+        console.error('Google Sheets after() sync failed:', sheetErr);
+      }
+    });
 
     return NextResponse.json({ success: true });
   } catch (err) {
