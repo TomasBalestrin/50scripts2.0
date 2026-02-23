@@ -99,33 +99,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send to Google Sheets in background (non-blocking - onboarding is already saved to DB)
+    // Send to Google Sheets (await with 8s internal timeout so Vercel doesn't kill it)
     const now = new Date();
     const timestamp = now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
     const challengesStr = Array.isArray(main_challenges) ? main_challenges.join(', ') : '';
 
-    // Fire-and-forget with internal timeout (appendToSheet has 8s timeout)
-    appendToSheet([
-      timestamp,
-      full_name || '',
-      phone || '',
-      email || '',
-      instagram || '',
-      company_name || '',
-      business_type || '',
-      business_type_custom || '',
-      role_in_business || '',
-      faturamento_mensal || '',
-      average_ticket || '',
-      target_audience || '',
-      main_objections || '',
-      challengesStr,
-      main_challenges_custom || '',
-      has_partner ? 'Sim' : 'Não',
-      time_knowing_cleiton || '',
-    ]).catch((sheetErr) => {
+    try {
+      await appendToSheet([
+        timestamp,
+        full_name || '',
+        phone || '',
+        email || '',
+        instagram || '',
+        company_name || '',
+        business_type || '',
+        business_type_custom || '',
+        role_in_business || '',
+        faturamento_mensal || '',
+        average_ticket || '',
+        target_audience || '',
+        main_objections || '',
+        challengesStr,
+        main_challenges_custom || '',
+        has_partner ? 'Sim' : 'Não',
+        time_knowing_cleiton || '',
+      ]);
+    } catch (sheetErr) {
+      // Non-blocking: onboarding already saved to DB, just log the error
       console.error('Google Sheets sync failed:', sheetErr);
-    });
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {
