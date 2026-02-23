@@ -24,7 +24,7 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
       {/* Nome da empresa */}
       <div className="space-y-2">
         <Label htmlFor="company_name" className="text-sm text-white">
-          Nome da empresa
+          Nome da empresa <span className="text-red-400">*</span>
         </Label>
         <Input
           id="company_name"
@@ -79,7 +79,7 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
 
       {/* Função */}
       <div className="space-y-2">
-        <Label className="text-sm text-white">Função no negócio</Label>
+        <Label className="text-sm text-white">Função no negócio <span className="text-red-400">*</span></Label>
         <Select
           value={data.role_in_business}
           onValueChange={(value) => onChange({ role_in_business: value })}
@@ -103,7 +103,7 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
 
       {/* Faturamento mensal */}
       <div className="space-y-2">
-        <Label className="text-sm text-white">Faturamento mensal</Label>
+        <Label className="text-sm text-white">Faturamento mensal <span className="text-red-400">*</span></Label>
         <Select
           value={data.faturamento_mensal}
           onValueChange={(value) => onChange({ faturamento_mensal: value })}
@@ -128,7 +128,7 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
       {/* Público-alvo */}
       <div className="space-y-2">
         <Label htmlFor="target_audience" className="text-sm text-white">
-          Público-alvo
+          Público-alvo <span className="text-red-400">*</span>
         </Label>
         <Input
           id="target_audience"
@@ -143,7 +143,7 @@ export function StepBusiness({ data, onChange }: StepBusinessProps) {
       {/* Principais objeções */}
       <div className="space-y-2">
         <Label htmlFor="main_objections" className="text-sm text-white">
-          Principais objeções dos clientes
+          Principais objeções dos clientes <span className="text-red-400">*</span>
         </Label>
         <Textarea
           id="main_objections"

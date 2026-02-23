@@ -19,7 +19,7 @@ function formatPhone(value: string): string {
 }
 
 function isValidEmail(email: string): boolean {
-  if (!email) return true; // empty is ok (not required)
+  if (!email) return false;
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
@@ -32,8 +32,8 @@ export function StepPersonal({ data, onChange }: StepPersonalProps) {
   const [emailTouched, setEmailTouched] = useState(false);
 
   const phoneDigits = getPhoneDigits(data.phone);
-  const phoneError = phoneTouched && data.phone && phoneDigits < 10;
-  const emailError = emailTouched && data.email && !isValidEmail(data.email);
+  const phoneError = phoneTouched && phoneDigits < 10;
+  const emailError = emailTouched && !isValidEmail(data.email);
 
   return (
     <div className="space-y-4">
@@ -55,7 +55,7 @@ export function StepPersonal({ data, onChange }: StepPersonalProps) {
       {/* Telefone */}
       <div className="space-y-2">
         <Label htmlFor="phone" className="text-sm text-white">
-          Telefone (WhatsApp)
+          Telefone (WhatsApp) <span className="text-red-400">*</span>
         </Label>
         <Input
           id="phone"
@@ -75,7 +75,7 @@ export function StepPersonal({ data, onChange }: StepPersonalProps) {
       {/* Email */}
       <div className="space-y-2">
         <Label htmlFor="email" className="text-sm text-white">
-          Email
+          Email <span className="text-red-400">*</span>
         </Label>
         <Input
           id="email"
@@ -94,7 +94,7 @@ export function StepPersonal({ data, onChange }: StepPersonalProps) {
       {/* Instagram */}
       <div className="space-y-2">
         <Label htmlFor="instagram" className="text-sm text-white">
-          Instagram
+          Instagram <span className="text-red-400">*</span>
         </Label>
         <Input
           id="instagram"
