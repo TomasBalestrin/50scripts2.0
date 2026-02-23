@@ -99,30 +99,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send to Google Sheets (fire-and-forget)
+    // Send to Google Sheets (await to ensure it completes before function ends)
     const now = new Date();
     const timestamp = now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
     const challengesStr = Array.isArray(main_challenges) ? main_challenges.join(', ') : '';
 
-    appendToSheet([
-      timestamp,
-      full_name || '',
-      phone || '',
-      email || '',
-      instagram || '',
-      company_name || '',
-      business_type || '',
-      business_type_custom || '',
-      role_in_business || '',
-      faturamento_mensal || '',
-      average_ticket || '',
-      target_audience || '',
-      main_objections || '',
-      challengesStr,
-      main_challenges_custom || '',
-      has_partner ? 'Sim' : 'Não',
-      time_knowing_cleiton || '',
-    ]);
+    try {
+      await appendToSheet([
+        timestamp,
+        full_name || '',
+        phone || '',
+        email || '',
+        instagram || '',
+        company_name || '',
+        business_type || '',
+        business_type_custom || '',
+        role_in_business || '',
+        faturamento_mensal || '',
+        average_ticket || '',
+        target_audience || '',
+        main_objections || '',
+        challengesStr,
+        main_challenges_custom || '',
+        has_partner ? 'Sim' : 'Não',
+        time_knowing_cleiton || '',
+      ]);
+    } catch (sheetErr) {
+      console.error('Google Sheets sync failed:', sheetErr);
+      // Non-blocking: onboarding is already saved to DB
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

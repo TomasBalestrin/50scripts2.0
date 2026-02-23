@@ -36,7 +36,14 @@ export async function appendToSheet(row: string[]) {
         values: [row],
       },
     });
-  } catch (err) {
-    console.error('Google Sheets append error:', err);
+  } catch (err: unknown) {
+    const errObj = err as { message?: string; code?: number; response?: { data?: unknown } };
+    console.error('Google Sheets append error:', {
+      message: errObj?.message,
+      code: errObj?.code,
+      response: errObj?.response?.data,
+      spreadsheetId: SPREADSHEET_ID,
+      sheetName: SHEET_NAME,
+    });
   }
 }
