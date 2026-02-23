@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback, createContext, useContext } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Download, WifiOff, X, RefreshCw } from 'lucide-react';
+import { Bell, Download, WifiOff, X, RefreshCw } from 'lucide-react';
+import { subscribeToPush, isSubscribed as checkPushSubscribed } from '@/lib/notifications/push';
 
 // ─── Context ────────────────────────────────────────────────────────────────
 interface PWAContextValue {
@@ -27,6 +28,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
   const [showUpdateBanner, setShowUpdateBanner] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showPushBanner, setShowPushBanner] = useState(false);
 
   // ── Service Worker Registration ──────────────────────────────────────────
   useEffect(() => {
@@ -112,6 +114,40 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
+  }, []);
+
+  // ── Push Notification Prompt ────────────────────────────────────────────
+  useEffect(() => {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+    if (Notification.permission !== 'default') return; // Already granted/denied
+
+    // Check if we already asked
+    const dismissed = localStorage.getItem('push_banner_dismissed');
+    if (dismissed) return;
+
+    // Show banner after 10 seconds
+    const timer = setTimeout(async () => {
+      const alreadySubscribed = await checkPushSubscribed();
+      if (!alreadySubscribed) {
+        setShowPushBanner(true);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleEnablePush = useCallback(async () => {
+    setShowPushBanner(false);
+    localStorage.setItem('push_banner_dismissed', '1');
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      await subscribeToPush();
+    }
+  }, []);
+
+  const handleDismissPush = useCallback(() => {
+    setShowPushBanner(false);
+    localStorage.setItem('push_banner_dismissed', '1');
   }, []);
 
   // ── Actions ──────────────────────────────────────────────────────────────
@@ -209,6 +245,41 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
               </button>
               <button
                 onClick={() => setInstallDismissed(true)}
+                className="shrink-0 rounded-full p-1 text-[#94A3B8] hover:text-white transition-colors"
+                aria-label="Fechar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* ── Push Notification Prompt ─────────────────────────────────── */}
+      <AnimatePresence>
+        {showPushBanner && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="fixed bottom-24 left-4 right-4 z-[95] mx-auto max-w-md rounded-xl border border-[#1D4ED8]/30 bg-[#0A0F1E] p-4 shadow-2xl lg:bottom-6"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1D4ED8]/20">
+                <Bell className="h-5 w-5 text-[#3B82F6]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white">Ativar notificacoes?</p>
+                <p className="text-xs text-[#94A3B8]">Receba alertas de streak, XP e novidades</p>
+              </div>
+              <button
+                onClick={handleEnablePush}
+                className="shrink-0 rounded-lg bg-[#1D4ED8] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1E40AF]"
+              >
+                Ativar
+              </button>
+              <button
+                onClick={handleDismissPush}
                 className="shrink-0 rounded-full p-1 text-[#94A3B8] hover:text-white transition-colors"
                 aria-label="Fechar"
               >
