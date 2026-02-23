@@ -13,19 +13,29 @@ export async function POST() {
     const { error, supabase } = await getAdminUser();
     if (error) return error;
 
-    // Fetch all onboarding data with profile info
-    const { data: onboardings, error: dbError } = await supabase
-      .from('user_onboarding')
-      .select('*, profiles!user_onboarding_user_id_fkey(email, is_active)')
-      .order('created_at', { ascending: true });
+    // Fetch onboarding data and profiles separately (no FK relationship in schema)
+    const [onboardingRes, profilesRes] = await Promise.all([
+      supabase
+        .from('user_onboarding')
+        .select('*')
+        .order('created_at', { ascending: true }),
+      supabase
+        .from('profiles')
+        .select('id, email, is_active'),
+    ]);
 
-    if (dbError) {
-      console.error('[sync-sheets] DB error:', dbError);
+    if (onboardingRes.error) {
+      console.error('[sync-sheets] DB error:', onboardingRes.error);
       return NextResponse.json(
-        { error: `Erro ao buscar dados: ${dbError.message}` },
+        { error: `Erro ao buscar dados: ${onboardingRes.error.message}` },
         { status: 500 }
       );
     }
+
+    const onboardings = onboardingRes.data ?? [];
+    const profileMap = new Map(
+      (profilesRes.data ?? []).map((p) => [p.id, p])
+    );
 
     const rows: string[][] = [];
 
@@ -53,14 +63,14 @@ export async function POST() {
     ]);
 
     // Data rows
-    for (const o of onboardings ?? []) {
+    for (const o of onboardings) {
       const createdAt = o.created_at
         ? new Date(o.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
         : '';
       const challenges = Array.isArray(o.main_challenges)
         ? o.main_challenges.join(', ')
         : '';
-      const profile = o.profiles as { email?: string; is_active?: boolean } | null;
+      const profile = profileMap.get(o.user_id);
 
       rows.push([
         createdAt,
@@ -89,8 +99,8 @@ export async function POST() {
 
     return NextResponse.json({
       success: true,
-      synced: (onboardings ?? []).length,
-      message: `${(onboardings ?? []).length} registros sincronizados com Google Sheets`,
+      synced: onboardings.length,
+      message: `${onboardings.length} registros sincronizados com Google Sheets`,
     });
   } catch (err) {
     console.error('[sync-sheets] Error:', err);
