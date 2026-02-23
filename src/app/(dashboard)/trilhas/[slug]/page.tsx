@@ -65,6 +65,7 @@ export default function TrailScriptsPage() {
 
   const [data, setData] = useState<CategoryWithScripts | null>(null);
   const [loading, setLoading] = useState(true);
+  const [scriptIdsWithSales, setScriptIdsWithSales] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function fetchCategoryScripts() {
@@ -73,6 +74,20 @@ export default function TrailScriptsPage() {
         if (res.ok) {
           const json = await res.json();
           setData(json);
+
+          // Fetch user's sales for these scripts in parallel
+          const scriptIds = (json.scripts || []).map((s: Script) => s.id);
+          if (scriptIds.length > 0) {
+            try {
+              const salesRes = await fetch(`/api/scripts/sales-check?ids=${scriptIds.join(',')}`);
+              if (salesRes.ok) {
+                const salesData = await salesRes.json();
+                setScriptIdsWithSales(new Set(salesData.scriptIds || []));
+              }
+            } catch {
+              // Non-critical - sale badges won't show
+            }
+          }
         }
       } catch (err) {
         console.error('Error fetching category scripts:', err);
@@ -169,6 +184,7 @@ export default function TrailScriptsPage() {
                 <ScriptCard
                   script={{ ...script, category }}
                   locked={isLocked(script)}
+                  hasSale={scriptIdsWithSales.has(script.id)}
                   onClick={() => {
                     if (!isLocked(script)) {
                       router.push(`/scripts/${script.id}`);

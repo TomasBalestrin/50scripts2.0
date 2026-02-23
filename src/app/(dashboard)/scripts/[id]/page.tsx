@@ -16,7 +16,6 @@ import {
 import { Script, ScriptSale, Tone } from '@/types/database';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { StarRating } from '@/components/scripts/star-rating';
 import { SCRIPT_COPY_COOLDOWN_MS } from '@/lib/constants';
 import {
   Dialog,
@@ -275,34 +274,65 @@ export default function ScriptDetailPage() {
   const handleSaleSubmit = useCallback(async () => {
     if (!scriptId || !saleForm.product_name || !saleForm.sale_date || !saleForm.sale_value) return;
     setSubmittingSale(true);
-    try {
-      const payload = {
-        ...(editingSale ? { id: editingSale.id } : {}),
-        product_name: saleForm.product_name,
-        sale_date: saleForm.sale_date,
-        sale_value: parseFloat(saleForm.sale_value.replace(',', '.')),
-      };
 
+    const parsedValue = parseFloat(saleForm.sale_value.replace(',', '.'));
+    const payload = {
+      ...(editingSale ? { id: editingSale.id } : {}),
+      product_name: saleForm.product_name,
+      sale_date: saleForm.sale_date,
+      sale_value: parsedValue,
+    };
+
+    // Optimistic update: immediately show the sale in the list
+    const isEdit = !!editingSale;
+    if (isEdit && editingSale) {
+      setSales((prev) =>
+        prev.map((s) =>
+          s.id === editingSale.id
+            ? { ...s, product_name: payload.product_name, sale_date: payload.sale_date, sale_value: parsedValue }
+            : s
+        )
+      );
+    } else {
+      const now = new Date().toISOString();
+      const optimisticSale: ScriptSale = {
+        id: `temp-${Date.now()}`,
+        user_id: '',
+        script_id: scriptId,
+        product_name: payload.product_name,
+        sale_date: payload.sale_date,
+        sale_value: parsedValue,
+        created_at: now,
+        updated_at: now,
+      };
+      setSales((prev) => [optimisticSale, ...prev]);
+    }
+
+    // Close dialog immediately for fast UX
+    setSaleDialogOpen(false);
+    setEditingSale(null);
+    toast(isEdit ? 'Venda atualizada!' : 'Venda registrada!', 'success');
+
+    if (!isEdit) {
+      setXpAmount(5);
+      setXpTrigger((t) => t + 1);
+    }
+
+    try {
       const res = await fetch(`/api/scripts/${scriptId}/sale`, {
-        method: editingSale ? 'PUT' : 'POST',
+        method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        toast(editingSale ? 'Venda atualizada!' : 'Venda registrada!', 'success');
-        setSaleDialogOpen(false);
-        setEditingSale(null);
+        // Sync with server data in background
         fetchSales();
-        if (!editingSale) {
-          setXpAmount(5);
-          setXpTrigger((t) => t + 1);
-        }
       } else {
-        toast('Erro ao salvar venda', 'error');
+        toast('Erro ao salvar no servidor. Recarregue a página.', 'error');
       }
     } catch {
-      toast('Erro ao salvar venda', 'error');
+      toast('Erro de conexão. Recarregue a página.', 'error');
     } finally {
       setSubmittingSale(false);
     }
@@ -385,7 +415,6 @@ export default function ScriptDetailPage() {
                   {script.category.name}
                 </span>
               )}
-              <StarRating value={Math.round(script.global_effectiveness)} readonly size={16} />
               <span className="text-xs text-[#94A3B8]">
                 {script.global_usage_count} {script.global_usage_count === 1 ? 'uso' : 'usos'}
               </span>
