@@ -18,6 +18,7 @@ import {
   Eye,
   EyeOff,
   RefreshCw,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -80,6 +81,7 @@ export default function AdminUsersPage() {
   }
 
   const [syncLoading, setSyncLoading] = useState(false);
+  const [sheetSyncLoading, setSheetSyncLoading] = useState(false);
 
   const [fetchError, setFetchError] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -149,6 +151,23 @@ export default function AdminUsersPage() {
       showToast('error', 'Erro de conexão ao sincronizar');
     } finally {
       setSyncLoading(false);
+    }
+  }
+
+  async function handleSheetSync() {
+    setSheetSyncLoading(true);
+    try {
+      const res = await fetch('/api/admin/sync-sheets', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('success', data.message || `${data.synced} registros sincronizados`);
+      } else {
+        showToast('error', data.error || 'Erro ao sincronizar planilha');
+      }
+    } catch {
+      showToast('error', 'Erro de conexão ao sincronizar planilha');
+    } finally {
+      setSheetSyncLoading(false);
     }
   }
 
@@ -357,6 +376,19 @@ export default function AdminUsersPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Usuários</h1>
         <div className="flex items-center gap-2">
+          <Button
+            onClick={handleSheetSync}
+            disabled={sheetSyncLoading}
+            variant="outline"
+            className="border-[#131B35] text-gray-300 hover:bg-[#131B35] hover:text-white"
+          >
+            {sheetSyncLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+            )}
+            Sync Planilha
+          </Button>
           <Button
             onClick={handleSync}
             disabled={syncLoading}

@@ -77,7 +77,39 @@ export async function appendToSheet(row: string[]) {
       spreadsheetId: SPREADSHEET_ID,
       sheetName: SHEET_NAME,
     });
-    // Re-throw so callers know it failed
     throw err;
   }
+}
+
+/**
+ * Clears the sheet and writes all rows (header + data).
+ * Used by the admin sync endpoint to do a full re-sync from Supabase.
+ */
+export async function clearAndWriteSheet(rows: string[][]) {
+  const auth = getAuth();
+  if (!auth) {
+    throw new Error('Google Sheets credentials not configured');
+  }
+
+  const sheets = google.sheets({ version: 'v4', auth });
+
+  // Clear existing content
+  await sheets.spreadsheets.values.clear({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}`,
+  });
+
+  // Write all rows at once
+  if (rows.length > 0) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_NAME}!A1`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: rows,
+      },
+    });
+  }
+
+  console.log(`[Google Sheets] Synced ${rows.length} rows (including header)`);
 }

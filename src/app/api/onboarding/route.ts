@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { appendToSheet } from '@/lib/google-sheets';
 
 export async function POST(request: NextRequest) {
   try {
@@ -99,36 +98,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send to Google Sheets (await with 8s internal timeout so Vercel doesn't kill it)
-    const now = new Date();
-    const timestamp = now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-    const challengesStr = Array.isArray(main_challenges) ? main_challenges.join(', ') : '';
-
-    try {
-      await appendToSheet([
-        timestamp,
-        full_name || '',
-        phone || '',
-        email || '',
-        instagram || '',
-        company_name || '',
-        business_type || '',
-        business_type_custom || '',
-        role_in_business || '',
-        faturamento_mensal || '',
-        average_ticket || '',
-        target_audience || '',
-        main_objections || '',
-        challengesStr,
-        main_challenges_custom || '',
-        has_partner ? 'Sim' : 'Não',
-        time_knowing_cleiton || '',
-      ]);
-    } catch (sheetErr) {
-      // Non-blocking: onboarding already saved to DB, just log the error
-      console.error('Google Sheets sync failed:', sheetErr);
-    }
-
+    // Google Sheets sync is handled separately via /api/admin/sync-sheets
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Onboarding API error:', err);
