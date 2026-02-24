@@ -169,10 +169,17 @@ export async function GET(request: NextRequest) {
 
     // ---- Peak hours (from ALL activity sources) ----
     const hourCounts = new Array(24).fill(0);
+    const hourCountsByDay: Record<string, number[]> = {};
     for (const a of allActivity) {
       try {
-        const hour = new Date(a.timestamp).getHours();
-        if (!isNaN(hour)) hourCounts[hour]++;
+        const d = new Date(a.timestamp);
+        const hour = d.getHours();
+        if (!isNaN(hour)) {
+          hourCounts[hour]++;
+          const day = a.timestamp.split('T')[0];
+          if (!hourCountsByDay[day]) hourCountsByDay[day] = new Array(24).fill(0);
+          hourCountsByDay[day][hour]++;
+        }
       } catch {
         // skip invalid timestamps
       }
@@ -182,6 +189,15 @@ export async function GET(request: NextRequest) {
       hour: `${String(hour).padStart(2, '0')}h`,
       count,
     }));
+
+    // Peak hours per day for day filter
+    const peakHoursByDay: Record<string, { hour: string; count: number }[]> = {};
+    for (const [day, counts] of Object.entries(hourCountsByDay)) {
+      peakHoursByDay[day] = counts.map((count, hour) => ({
+        hour: `${String(hour).padStart(2, '0')}h`,
+        count,
+      }));
+    }
 
     // ---- Feature/Module usage breakdown ----
     // Count page views by module from user_activity
@@ -351,6 +367,7 @@ export async function GET(request: NextRequest) {
       dau_trend: dauTrend,
       top_pages: topPages,
       peak_hours: peakHours,
+      peak_hours_by_day: peakHoursByDay,
       feature_usage: featureUsage,
       engagement: {
         high: highEngagement,
