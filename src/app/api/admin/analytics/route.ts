@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/admin/auth';
+import { createAdminClient } from '@/lib/supabase/server';
 
 /**
  * GET /api/admin/analytics?days=30
@@ -12,8 +13,12 @@ import { getAdminUser } from '@/lib/admin/auth';
  */
 export async function GET(request: NextRequest) {
   try {
-    const { error, supabase } = await getAdminUser();
+    // Verify admin access
+    const { error } = await getAdminUser();
     if (error) return error;
+
+    // Use admin client to bypass RLS for all analytics queries
+    const supabase = await createAdminClient();
 
     const days = parseInt(request.nextUrl.searchParams.get('days') || '30', 10);
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
@@ -218,9 +223,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Calculate session duration: if only 1 event, count as 1 min (user was there)
     const sessionDurations = Object.values(userDaySessions)
-      .map((s) => (s.last - s.first) / 1000 / 60)
-      .filter((d) => d > 0);
+      .map((s) => {
+        const mins = (s.last - s.first) / 1000 / 60;
+        return mins > 0 ? mins : 1; // At least 1 min per session
+      });
 
     const avgSessionMinutes = sessionDurations.length > 0
       ? Math.round(sessionDurations.reduce((a, b) => a + b, 0) / sessionDurations.length)
