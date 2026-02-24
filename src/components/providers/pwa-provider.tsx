@@ -37,7 +37,7 @@ function isStandalone(): boolean {
 
 const INSTALL_PROMPT_KEY = 'install_guide_seen';
 const SCRIPT_USE_COUNT_KEY = 'scripts_used_count';
-const SCRIPTS_BEFORE_PROMPT = 3;
+const SCRIPTS_BEFORE_PROMPT = 2;
 
 // ─── Provider ───────────────────────────────────────────────────────────────
 export function PWAProvider({ children }: { children: React.ReactNode }) {
