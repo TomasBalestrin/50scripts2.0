@@ -51,6 +51,7 @@ interface AnalyticsData {
   dau_trend: { date: string; count: number }[];
   top_pages: { path: string; label: string; views: number }[];
   peak_hours: { hour: string; count: number }[];
+  peak_hours_by_day: Record<string, { hour: string; count: number }[]>;
   feature_usage: { feature: string; count: number }[];
   engagement: { high: number; medium: number; low: number };
   level_distribution: { level: string; count: number }[];
@@ -104,6 +105,7 @@ export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState(30);
+  const [peakDay, setPeakDay] = useState<string>('all');
 
   useEffect(() => {
     fetchAnalytics();
@@ -284,12 +286,28 @@ export default function AnalyticsPage() {
 
         <Card className="border-[#131B35] bg-[#0A0F1E]">
           <CardHeader>
-            <CardTitle className="text-base text-white">Horários de Pico</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base text-white">Horarios de Pico</CardTitle>
+              <select
+                value={peakDay}
+                onChange={(e) => setPeakDay(e.target.value)}
+                className="rounded-lg border border-[#131B35] bg-[#020617] px-2 py-1 text-xs text-gray-300 focus:border-[#3B82F6] focus:outline-none"
+              >
+                <option value="all">Todo periodo</option>
+                {Object.keys(data.peak_hours_by_day || {})
+                  .sort((a, b) => b.localeCompare(a))
+                  .map((day) => (
+                    <option key={day} value={day}>
+                      {new Date(day + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', weekday: 'short' })}
+                    </option>
+                  ))}
+              </select>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.peak_hours}>
+                <BarChart data={peakDay === 'all' ? data.peak_hours : (data.peak_hours_by_day?.[peakDay] || data.peak_hours)}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#131B35" />
                   <XAxis
                     dataKey="hour"
