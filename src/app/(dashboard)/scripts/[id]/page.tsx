@@ -16,6 +16,7 @@ import {
 import { Script, ScriptSale, Tone } from '@/types/database';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import { usePWA } from '@/components/providers/pwa-provider';
 import { SCRIPT_COPY_COOLDOWN_MS } from '@/lib/constants';
 import {
   Dialog,
@@ -86,6 +87,7 @@ export default function ScriptDetailPage() {
   const scriptId = params.id as string;
   const { profile } = useAuth();
   const { toasts, toast, dismiss } = useToast();
+  const { notifyScriptUsed } = usePWA();
 
   const [script, setScript] = useState<Script | null>(null);
   const [loading, setLoading] = useState(true);
@@ -245,11 +247,14 @@ export default function ScriptDetailPage() {
         // Non-blocking
       }
 
+      // Track for contextual install prompt
+      notifyScriptUsed();
+
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast('Erro ao copiar', 'error');
     }
-  }, [script, activeContent, activeTone, toast, isCooldownActive, scriptId]);
+  }, [script, activeContent, activeTone, toast, isCooldownActive, scriptId, notifyScriptUsed]);
 
   // Sale form handlers
   const openSaleDialog = useCallback((sale?: ScriptSale) => {
