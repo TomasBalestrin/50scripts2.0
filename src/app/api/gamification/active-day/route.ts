@@ -30,6 +30,7 @@ export async function POST() {
   }
 
   const result = activeDayRes.data;
+  const xpResult = cyclicXpRes.data;
 
   return NextResponse.json({
     active_days: result?.active_days ?? 0,
@@ -39,5 +40,6 @@ export async function POST() {
     streak: result?.streak ?? 0,
     streak_reward_pending: result?.streak_reward_pending ?? false,
     cyclic_xp_added: !cyclicXpRes.error,
+    cyclic_xp_reward_pending: xpResult?.reward_pending ?? false,
   });
 }

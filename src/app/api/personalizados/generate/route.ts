@@ -125,12 +125,12 @@ Máximo 300 palavras. Responda apenas com o script, sem explicações.`;
     // Still return the content even if save fails
   }
 
-  // Award +10 cyclic XP
+  // Award +5 cyclic XP for generating personalized script
   let xpResult = null;
   try {
     const { data: xpData } = await supabase.rpc('add_cyclic_xp', {
       p_user_id: user.id,
-      p_xp: 10,
+      p_xp: 5,
     });
     xpResult = xpData;
   } catch (err) {

@@ -30,7 +30,7 @@ export async function GET() {
       supabase
         .from('profiles')
         .select(
-          'full_name, active_days, new_level, cyclic_xp, current_streak, bonus_scripts, streak_reward_pending'
+          'full_name, active_days, new_level, cyclic_xp, current_streak, bonus_scripts, streak_reward_pending, cyclic_xp_reward_pending'
         )
         .eq('id', userId)
         .single(),
@@ -155,6 +155,7 @@ export async function GET() {
       streak: profile?.current_streak ?? 0,
       bonusScripts: profile?.bonus_scripts ?? 0,
       streakRewardPending: profile?.streak_reward_pending ?? false,
+      cyclicXpRewardPending: profile?.cyclic_xp_reward_pending ?? false,
       // Indicators
       scriptsUsed: uniqueScriptsUsed,
       personalizedGenerated: personalizedCount,
