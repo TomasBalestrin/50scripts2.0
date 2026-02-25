@@ -7,6 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Sparkles, Copy, Check, Loader2, History,
   ChevronDown, ChevronUp,
 } from 'lucide-react';
@@ -33,10 +40,28 @@ interface GenerateResponse {
   xp: { cyclic_xp: number; cyclic_xp_cap: number } | null;
 }
 
+const OBJECTIVES = [
+  { value: 'primeiro-contato', label: 'Primeiro Contato', description: 'Primeira mensagem para um lead novo' },
+  { value: 'follow-up', label: 'Follow-up', description: 'Retorno apos contato sem resposta' },
+  { value: 'cobrar-resposta', label: 'Cobrar Resposta', description: 'Lead visualizou mas nao respondeu' },
+  { value: 'quebrar-objecao', label: 'Quebrar Objecao', description: 'Contornar objecao do lead' },
+  { value: 'fechamento', label: 'Fechamento', description: 'Empurrao final para fechar a venda' },
+  { value: 'pos-venda', label: 'Pos-venda', description: 'Mensagem para quem ja comprou' },
+  { value: 'reativacao', label: 'Reativacao', description: 'Reconectar com lead ou cliente sumido' },
+  { value: 'aquecimento', label: 'Aquecimento de Base', description: 'Nutrir lead frio com valor' },
+];
+
+const TONES = [
+  { value: 'informal', label: 'Informal', description: 'Leve e amigavel, como um amigo' },
+  { value: 'formal', label: 'Formal', description: 'Profissional e educado' },
+  { value: 'direto', label: 'Direto', description: 'Objetivo, sem rodeios' },
+];
+
 const LOADING_STEPS = [
-  'Analisando contexto...',
-  'Consultando seu perfil...',
-  'Gerando script personalizado...',
+  'Analisando seu perfil e contexto...',
+  'Buscando referencias de qualidade...',
+  'Gerando script com IA avancada...',
+  'Refinando e otimizando...',
 ];
 
 const MIN_LOADING_MS = 5000;
@@ -44,6 +69,8 @@ const MIN_LOADING_MS = 5000;
 export default function PersonalizadosPage() {
   const searchParams = useSearchParams();
 
+  const [objective, setObjective] = useState('primeiro-contato');
+  const [tone, setTone] = useState('informal');
   const [situation, setSituation] = useState('');
   const [details, setDetails] = useState('');
   const [generating, setGenerating] = useState(false);
@@ -108,7 +135,7 @@ export default function PersonalizadosPage() {
   }, []);
 
   const handleGenerate = async () => {
-    if (!situation.trim() || !details.trim() || remaining <= 0) return;
+    if (!situation.trim() || remaining <= 0) return;
 
     setGenerating(true);
     setResult('');
@@ -133,13 +160,18 @@ export default function PersonalizadosPage() {
         if (prev < LOADING_STEPS.length - 1) return prev + 1;
         return prev;
       });
-    }, 1600);
+    }, 1200);
 
     try {
       const res = await fetch('/api/personalizados/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ situation: situation.trim(), details: details.trim() }),
+        body: JSON.stringify({
+          situation: situation.trim(),
+          details: details.trim() || undefined,
+          objective,
+          tone,
+        }),
         signal: abortController.signal,
       });
 
@@ -152,7 +184,7 @@ export default function PersonalizadosPage() {
 
       const generatedData = data as GenerateResponse;
 
-      // Ensure minimum 5 seconds of loading
+      // Ensure minimum loading time
       const elapsed = Date.now() - startTime;
       if (elapsed < MIN_LOADING_MS) {
         await new Promise(resolve => setTimeout(resolve, MIN_LOADING_MS - elapsed));
@@ -169,7 +201,7 @@ export default function PersonalizadosPage() {
       if (err instanceof DOMException && err.name === 'AbortError') {
         // User cancelled - don't show error
       } else {
-        setError('Erro de conexão. Verifique sua internet e tente novamente.');
+        setError('Erro de conexao. Verifique sua internet e tente novamente.');
       }
     } finally {
       abortControllerRef.current = null;
@@ -232,8 +264,11 @@ export default function PersonalizadosPage() {
           <div>
             <h1 className="text-2xl font-bold text-white md:text-3xl">
               <Sparkles className="mr-2 inline-block h-7 w-7 text-[#3B82F6]" />
-              Gere scripts personalizados para você!
+              Scripts Personalizados
             </h1>
+            <p className="mt-1 text-sm text-[#94A3B8]">
+              Crie scripts sob medida para sua situacao
+            </p>
           </div>
           <div className="flex-shrink-0">
             <Card className="border-[#1D4ED8]/30 bg-[#131B35]">
@@ -251,32 +286,88 @@ export default function PersonalizadosPage() {
 
         {/* Form */}
         <Card className="border-[#1D4ED8]/20 bg-[#0A0F1E]">
-          <CardContent className="space-y-6 p-6">
+          <CardContent className="space-y-5 p-6">
+            {/* Objective + Tone row */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-white">
+                  Objetivo
+                </Label>
+                <Select value={objective} onValueChange={setObjective}>
+                  <SelectTrigger disabled={generating} className="border-[#1D4ED8]/30 bg-[#131B35] text-white focus:ring-[#3B82F6]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-[#1D4ED8]/30 bg-[#0A0F1E]">
+                    {OBJECTIVES.map(obj => (
+                      <SelectItem
+                        key={obj.value}
+                        value={obj.value}
+                        className="text-white focus:bg-[#1D4ED8]/20 focus:text-white"
+                      >
+                        <span>{obj.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-[#94A3B8]/60">
+                  {OBJECTIVES.find(o => o.value === objective)?.description}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-white">
+                  Tom
+                </Label>
+                <Select value={tone} onValueChange={setTone}>
+                  <SelectTrigger disabled={generating} className="border-[#1D4ED8]/30 bg-[#131B35] text-white focus:ring-[#3B82F6]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-[#1D4ED8]/30 bg-[#0A0F1E]">
+                    {TONES.map(t => (
+                      <SelectItem
+                        key={t.value}
+                        value={t.value}
+                        className="text-white focus:bg-[#1D4ED8]/20 focus:text-white"
+                      >
+                        <span>{t.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-[#94A3B8]/60">
+                  {TONES.find(t => t.value === tone)?.description}
+                </p>
+              </div>
+            </div>
+
+            {/* Situation */}
             <div className="space-y-2">
               <Label htmlFor="situation" className="text-sm font-medium text-white">
-                Situação ou o que o cliente falou
+                Descreva a situacao
               </Label>
               <Textarea
                 id="situation"
-                placeholder="Ex: Lead demonstrou interesse mas não responde há 3 dias..."
+                placeholder="Ex: Lead demonstrou interesse no produto mas disse que precisa pensar. Ele trabalha com estetica e eu vendo um sistema de agendamento..."
                 value={situation}
                 onChange={e => setSituation(e.target.value)}
                 disabled={generating}
-                className="min-h-[100px] resize-none border-[#1D4ED8]/30 bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#3B82F6]"
+                className="min-h-[120px] resize-none border-[#1D4ED8]/30 bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#3B82F6]"
               />
             </div>
 
+            {/* Details (optional) */}
             <div className="space-y-2">
               <Label htmlFor="details" className="text-sm font-medium text-white">
-                Descreva o que você quer gerar
+                Detalhes adicionais{' '}
+                <span className="font-normal text-[#94A3B8]/60">(opcional)</span>
               </Label>
               <Textarea
                 id="details"
-                placeholder="Detalhes do produto, tom desejado, abordagem..."
+                placeholder="Informacoes extras sobre o produto, preco, diferencial, o que o cliente disse..."
                 value={details}
                 onChange={e => setDetails(e.target.value)}
                 disabled={generating}
-                className="min-h-[100px] resize-none border-[#1D4ED8]/30 bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#3B82F6]"
+                className="min-h-[80px] resize-none border-[#1D4ED8]/30 bg-[#131B35] text-white placeholder:text-[#94A3B8]/50 focus:border-[#3B82F6]"
               />
             </div>
 
@@ -288,7 +379,7 @@ export default function PersonalizadosPage() {
 
             <Button
               onClick={handleGenerate}
-              disabled={generating || !situation.trim() || !details.trim() || remaining <= 0}
+              disabled={generating || !situation.trim() || remaining <= 0}
               className="w-full bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/80 disabled:opacity-50"
               size="lg"
             >
@@ -307,7 +398,7 @@ export default function PersonalizadosPage() {
 
             {remaining <= 0 && !generating && (
               <p className="text-center text-sm text-red-400">
-                Você atingiu o limite de scripts deste mês. Continue usando a plataforma para ganhar bônus!
+                Voce atingiu o limite de scripts deste mes. Continue usando a plataforma para ganhar bonus!
               </p>
             )}
           </CardContent>
@@ -390,7 +481,7 @@ export default function PersonalizadosPage() {
         <div className="space-y-4">
           <h2 className="flex items-center gap-2 text-xl font-semibold text-white">
             <History className="h-5 w-5 text-[#3B82F6]" />
-            Histórico de Scripts Gerados
+            Historico de Scripts Gerados
           </h2>
 
           {historyLoading ? (
@@ -400,7 +491,7 @@ export default function PersonalizadosPage() {
           ) : history.length === 0 ? (
             <Card className="border-[#1D4ED8]/10 bg-[#0A0F1E]">
               <CardContent className="py-8 text-center text-[#94A3B8]">
-                Nenhum script gerado ainda. Use o formulário acima para criar seu primeiro!
+                Nenhum script gerado ainda. Use o formulario acima para criar seu primeiro!
               </CardContent>
             </Card>
           ) : (
@@ -450,7 +541,7 @@ export default function PersonalizadosPage() {
                       {isExpanded && (
                         <div className="mt-4 space-y-3 border-t border-[#1D4ED8]/10 pt-4">
                           <div>
-                            <p className="mb-1 text-xs font-medium text-[#94A3B8]/60">Situação</p>
+                            <p className="mb-1 text-xs font-medium text-[#94A3B8]/60">Situacao</p>
                             <p className="text-sm text-[#94A3B8]">{script.situation}</p>
                           </div>
                           {script.description && (
@@ -476,7 +567,7 @@ export default function PersonalizadosPage() {
         </div>
       </div>
 
-      <XpToast amount={10} trigger={xpTrigger} />
+      <XpToast amount={5} trigger={xpTrigger} />
     </div>
   );
 }
