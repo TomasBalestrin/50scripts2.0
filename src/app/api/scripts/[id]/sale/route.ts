@@ -90,9 +90,9 @@ export async function POST(
       );
     }
 
-    // Award +5 cyclic XP
+    // Award +10 cyclic XP for registering a sale
     try {
-      await supabase.rpc('add_cyclic_xp', { p_user_id: user.id, p_xp: 5 });
+      await supabase.rpc('add_cyclic_xp', { p_user_id: user.id, p_xp: 10 });
     } catch (xpError) {
       console.error('[scripts/id/sale] XP award error:', xpError);
       // Non-blocking: sale was already created

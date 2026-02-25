@@ -169,8 +169,9 @@ export const LEVEL_MOTIVATIONAL_MESSAGES: Partial<Record<NewLevel, string>> = {
 // Cyclic XP system (0-100, independent of levels)
 export const CYCLIC_XP_VALUES = {
   LOGIN_DAILY: 10,
-  COPY_SCRIPT: 5,
-  GENERATE_PERSONALIZED: 10,
+  COPY_SCRIPT: 2,
+  GENERATE_PERSONALIZED: 5,
+  REGISTER_SALE: 10,
 } as const;
 
 export const CYCLIC_XP_MAX = 100;

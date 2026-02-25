@@ -18,6 +18,7 @@ import { CyclicXpBar } from '@/components/gamification/cyclic-xp-bar';
 import { LevelProgress } from '@/components/gamification/level-progress';
 import { StreakReward } from '@/components/gamification/streak-reward';
 import { LevelUpModal } from '@/components/gamification/level-up-modal';
+import { CyclicXpRewardModal } from '@/components/gamification/cyclic-xp-reward-modal';
 import { Card, CardContent } from '@/components/ui/card';
 import { XpToast } from '@/components/gamification/xp-toast';
 import type { NewLevel } from '@/types/database';
@@ -45,6 +46,7 @@ interface DashboardData {
   streak: number;
   bonusScripts: number;
   streakRewardPending: boolean;
+  cyclicXpRewardPending: boolean;
   scriptsUsed: number;
   personalizedGenerated: number;
   salesCount: number;
@@ -143,6 +145,9 @@ export default function DashboardPage() {
   // Streak pending (local, so we can toggle after collection)
   const [streakPending, setStreakPending] = useState(false);
 
+  // Cyclic XP reward modal
+  const [cyclicXpRewardOpen, setCyclicXpRewardOpen] = useState(false);
+
   // ------- Fetch dashboard data -------
   const fetchData = useCallback(async () => {
     try {
@@ -153,6 +158,9 @@ export default function DashboardPage() {
       const json: DashboardData = await res.json();
       setData(json);
       setStreakPending(json.streakRewardPending);
+      if (json.cyclicXpRewardPending) {
+        setCyclicXpRewardOpen(true);
+      }
     } catch {
       setError(true);
     } finally {
@@ -178,11 +186,29 @@ export default function DashboardPage() {
         if (result.streak_reward_pending) {
           setStreakPending(true);
         }
+        if (result.cyclic_xp_reward_pending) {
+          setCyclicXpRewardOpen(true);
+        }
       }
     } catch {
       // Non-critical, silently ignore
     }
   }, []);
+
+  // ------- Collect cyclic XP reward -------
+  const handleCollectCyclicReward = useCallback(async () => {
+    try {
+      const res = await fetch('/api/gamification/collect-cyclic-reward', {
+        method: 'POST',
+      });
+      if (res.ok) {
+        setCyclicXpRewardOpen(false);
+        fetchData();
+      }
+    } catch {
+      // Silently ignore
+    }
+  }, [fetchData]);
 
   // ------- Collect streak reward -------
   const handleCollectStreak = useCallback(async () => {
@@ -484,6 +510,11 @@ export default function DashboardPage() {
         level={levelUpLevel}
         isOpen={levelUpModalOpen}
         onClose={() => setLevelUpModalOpen(false)}
+      />
+      <CyclicXpRewardModal
+        isOpen={cyclicXpRewardOpen}
+        onCollect={handleCollectCyclicReward}
+        onClose={() => setCyclicXpRewardOpen(false)}
       />
       <XpToast amount={10} trigger={xpTrigger} />
     </div>
