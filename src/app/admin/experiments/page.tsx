@@ -11,7 +11,6 @@ import {
   TrendingUp,
   AlertTriangle,
   CheckCircle,
-  XCircle,
   RefreshCw,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

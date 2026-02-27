@@ -5,6 +5,7 @@
 let trackFn: ((name: string, props?: Record<string, string | number | boolean>) => void) | null = null;
 
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mod = require('@vercel/analytics');
   trackFn = mod.track;
 } catch {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/server';
-import { handlePurchase, handleCancellation, logWebhookEvent } from '@/lib/webhooks/shared';
+import { handlePurchase, handleCancellation } from '@/lib/webhooks/shared';
 import { getPlatformConfig, buildProductMap } from '@/lib/webhooks/platform-config';
 
 /**

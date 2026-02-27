@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  Search,
   ChevronLeft,
   ChevronRight,
   Loader2,

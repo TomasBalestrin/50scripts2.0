@@ -149,7 +149,7 @@ export async function findOrCreateUser(
       const { data: usersResponse } = await supabase.rpc('get_user_id_by_email', { lookup_email: email }).maybeSingle();
 
       // Fallback: try getUserByEmail if RPC not available
-      let authUserId: string | undefined = usersResponse?.id;
+      let authUserId: string | undefined = (usersResponse as { id?: string } | null)?.id;
 
       if (!authUserId) {
         // Direct query on auth.users via service role (much faster than listUsers pagination)

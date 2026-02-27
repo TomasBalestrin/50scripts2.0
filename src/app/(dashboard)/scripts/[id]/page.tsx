@@ -13,7 +13,7 @@ import {
   Pencil,
   Trash2,
 } from 'lucide-react';
-import { Script, ScriptSale, Tone } from '@/types/database';
+import { Script, ScriptSale } from '@/types/database';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { usePWA } from '@/components/providers/pwa-provider';
@@ -85,7 +85,7 @@ export default function ScriptDetailPage() {
   const params = useParams();
   const router = useRouter();
   const scriptId = params.id as string;
-  const { profile } = useAuth();
+  useAuth();
   const { toasts, toast, dismiss } = useToast();
   const { notifyScriptUsed } = usePWA();
 
@@ -142,7 +142,7 @@ export default function ScriptDetailPage() {
     }
 
     cooldownIntervalRef.current = setInterval(() => {
-      setCooldownRemaining((prev) => {
+      setCooldownRemaining(() => {
         const key = `cooldown_script_${scriptId}`;
         const stored = localStorage.getItem(key);
         if (!stored) return 0;
@@ -162,6 +162,7 @@ export default function ScriptDetailPage() {
         cooldownIntervalRef.current = null;
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cooldownRemaining > 0, scriptId]);
 
   // Fetch script

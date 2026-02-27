@@ -61,6 +61,7 @@ export async function GET(request: NextRequest) {
           ? (s.usage_count[0] as { count: number }).count
           : 0;
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { script_categories: _sc, usage_count: _uc, ...rest } = s;
 
       return {

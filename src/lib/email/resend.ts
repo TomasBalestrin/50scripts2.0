@@ -2,9 +2,11 @@
 // Requires: npm install resend
 // Gracefully handles the case where resend is not installed
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let ResendClient: any = null;
 
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mod = require('resend');
   ResendClient = mod.Resend || mod.default?.Resend;
 } catch {
