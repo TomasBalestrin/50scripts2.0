@@ -34,10 +34,13 @@ export async function logWebhookEvent(
   errorMessage?: string,
   extra?: { planGranted?: string; userCreated?: boolean },
 ) {
+  // Trim payload to avoid bloating the database (Supabase free tier has 500MB limit)
+  const trimmedPayload = trimPayload(payload || {});
+
   const row = {
     source,
     event_type: eventType,
-    payload: payload || {},
+    payload: trimmedPayload,
     email_extracted: email || '',
     status,
     user_id: userId || null,
@@ -56,12 +59,54 @@ export async function logWebhookEvent(
 
       console.error(`[webhook/${source}] Log insert attempt ${attempt + 1} failed:`, insertError.message, insertError.code);
 
+      // Database full or quota exceeded - log prominently
+      if (insertError.message?.includes('quota') || insertError.message?.includes('storage') || insertError.code === '54000') {
+        console.error(`[webhook/${source}] DATABASE QUOTA EXCEEDED - webhooks cannot be logged. Consider upgrading Supabase plan.`);
+        return;
+      }
+
       // Don't retry on constraint violations - they won't resolve
       if (insertError.code === '23505') return;
     } catch (err) {
       console.error(`[webhook/${source}] Log insert attempt ${attempt + 1} exception:`, eventType, err);
     }
   }
+}
+
+/**
+ * Trims large payloads to reduce database storage usage.
+ * Keeps only essential fields to minimize JSONB size.
+ */
+function trimPayload(payload: Record<string, unknown>): Record<string, unknown> {
+  const serialized = JSON.stringify(payload);
+  // If payload is under 2KB, keep it as-is
+  if (serialized.length <= 2048) return payload;
+
+  // Extract only essential fields
+  const trimmed: Record<string, unknown> = {};
+  const essentialKeys = [
+    'event', 'webhook_event_type', 'type', 'order_status',
+    'email', 'product_id', 'order_id', 'transaction_id',
+    'original_event', 'reprocessed', 'original_log_id',
+  ];
+
+  for (const key of essentialKeys) {
+    if (key in payload) trimmed[key] = payload[key];
+  }
+
+  // Extract nested email/product info
+  const data = payload.data as Record<string, unknown> | undefined;
+  const buyer = (data?.buyer || payload.buyer || payload.Customer) as Record<string, unknown> | undefined;
+  const product = (data?.product || payload.product) as Record<string, unknown> | undefined;
+
+  if (buyer?.email) trimmed._buyer_email = buyer.email;
+  if (buyer?.name || buyer?.full_name) trimmed._buyer_name = buyer.name || buyer.full_name;
+  if (product?.id || product?.product_id) trimmed._product_id = product.id || product.product_id;
+
+  trimmed._trimmed = true;
+  trimmed._original_size = serialized.length;
+
+  return trimmed;
 }
 
 /**
@@ -100,24 +145,35 @@ export async function findOrCreateUser(
       authError.message?.toLowerCase().includes('already') ||
       authError.message?.toLowerCase().includes('duplicate')
     ) {
-      // Search for the existing auth user by email
-      // Use paginated call to avoid loading all users at once
-      let authUser: { id: string; email?: string } | undefined;
-      let page = 1;
-      while (!authUser && page <= 10) {
-        const { data: users } = await supabase.auth.admin.listUsers({
-          page,
-          perPage: 100,
-        });
-        authUser = users?.users?.find((u) => u.email === email);
-        if (!users?.users?.length || users.users.length < 100) break;
-        page++;
+      // Look up user directly by email via admin API (single call instead of paginating all users)
+      const { data: usersResponse } = await supabase.rpc('get_user_id_by_email', { lookup_email: email }).maybeSingle();
+
+      // Fallback: try getUserByEmail if RPC not available
+      let authUserId: string | undefined = usersResponse?.id;
+
+      if (!authUserId) {
+        // Direct query on auth.users via service role (much faster than listUsers pagination)
+        const { data: directLookup } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', email)
+          .maybeSingle();
+
+        if (directLookup) {
+          return { userId: directLookup.id, created: false };
+        }
+
+        // Last resort: single-page listUsers (avoid scanning all pages)
+        const { data: users } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+        const authUser = users?.users?.find((u) => u.email === email);
+        authUserId = authUser?.id;
       }
-      if (authUser) {
+
+      if (authUserId) {
         // Create missing profile for existing auth user
         const referralCode = crypto.randomBytes(4).toString('hex').toUpperCase();
         await supabase.from('profiles').upsert({
-          id: authUser.id,
+          id: authUserId,
           email,
           full_name: name || '',
           plan: 'starter',
@@ -125,7 +181,7 @@ export async function findOrCreateUser(
           webhook_source: webhookSource,
           onboarding_completed: true,
         }, { onConflict: 'id' });
-        return { userId: authUser.id, created: false };
+        return { userId: authUserId, created: false };
       }
     }
     throw new Error(`Failed to create user: ${authError.message}`);
