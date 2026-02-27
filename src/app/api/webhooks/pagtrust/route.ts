@@ -32,19 +32,113 @@ const SOURCE = 'pagtrust';
  *   ...
  * }
  *
+ * Suporta Content-Type: application/json E application/x-www-form-urlencoded
  * Autenticacao: Header X-PagTrust-Token (opcional se nao configurado)
  */
+
+/**
+ * Parse the request body from multiple content types.
+ * Supports JSON, form-urlencoded, and plain text (tries JSON parse).
+ */
+async function parseBody(request: NextRequest): Promise<Record<string, unknown>> {
+  const contentType = request.headers.get('content-type') || '';
+
+  // Try JSON first (most common)
+  if (contentType.includes('application/json')) {
+    return await request.json();
+  }
+
+  // Handle form-urlencoded (some payment platforms send this)
+  if (contentType.includes('application/x-www-form-urlencoded')) {
+    const text = await request.text();
+    const params = new URLSearchParams(text);
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of params.entries()) {
+      // Try to parse JSON values (some platforms encode JSON inside form fields)
+      try {
+        result[key] = JSON.parse(value);
+      } catch {
+        result[key] = value;
+      }
+    }
+    return result;
+  }
+
+  // Fallback: try to parse as JSON regardless of content-type
+  // Many platforms don't set content-type correctly
+  const text = await request.text();
+  if (!text.trim()) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Last resort: try form-urlencoded parsing
+    try {
+      const params = new URLSearchParams(text);
+      const result: Record<string, unknown> = {};
+      let hasKeys = false;
+      for (const [key, value] of params.entries()) {
+        hasKeys = true;
+        try {
+          result[key] = JSON.parse(value);
+        } catch {
+          result[key] = value;
+        }
+      }
+      if (hasKeys) return result;
+    } catch {
+      // ignore
+    }
+
+    return { _raw_body: text, _parse_failed: true };
+  }
+}
+
+/**
+ * GET handler - returns endpoint info for URL verification and health checks.
+ * Useful to confirm the webhook URL is reachable from PagTrust.
+ */
+export async function GET() {
+  return NextResponse.json({
+    status: 'active',
+    source: SOURCE,
+    message: 'PagTrust webhook endpoint is active. Send POST requests to process webhooks.',
+    timestamp: new Date().toISOString(),
+  });
+}
+
 export async function POST(request: NextRequest) {
   // Declare outside try so they're available in catch for error logging
   let body: Record<string, unknown> = {};
   let buyerEmail = '';
   let rawEvent = '';
 
+  // Log request arrival immediately for diagnostics
+  const contentType = request.headers.get('content-type') || 'not-set';
+  console.log(`[webhook/pagtrust] Incoming request - Content-Type: ${contentType}, URL: ${request.url}`);
+
   try {
     const config = await getPlatformConfig(SOURCE);
 
-    // Parse body FIRST so we can always log it
-    body = await request.json();
+    // Parse body with multi-format support
+    try {
+      body = await parseBody(request);
+    } catch (parseError) {
+      console.error('[webhook/pagtrust] Body parse failed:', parseError);
+      await logWebhookEvent(SOURCE, 'parse_error', { content_type: contentType, error: String(parseError) }, 'error', '', undefined, `Body parse failed (Content-Type: ${contentType})`);
+      return NextResponse.json({ error: 'Failed to parse request body' }, { status: 400 });
+    }
+
+    // Log parsed body for debugging (first 500 chars)
+    console.log(`[webhook/pagtrust] Parsed body keys: ${Object.keys(body).join(', ')}`);
+
+    if (body._parse_failed) {
+      console.warn('[webhook/pagtrust] Body could not be parsed as JSON or form-urlencoded');
+      await logWebhookEvent(SOURCE, 'parse_error', body, 'error', '', undefined, `Unrecognized body format (Content-Type: ${contentType})`);
+      return NextResponse.json({ error: 'Unrecognized body format' }, { status: 400 });
+    }
 
     // Extract event and email early for logging purposes
     rawEvent = (body.event as string)
@@ -185,7 +279,9 @@ export async function POST(request: NextRequest) {
     try {
       await logWebhookEvent(SOURCE, rawEvent || 'unknown', body, 'error', buyerEmail, undefined,
         error instanceof Error ? error.message : 'Unknown error');
-    } catch { /* silent */ }
+    } catch (logError) {
+      console.error('[webhook/pagtrust] Failed to log error event:', logError);
+    }
 
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
