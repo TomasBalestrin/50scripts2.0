@@ -11,11 +11,10 @@ export async function POST() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Run both RPCs in parallel: record active day + add cyclic XP for daily login
-  const [activeDayRes, cyclicXpRes] = await Promise.all([
-    supabase.rpc('record_active_day', { p_user_id: user.id }),
-    supabase.rpc('add_cyclic_xp', { p_user_id: user.id, p_xp: 10 }),
-  ]);
+  // First, record the active day (checks once-per-day guard)
+  const activeDayRes = await supabase.rpc('record_active_day', {
+    p_user_id: user.id,
+  });
 
   if (activeDayRes.error) {
     return NextResponse.json(
@@ -24,13 +23,26 @@ export async function POST() {
     );
   }
 
-  if (cyclicXpRes.error) {
-    console.error('Failed to add cyclic XP:', cyclicXpRes.error.message);
-    // Don't fail the whole request – active day is the primary operation
-  }
-
   const result = activeDayRes.data;
-  const xpResult = cyclicXpRes.data;
+
+  // Only add cyclic XP if this is the first visit today (not already recorded)
+  // This prevents duplicate XP on every page refresh
+  let cyclicXpAdded = false;
+  let cyclicXpRewardPending = false;
+
+  if (!result?.already_recorded) {
+    const cyclicXpRes = await supabase.rpc('add_cyclic_xp', {
+      p_user_id: user.id,
+      p_xp: 10,
+    });
+
+    if (cyclicXpRes.error) {
+      console.error('Failed to add cyclic XP:', cyclicXpRes.error.message);
+    } else {
+      cyclicXpAdded = true;
+      cyclicXpRewardPending = cyclicXpRes.data?.reward_pending ?? false;
+    }
+  }
 
   return NextResponse.json({
     active_days: result?.active_days ?? 0,
@@ -39,7 +51,7 @@ export async function POST() {
     bonus_scripts: result?.bonus_scripts ?? 0,
     streak: result?.streak ?? 0,
     streak_reward_pending: result?.streak_reward_pending ?? false,
-    cyclic_xp_added: !cyclicXpRes.error,
-    cyclic_xp_reward_pending: xpResult?.reward_pending ?? false,
+    cyclic_xp_added: cyclicXpAdded,
+    cyclic_xp_reward_pending: cyclicXpRewardPending,
   });
 }
