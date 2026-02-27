@@ -10,6 +10,7 @@ interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>
 }
 
 const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ({ className, checked = false, onCheckedChange, disabled, ...props }, ref) => {
     return (
       <button

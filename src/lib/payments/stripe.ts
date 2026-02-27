@@ -2,9 +2,11 @@
 // Requires: npm install stripe
 // This module gracefully handles the case where stripe is not installed
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let StripeConstructor: any = null;
 
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   StripeConstructor = require('stripe').default || require('stripe');
 } catch {
   // Stripe not installed - payment features will be disabled

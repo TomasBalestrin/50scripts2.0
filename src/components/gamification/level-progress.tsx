@@ -19,10 +19,8 @@ interface LevelProgressProps {
 export function LevelProgress({ level, activeDays }: LevelProgressProps) {
   const {
     currentLabel,
-    nextLevel,
     nextLabel,
     nextThreshold,
-    currentThreshold,
     percentage,
     daysRemaining,
     isMaxLevel,

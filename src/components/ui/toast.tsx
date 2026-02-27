@@ -51,6 +51,7 @@ export interface ToastProps
 }
 
 const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ({ className, variant, open = true, onOpenChange, ...props }, ref) => {
     if (!open) return null
 

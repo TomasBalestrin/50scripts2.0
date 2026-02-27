@@ -71,6 +71,7 @@ Tooltip.displayName = "Tooltip"
 const TooltipTrigger = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 >(({ children, asChild, ...props }, ref) => {
   const { setOpen } = React.useContext(TooltipItemContext)
   const { delayDuration } = React.useContext(TooltipContext)

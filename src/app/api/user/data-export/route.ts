@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { getSecurityHeaders } from '@/lib/security/headers';
 import { getDownloadHeaders } from '@/lib/security/headers';
 

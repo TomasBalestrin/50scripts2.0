@@ -2,9 +2,11 @@
 // Requires: npm install @sentry/nextjs
 // Gracefully degrades when not installed
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let Sentry: any = null;
 
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   Sentry = require('@sentry/nextjs');
 } catch {
   // Sentry not installed

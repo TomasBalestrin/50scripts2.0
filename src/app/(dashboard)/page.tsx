@@ -7,7 +7,6 @@ import {
   Sparkles,
   DollarSign,
   TrendingUp,
-  Flame,
   Target,
   Route,
   X,

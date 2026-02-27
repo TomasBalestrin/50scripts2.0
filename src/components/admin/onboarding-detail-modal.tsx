@@ -46,6 +46,7 @@ export function OnboardingDetailModal({ userId, isOpen, onClose }: OnboardingDet
     }
 
     fetchOnboarding();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, userId]);
 
   return (
