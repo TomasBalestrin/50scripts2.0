@@ -152,7 +152,7 @@ export async function findOrCreateUser(
       let authUserId: string | undefined = (usersResponse as { id?: string } | null)?.id;
 
       if (!authUserId) {
-        // Direct query on auth.users via service role (much faster than listUsers pagination)
+        // Direct query on profiles table (much faster than listUsers pagination)
         const { data: directLookup } = await supabase
           .from('profiles')
           .select('id')
@@ -163,10 +163,22 @@ export async function findOrCreateUser(
           return { userId: directLookup.id, created: false };
         }
 
-        // Last resort: single-page listUsers (avoid scanning all pages)
-        const { data: users } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
-        const authUser = users?.users?.find((u) => u.email === email);
-        authUserId = authUser?.id;
+        // Last resort: paginate through ALL auth users (not just first 1000)
+        let foundUser: { id: string } | undefined;
+        let listPage = 1;
+        const listPerPage = 500;
+        while (!foundUser) {
+          const { data: users } = await supabase.auth.admin.listUsers({ page: listPage, perPage: listPerPage });
+          if (!users?.users?.length) break;
+          const match = users.users.find((u) => u.email === email);
+          if (match) {
+            foundUser = { id: match.id };
+            break;
+          }
+          if (users.users.length < listPerPage) break;
+          listPage++;
+        }
+        authUserId = foundUser?.id;
       }
 
       if (authUserId) {
