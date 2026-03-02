@@ -110,8 +110,100 @@ function trimPayload(payload: Record<string, unknown>): Record<string, unknown> 
 }
 
 /**
+ * Looks up an auth user ID by email using the RPC function (single DB query).
+ * Falls back to paginated listUsers if RPC is not available.
+ */
+async function lookupAuthUserByEmail(
+  supabase: Awaited<ReturnType<typeof createAdminClient>>,
+  email: string,
+): Promise<string | undefined> {
+  // Strategy 1: RPC function (requires migration 015)
+  try {
+    const { data: rpcResult, error: rpcError } = await supabase
+      .rpc('get_user_id_by_email', { lookup_email: email })
+      .maybeSingle();
+
+    if (!rpcError && rpcResult) {
+      const userId = (rpcResult as { id?: string })?.id;
+      if (userId) return userId;
+    }
+    if (rpcError) {
+      console.warn(`[webhook] RPC get_user_id_by_email failed (run migration 015?): ${rpcError.message}`);
+    }
+  } catch {
+    // RPC function doesn't exist
+  }
+
+  // Strategy 2: Paginate through auth users (slower but always works)
+  let listPage = 1;
+  const listPerPage = 500;
+  const maxPages = 20; // Safety limit: 10,000 users max
+  while (listPage <= maxPages) {
+    try {
+      const { data: users, error: listError } = await supabase.auth.admin.listUsers({
+        page: listPage,
+        perPage: listPerPage,
+      });
+
+      if (listError) {
+        console.error(`[webhook] listUsers page ${listPage} error: ${listError.message}`);
+        break;
+      }
+
+      if (!users?.users?.length) break;
+
+      const match = users.users.find((u) => u.email === email);
+      if (match) return match.id;
+
+      if (users.users.length < listPerPage) break;
+      listPage++;
+    } catch (err) {
+      console.error(`[webhook] listUsers page ${listPage} exception:`, err);
+      break;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Creates a profile for an auth user. Uses upsert to handle race conditions.
+ */
+async function ensureProfile(
+  supabase: Awaited<ReturnType<typeof createAdminClient>>,
+  userId: string,
+  email: string,
+  name: string,
+  webhookSource: string,
+): Promise<void> {
+  const referralCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+  const { error } = await supabase.from('profiles').upsert(
+    {
+      id: userId,
+      email,
+      full_name: name || '',
+      plan: 'starter',
+      referral_code: referralCode,
+      webhook_source: webhookSource,
+      onboarding_completed: true,
+    },
+    { onConflict: 'id' },
+  );
+
+  if (error) {
+    throw new Error(`Failed to create/upsert profile: ${error.message}`);
+  }
+}
+
+/**
  * Finds an existing user by email or creates a new one.
  * Returns the user ID and whether the user was newly created.
+ *
+ * Handles these scenarios:
+ * 1. User exists in profiles → return immediately
+ * 2. User exists in auth but not in profiles → create missing profile
+ * 3. User is brand new → create auth user + profile
+ * 4. Any createUser error → try to find existing auth user and recover
  */
 export async function findOrCreateUser(
   email: string,
@@ -120,18 +212,27 @@ export async function findOrCreateUser(
 ): Promise<{ userId: string; created: boolean }> {
   const supabase = await createAdminClient();
 
-  // Try to find existing user by email
+  // Step 1: Check profiles table (fast path)
   const { data: existingProfile } = await supabase
     .from('profiles')
     .select('id')
     .eq('email', email)
-    .single();
+    .maybeSingle();
 
   if (existingProfile) {
     return { userId: existingProfile.id, created: false };
   }
 
-  // Create new auth user with default password from app_config
+  // Step 2: Check if user exists in auth (without creating)
+  // This catches the common case where auth user exists but profile is missing
+  const existingAuthId = await lookupAuthUserByEmail(supabase, email);
+  if (existingAuthId) {
+    console.log(`[webhook/${webhookSource}] Auth user exists without profile, creating profile: ${email}`);
+    await ensureProfile(supabase, existingAuthId, email, name, webhookSource);
+    return { userId: existingAuthId, created: false };
+  }
+
+  // Step 3: Create new auth user
   const defaultPassword = await getDefaultPassword();
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email,
@@ -140,84 +241,30 @@ export async function findOrCreateUser(
   });
 
   if (authError) {
-    // Handle case where auth user exists but profile doesn't
-    if (
-      authError.message?.toLowerCase().includes('already') ||
-      authError.message?.toLowerCase().includes('duplicate')
-    ) {
-      // Look up user directly by email via admin API (single call instead of paginating all users)
-      const { data: usersResponse } = await supabase.rpc('get_user_id_by_email', { lookup_email: email }).maybeSingle();
+    const errorMsg = authError.message?.toLowerCase() || '';
+    const isDuplicate = errorMsg.includes('already') || errorMsg.includes('duplicate');
 
-      // Fallback: try getUserByEmail if RPC not available
-      let authUserId: string | undefined = (usersResponse as { id?: string } | null)?.id;
-
-      if (!authUserId) {
-        // Direct query on profiles table (much faster than listUsers pagination)
-        const { data: directLookup } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', email)
-          .maybeSingle();
-
-        if (directLookup) {
-          return { userId: directLookup.id, created: false };
-        }
-
-        // Last resort: paginate through ALL auth users (not just first 1000)
-        let foundUser: { id: string } | undefined;
-        let listPage = 1;
-        const listPerPage = 500;
-        while (!foundUser) {
-          const { data: users } = await supabase.auth.admin.listUsers({ page: listPage, perPage: listPerPage });
-          if (!users?.users?.length) break;
-          const match = users.users.find((u) => u.email === email);
-          if (match) {
-            foundUser = { id: match.id };
-            break;
-          }
-          if (users.users.length < listPerPage) break;
-          listPage++;
-        }
-        authUserId = foundUser?.id;
-      }
-
-      if (authUserId) {
-        // Create missing profile for existing auth user
-        const referralCode = crypto.randomBytes(4).toString('hex').toUpperCase();
-        await supabase.from('profiles').upsert({
-          id: authUserId,
-          email,
-          full_name: name || '',
-          plan: 'starter',
-          referral_code: referralCode,
-          webhook_source: webhookSource,
-          onboarding_completed: true,
-        }, { onConflict: 'id' });
-        return { userId: authUserId, created: false };
+    if (isDuplicate) {
+      // Race condition: user was created between our check and createUser call
+      // Try lookup again
+      console.log(`[webhook/${webhookSource}] Race condition: user created concurrently for ${email}, looking up...`);
+      const raceAuthId = await lookupAuthUserByEmail(supabase, email);
+      if (raceAuthId) {
+        await ensureProfile(supabase, raceAuthId, email, name, webhookSource);
+        return { userId: raceAuthId, created: false };
       }
     }
+
+    // For ANY error (rate limit, quota, network, etc.), log detailed info
+    console.error(`[webhook/${webhookSource}] createUser failed for ${email}: ${authError.message} (code: ${authError.status || 'unknown'})`);
     throw new Error(`Failed to create user: ${authError.message}`);
   }
 
+  // Step 4: Create profile for the new auth user
   const userId = authData.user.id;
+  console.log(`[webhook/${webhookSource}] Created new auth user: ${email} (${userId})`);
 
-  // Generate unique referral code
-  const referralCode = crypto.randomBytes(4).toString('hex').toUpperCase();
-
-  // Create profile
-  const { error: profileError } = await supabase.from('profiles').insert({
-    id: userId,
-    email,
-    full_name: name || '',
-    plan: 'starter',
-    referral_code: referralCode,
-    webhook_source: webhookSource,
-    onboarding_completed: true,
-  });
-
-  if (profileError) {
-    throw new Error(`Failed to create profile: ${profileError.message}`);
-  }
+  await ensureProfile(supabase, userId, email, name, webhookSource);
 
   return { userId, created: true };
 }
