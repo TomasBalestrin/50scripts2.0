@@ -285,11 +285,25 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: createError.message }, { status: 400 });
       }
 
-      // Find the existing auth user
-      const { data: listData } = await adminClient.auth.admin.listUsers({ perPage: 1000 });
-      const existingUser = listData?.users?.find(
-        (u) => u.email?.toLowerCase() === email.toLowerCase()
-      );
+      // Find the existing auth user - paginate through ALL pages
+      let existingUser: { id: string; email?: string } | undefined;
+      {
+        let listPage = 1;
+        const listPerPage = 500;
+        while (!existingUser) {
+          const { data: listData } = await adminClient.auth.admin.listUsers({ page: listPage, perPage: listPerPage });
+          if (!listData?.users?.length) break;
+          const match = listData.users.find(
+            (u) => u.email?.toLowerCase() === email.toLowerCase()
+          );
+          if (match) {
+            existingUser = match;
+            break;
+          }
+          if (listData.users.length < listPerPage) break;
+          listPage++;
+        }
+      }
 
       if (!existingUser) {
         return NextResponse.json(
