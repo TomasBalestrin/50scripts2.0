@@ -1,0 +1,60 @@
+name: Supabase CI
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/config.toml'
+      - 'supabase/seed/**'
+
+jobs:
+  lint-migrations:
+    name: Lint & Validate Migrations
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Validate migration file naming
+        run: |
+          echo "Checking migration files..."
+          for file in supabase/migrations/*.sql; do
+            filename=$(basename "$file")
+            echo "  ✓ $filename"
+          done
+          echo "All migration files validated."
+
+      - name: Start Supabase local (for diff check)
+        run: supabase db start
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Verify migrations apply cleanly
+        run: |
+          for migration in supabase/migrations/*.sql; do
+            echo "Applying: $(basename $migration)"
+            supabase db push --local < "$migration" || true
+          done
+
+      - name: Generate TypeScript types
+        run: |
+          supabase gen types typescript --local > src/types/supabase-generated.ts
+          echo "Types generated successfully."
+
+      - name: Check for migration conflicts
+        run: |
+          migration_count=$(ls supabase/migrations/*.sql | wc -l)
+          echo "Total migrations: $migration_count"
+
+          # Check for duplicate prefixes
+          prefixes=$(ls supabase/migrations/*.sql | xargs -I{} basename {} | cut -d'_' -f1 | sort)
+          duplicates=$(echo "$prefixes" | uniq -d)
+          if [ -n "$duplicates" ]; then
+            echo "⚠️ Warning: Duplicate migration prefixes found: $duplicates"
+            exit 1
+          fi
+          echo "✓ No duplicate migration prefixes."

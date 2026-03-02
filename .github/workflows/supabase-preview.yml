@@ -1,0 +1,99 @@
+name: Supabase Preview Branch
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/seed/**'
+      - 'src/**'
+
+  pull_request_target:
+    types: [closed]
+
+jobs:
+  create-preview:
+    name: Create Preview Branch
+    if: github.event.action != 'closed' || github.event.pull_request.merged != true
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Supabase project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Create preview branch
+        run: |
+          BRANCH_NAME="pr-${{ github.event.pull_request.number }}"
+          supabase branches create "$BRANCH_NAME" || echo "Branch may already exist"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Apply migrations to preview
+        run: supabase db push --branch "pr-${{ github.event.pull_request.number }}"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+      - name: Run seed on preview
+        run: |
+          echo "Seeding preview branch with test data..."
+          supabase db seed --branch "pr-${{ github.event.pull_request.number }}" || echo "Seed skipped"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Comment PR with preview info
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const branchName = `pr-${prNumber}`;
+            const body = `## 🔄 Supabase Preview Branch
+
+            **Branch:** \`${branchName}\`
+            **Status:** ✅ Preview database ready
+
+            ### Preview Details
+            - Migrations applied from this PR
+            - Seed data loaded for testing
+            - Preview branch will be cleaned up when PR is closed
+
+            > ℹ️ Use the preview branch connection string in your local \`.env.local\` to test against the preview database.`;
+
+            github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  cleanup-preview:
+    name: Cleanup Preview Branch
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Supabase project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Delete preview branch
+        run: |
+          BRANCH_NAME="pr-${{ github.event.pull_request.number }}"
+          supabase branches delete "$BRANCH_NAME" || echo "Branch already deleted"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
