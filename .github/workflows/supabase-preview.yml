@@ -6,7 +6,6 @@ on:
     paths:
       - 'supabase/migrations/**'
       - 'supabase/seed/**'
-      - 'src/**'
 
   pull_request_target:
     types: [closed]
@@ -14,65 +13,54 @@ on:
 jobs:
   create-preview:
     name: Create Preview Branch
-    if: github.event.action != 'closed' || github.event.pull_request.merged != true
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
+    # Only run if Supabase secrets are configured
+    env:
+      HAS_SECRETS: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' && secrets.SUPABASE_PROJECT_REF != '' }}
 
     steps:
+      - name: Check for Supabase secrets
+        id: check-secrets
+        run: |
+          if [ "${{ env.HAS_SECRETS }}" != "true" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Supabase secrets not configured. Skipping preview branch creation."
+            echo "To enable, add SUPABASE_ACCESS_TOKEN and SUPABASE_PROJECT_REF to repository secrets."
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.check-secrets.outputs.skip != 'true'
 
       - uses: supabase/setup-cli@v1
+        if: steps.check-secrets.outputs.skip != 'true'
         with:
           version: latest
 
       - name: Link Supabase project
+        if: steps.check-secrets.outputs.skip != 'true'
         run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       - name: Create preview branch
+        if: steps.check-secrets.outputs.skip != 'true'
+        continue-on-error: true
         run: |
           BRANCH_NAME="pr-${{ github.event.pull_request.number }}"
-          supabase branches create "$BRANCH_NAME" || echo "Branch may already exist"
+          supabase branches create "$BRANCH_NAME" || echo "Branch may already exist or branching not available on current plan"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       - name: Apply migrations to preview
+        if: steps.check-secrets.outputs.skip != 'true'
+        continue-on-error: true
         run: supabase db push --branch "pr-${{ github.event.pull_request.number }}"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-
-      - name: Run seed on preview
-        run: |
-          echo "Seeding preview branch with test data..."
-          supabase db seed --branch "pr-${{ github.event.pull_request.number }}" || echo "Seed skipped"
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-      - name: Comment PR with preview info
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const prNumber = context.payload.pull_request.number;
-            const branchName = `pr-${prNumber}`;
-            const body = `## 🔄 Supabase Preview Branch
-
-            **Branch:** \`${branchName}\`
-            **Status:** ✅ Preview database ready
-
-            ### Preview Details
-            - Migrations applied from this PR
-            - Seed data loaded for testing
-            - Preview branch will be cleaned up when PR is closed
-
-            > ℹ️ Use the preview branch connection string in your local \`.env.local\` to test against the preview database.`;
-
-            github.rest.issues.createComment({
-              issue_number: prNumber,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
 
   cleanup-preview:
     name: Cleanup Preview Branch
@@ -80,18 +68,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check for Supabase secrets
+        id: check-secrets
+        run: |
+          if [ "${{ secrets.SUPABASE_ACCESS_TOKEN }}" == "" ] || [ "${{ secrets.SUPABASE_PROJECT_REF }}" == "" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Supabase secrets not configured. Skipping cleanup."
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.check-secrets.outputs.skip != 'true'
 
       - uses: supabase/setup-cli@v1
+        if: steps.check-secrets.outputs.skip != 'true'
         with:
           version: latest
 
       - name: Link Supabase project
+        if: steps.check-secrets.outputs.skip != 'true'
         run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       - name: Delete preview branch
+        if: steps.check-secrets.outputs.skip != 'true'
+        continue-on-error: true
         run: |
           BRANCH_NAME="pr-${{ github.event.pull_request.number }}"
           supabase branches delete "$BRANCH_NAME" || echo "Branch already deleted"

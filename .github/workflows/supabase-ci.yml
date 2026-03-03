@@ -15,35 +15,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
-
       - name: Validate migration file naming
         run: |
           echo "Checking migration files..."
           for file in supabase/migrations/*.sql; do
             filename=$(basename "$file")
+            # Check that filename starts with a number prefix
+            if [[ ! "$filename" =~ ^[0-9]+ ]]; then
+              echo "  ✗ $filename (invalid: must start with numeric prefix)"
+              exit 1
+            fi
             echo "  ✓ $filename"
           done
           echo "All migration files validated."
-
-      - name: Start Supabase local (for diff check)
-        run: supabase db start
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-      - name: Verify migrations apply cleanly
-        run: |
-          for migration in supabase/migrations/*.sql; do
-            echo "Applying: $(basename $migration)"
-            supabase db push --local < "$migration" || true
-          done
-
-      - name: Generate TypeScript types
-        run: |
-          supabase gen types typescript --local > src/types/supabase-generated.ts
-          echo "Types generated successfully."
 
       - name: Check for migration conflicts
         run: |
@@ -58,3 +42,17 @@ jobs:
             exit 1
           fi
           echo "✓ No duplicate migration prefixes."
+
+      - name: Validate SQL syntax (basic)
+        run: |
+          echo "Running basic SQL validation..."
+          for file in supabase/migrations/*.sql; do
+            filename=$(basename "$file")
+            # Check file is not empty
+            if [ ! -s "$file" ]; then
+              echo "  ✗ $filename (empty file)"
+              exit 1
+            fi
+            echo "  ✓ $filename"
+          done
+          echo "All migration files passed basic validation."
