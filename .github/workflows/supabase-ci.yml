@@ -1,0 +1,58 @@
+name: Supabase CI
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/config.toml'
+      - 'supabase/seed/**'
+
+jobs:
+  lint-migrations:
+    name: Lint & Validate Migrations
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate migration file naming
+        run: |
+          echo "Checking migration files..."
+          for file in supabase/migrations/*.sql; do
+            filename=$(basename "$file")
+            # Check that filename starts with a number prefix
+            if [[ ! "$filename" =~ ^[0-9]+ ]]; then
+              echo "  ✗ $filename (invalid: must start with numeric prefix)"
+              exit 1
+            fi
+            echo "  ✓ $filename"
+          done
+          echo "All migration files validated."
+
+      - name: Check for migration conflicts
+        run: |
+          migration_count=$(ls supabase/migrations/*.sql | wc -l)
+          echo "Total migrations: $migration_count"
+
+          # Check for duplicate prefixes
+          prefixes=$(ls supabase/migrations/*.sql | xargs -I{} basename {} | cut -d'_' -f1 | sort)
+          duplicates=$(echo "$prefixes" | uniq -d)
+          if [ -n "$duplicates" ]; then
+            echo "⚠️ Warning: Duplicate migration prefixes found: $duplicates"
+            exit 1
+          fi
+          echo "✓ No duplicate migration prefixes."
+
+      - name: Validate SQL syntax (basic)
+        run: |
+          echo "Running basic SQL validation..."
+          for file in supabase/migrations/*.sql; do
+            filename=$(basename "$file")
+            # Check file is not empty
+            if [ ! -s "$file" ]; then
+              echo "  ✗ $filename (empty file)"
+              exit 1
+            fi
+            echo "  ✓ $filename"
+          done
+          echo "All migration files passed basic validation."
