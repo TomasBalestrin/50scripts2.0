@@ -93,7 +93,7 @@ describe('Plan Gating Logic', () => {
     it('should give starter plan basic features only', () => {
       const features = getAvailableFeatures('starter');
 
-      // Basic features should be true
+      // Basic features should be true (available to all plans)
       expect(features.scripts).toBe(true);
       expect(features.trails).toBe(true);
       expect(features.copyScript).toBe(true);
@@ -104,6 +104,7 @@ describe('Plan Gating Logic', () => {
       expect(features.basicDashboard).toBe(true);
       expect(features.textSearch).toBe(true);
       expect(features.profile).toBe(true);
+      expect(features.leadHistory).toBe(true);
 
       // Pro features should be false
       expect(features.revenueDashboard).toBe(false);
@@ -117,12 +118,12 @@ describe('Plan Gating Logic', () => {
       expect(features.dailyChallenges).toBe(false);
       expect(features.salesAgenda).toBe(false);
       expect(features.advancedAnalytics).toBe(false);
+      expect(features.aiGeneration).toBe(false);
 
       // Premium features should be false
       expect(features.pipeline).toBe(false);
-      expect(features.leadHistory).toBe(false);
       expect(features.realLeadAgenda).toBe(false);
-      expect(features.aiGeneration).toBe(false);
+      expect(features.patternAnalysis).toBe(false);
       expect(features.semanticSearch).toBe(false);
       expect(features.audioModels).toBe(false);
       expect(features.resultCards).toBe(false);
@@ -132,7 +133,6 @@ describe('Plan Gating Logic', () => {
       // Copilot features should be false
       expect(features.aiConversational).toBe(false);
       expect(features.aiUnlimited).toBe(false);
-      expect(features.patternAnalysis).toBe(false);
       expect(features.smartAgenda).toBe(false);
       expect(features.dataExport).toBe(false);
       expect(features.earlyAccess).toBe(false);
@@ -144,6 +144,7 @@ describe('Plan Gating Logic', () => {
       // Starter features
       expect(features.scripts).toBe(true);
       expect(features.trails).toBe(true);
+      expect(features.leadHistory).toBe(true);
 
       // Pro features should be true
       expect(features.revenueDashboard).toBe(true);
@@ -151,16 +152,16 @@ describe('Plan Gating Logic', () => {
       expect(features.toneVariations).toBe(true);
       expect(features.communityMetrics).toBe(true);
       expect(features.pushNotifications).toBe(true);
-      expect(features.chromeExtension).toBe(true);
       expect(features.pwaOffline).toBe(true);
       expect(features.gamification).toBe(true);
       expect(features.dailyChallenges).toBe(true);
       expect(features.salesAgenda).toBe(true);
       expect(features.advancedAnalytics).toBe(true);
+      expect(features.aiGeneration).toBe(true);
 
       // Premium features should be false
+      expect(features.chromeExtension).toBe(false);
       expect(features.pipeline).toBe(false);
-      expect(features.aiGeneration).toBe(false);
       expect(features.collections).toBe(false);
 
       // Copilot features should be false
@@ -173,16 +174,18 @@ describe('Plan Gating Logic', () => {
 
       // Starter features
       expect(features.scripts).toBe(true);
+      expect(features.leadHistory).toBe(true);
 
       // Pro features
       expect(features.revenueDashboard).toBe(true);
       expect(features.gamification).toBe(true);
+      expect(features.aiGeneration).toBe(true);
 
       // Premium features should be true
       expect(features.pipeline).toBe(true);
-      expect(features.leadHistory).toBe(true);
+      expect(features.chromeExtension).toBe(true);
       expect(features.realLeadAgenda).toBe(true);
-      expect(features.aiGeneration).toBe(true);
+      expect(features.patternAnalysis).toBe(true);
       expect(features.semanticSearch).toBe(true);
       expect(features.audioModels).toBe(true);
       expect(features.resultCards).toBe(true);
@@ -192,7 +195,6 @@ describe('Plan Gating Logic', () => {
       // Copilot features should be false
       expect(features.aiConversational).toBe(false);
       expect(features.aiUnlimited).toBe(false);
-      expect(features.patternAnalysis).toBe(false);
       expect(features.smartAgenda).toBe(false);
       expect(features.dataExport).toBe(false);
       expect(features.earlyAccess).toBe(false);

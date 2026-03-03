@@ -95,10 +95,10 @@ describe('Utility Functions', () => {
       expect(result).toBe('single');
     });
 
-    it('should not produce duplicate classes', () => {
-      const result = cn('foo', 'foo');
-      // tailwind-merge deduplicates
-      expect(result).toBe('foo');
+    it('should deduplicate Tailwind classes', () => {
+      const result = cn('p-4', 'p-4');
+      // tailwind-merge deduplicates known Tailwind classes
+      expect(result).toBe('p-4');
     });
 
     it('should handle whitespace in class strings', () => {
