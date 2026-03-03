@@ -11,7 +11,6 @@ import {
   AI_CREDITS,
   REFERRAL_REWARDS,
   COLORS,
-  DEFAULT_PASSWORD,
   EMERGENCY_TYPES,
   EMERGENCY_LABELS,
   TRAIL_SLUGS,
@@ -64,9 +63,9 @@ describe('Constants Integrity', () => {
       expect(Object.keys(PLAN_PRICES)).toEqual(Object.keys(PLAN_HIERARCHY));
     });
 
-    it('should have prices in R$ format', () => {
+    it('should have prices in R$ format or Grátis', () => {
       Object.values(PLAN_PRICES).forEach((price) => {
-        expect(price).toMatch(/^R\$/);
+        expect(price).toMatch(/^(R\$|Grátis)/);
       });
     });
   });
@@ -192,13 +191,16 @@ describe('Constants Integrity', () => {
       expect(Object.keys(AI_CREDITS)).toEqual(Object.keys(PLAN_HIERARCHY));
     });
 
-    it('should give no AI credits to starter and pro', () => {
+    it('should give no AI credits to starter', () => {
       expect(AI_CREDITS.starter).toBe(0);
-      expect(AI_CREDITS.pro).toBe(0);
     });
 
-    it('should give 15 credits to premium', () => {
-      expect(AI_CREDITS.premium).toBe(15);
+    it('should give 15 credits to pro', () => {
+      expect(AI_CREDITS.pro).toBe(15);
+    });
+
+    it('should give 30 credits to premium', () => {
+      expect(AI_CREDITS.premium).toBe(30);
     });
 
     it('should give unlimited (-1) credits to copilot', () => {
@@ -260,17 +262,6 @@ describe('Constants Integrity', () => {
         expect(EMERGENCY_LABELS).toHaveProperty(type);
         expect(typeof EMERGENCY_LABELS[type]).toBe('string');
       });
-    });
-  });
-
-  describe('DEFAULT_PASSWORD', () => {
-    it('should be defined and non-empty', () => {
-      expect(DEFAULT_PASSWORD).toBeDefined();
-      expect(DEFAULT_PASSWORD.length).toBeGreaterThan(0);
-    });
-
-    it('should meet minimum security requirements (8+ chars)', () => {
-      expect(DEFAULT_PASSWORD.length).toBeGreaterThanOrEqual(8);
     });
   });
 
