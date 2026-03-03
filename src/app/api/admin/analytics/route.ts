@@ -2,6 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/server';
 
+const PAGE_SIZE = 1000;
+
+/**
+ * Fetches all rows from a Supabase query by paginating through results.
+ * Supabase returns at most 1000 rows per request by default.
+ */
+async function fetchAllRows<T>(
+  queryFn: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>,
+): Promise<T[]> {
+  const allRows: T[] = [];
+  let offset = 0;
+
+  while (true) {
+    const { data, error } = await queryFn(offset, offset + PAGE_SIZE - 1);
+    if (error) {
+      console.error('[admin/analytics] Pagination query error:', error);
+      break;
+    }
+    const rows = data ?? [];
+    allRows.push(...rows);
+    if (rows.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+
+  return allRows;
+}
+
 /**
  * GET /api/admin/analytics?days=30
  * Returns usability-focused analytics:
@@ -27,51 +54,62 @@ export async function GET(request: NextRequest) {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Run ALL queries in parallel
+    // Run ALL queries in parallel, paginating to fetch beyond 1000-row limit
     const [
-      activityRes,
-      profilesRes,
-      scriptUsageRes,
-      personalizedRes,
-      salesRes,
-      onboardingRes,
+      activities,
+      profiles,
+      scriptUsages,
+      personalized,
+      sales,
+      onboardings,
     ] = await Promise.all([
-      supabase
-        .from('user_activity')
-        .select('user_id, event_type, page_path, created_at')
-        .gte('created_at', since)
-        .order('created_at', { ascending: true }),
+      fetchAllRows((from, to) =>
+        supabase
+          .from('user_activity')
+          .select('user_id, event_type, page_path, created_at')
+          .gte('created_at', since)
+          .order('created_at', { ascending: true })
+          .range(from, to),
+      ),
 
-      supabase
-        .from('profiles')
-        .select('id, email, full_name, last_login_at, last_active_date, created_at, is_active, onboarding_completed, new_level, active_days'),
+      fetchAllRows((from, to) =>
+        supabase
+          .from('profiles')
+          .select('id, email, full_name, last_login_at, last_active_date, created_at, is_active, onboarding_completed, new_level, active_days')
+          .range(from, to),
+      ),
 
-      supabase
-        .from('script_usage')
-        .select('user_id, script_id, used_at')
-        .gte('used_at', since),
+      fetchAllRows((from, to) =>
+        supabase
+          .from('script_usage')
+          .select('user_id, script_id, used_at')
+          .gte('used_at', since)
+          .range(from, to),
+      ),
 
-      supabase
-        .from('personalized_scripts')
-        .select('user_id, created_at')
-        .gte('created_at', since),
+      fetchAllRows((from, to) =>
+        supabase
+          .from('personalized_scripts')
+          .select('user_id, created_at')
+          .gte('created_at', since)
+          .range(from, to),
+      ),
 
-      supabase
-        .from('script_sales')
-        .select('user_id, sale_value, sale_date, created_at')
-        .gte('created_at', since),
+      fetchAllRows((from, to) =>
+        supabase
+          .from('script_sales')
+          .select('user_id, sale_value, sale_date, created_at')
+          .gte('created_at', since)
+          .range(from, to),
+      ),
 
-      supabase
-        .from('user_onboarding')
-        .select('user_id, created_at'),
+      fetchAllRows((from, to) =>
+        supabase
+          .from('user_onboarding')
+          .select('user_id, created_at')
+          .range(from, to),
+      ),
     ]);
-
-    const activities = activityRes.data ?? [];
-    const profiles = profilesRes.data ?? [];
-    const scriptUsages = scriptUsageRes.data ?? [];
-    const personalized = personalizedRes.data ?? [];
-    const sales = salesRes.data ?? [];
-    const onboardings = onboardingRes.data ?? [];
 
     // ---- Build unified activity timeline from ALL sources ----
     type ActivityEntry = { user_id: string; timestamp: string; source: string };

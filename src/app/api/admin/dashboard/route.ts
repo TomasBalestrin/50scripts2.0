@@ -8,16 +8,46 @@ const PLAN_PRICES: Record<string, number> = {
   copilot: 99.9,
 };
 
+const PAGE_SIZE = 1000;
+
+/**
+ * Fetches all rows from a Supabase query by paginating through results.
+ * Supabase returns at most 1000 rows per request by default.
+ */
+async function fetchAllRows<T>(
+  queryFn: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>,
+): Promise<T[]> {
+  const allRows: T[] = [];
+  let offset = 0;
+
+  while (true) {
+    const { data, error } = await queryFn(offset, offset + PAGE_SIZE - 1);
+    if (error) {
+      console.error('[admin/dashboard] Pagination query error:', error);
+      break;
+    }
+    const rows = data ?? [];
+    allRows.push(...rows);
+    if (rows.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+
+  return allRows;
+}
+
 export async function GET() {
   try {
     const { error, supabase } = await getAdminUser();
     if (error) return error;
 
-    // Run ALL independent queries in parallel (was sequential before)
-    const [profilesRes, topScriptsRes, aiLogsRes, webhooksRes] = await Promise.all([
-      supabase
-        .from('profiles')
-        .select('plan, is_active, created_at, last_login_at'),
+    // Run ALL independent queries in parallel, paginating to fetch beyond 1000-row limit
+    const [allProfiles, topScriptsRes, aiLogs, webhooksRes] = await Promise.all([
+      fetchAllRows((from, to) =>
+        supabase
+          .from('profiles')
+          .select('plan, is_active, created_at, last_login_at')
+          .range(from, to),
+      ),
       supabase
         .from('scripts')
         .select(`
@@ -26,17 +56,18 @@ export async function GET() {
         `)
         .order('global_usage_count', { ascending: false })
         .limit(10),
-      supabase
-        .from('ai_generation_logs')
-        .select('tokens_used'),
+      fetchAllRows((from, to) =>
+        supabase
+          .from('ai_generation_logs')
+          .select('tokens_used')
+          .range(from, to),
+      ),
       supabase
         .from('webhook_logs')
         .select('id, source, event_type, email_extracted, status, error_message, processed_at')
         .order('processed_at', { ascending: false })
         .limit(10),
     ]);
-
-    const allProfiles = profilesRes.data ?? [];
 
     // ---- Compute everything from profiles in memory (zero extra DB calls) ----
     const totalUsersByPlan: Record<string, number> = {
@@ -166,7 +197,6 @@ export async function GET() {
     });
 
     // ---- AI consumption (from parallel query) ----
-    const aiLogs = aiLogsRes.data ?? [];
     const totalGenerations = aiLogs.length;
     const totalTokens = aiLogs.reduce(
       (sum, l) => sum + (l.tokens_used ?? 0),
