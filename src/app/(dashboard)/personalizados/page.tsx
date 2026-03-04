@@ -175,10 +175,17 @@ export default function PersonalizadosPage() {
         signal: abortController.signal,
       });
 
-      const data = await res.json();
+      let data: Record<string, unknown>;
+      try {
+        data = await res.json();
+      } catch {
+        console.error('[personalizados] Failed to parse response:', res.status, res.statusText);
+        setError('Erro ao gerar script. Tente novamente.');
+        return;
+      }
 
       if (!res.ok) {
-        setError(data.error || 'Erro ao gerar script. Tente novamente.');
+        setError((data.error as string) || 'Erro ao gerar script. Tente novamente.');
         return;
       }
 
@@ -201,6 +208,7 @@ export default function PersonalizadosPage() {
       if (err instanceof DOMException && err.name === 'AbortError') {
         // User cancelled - don't show error
       } else {
+        console.error('[personalizados] Generate error:', err);
         setError('Erro de conexao. Verifique sua internet e tente novamente.');
       }
     } finally {
