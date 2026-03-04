@@ -66,45 +66,49 @@ export async function POST(request: NextRequest) {
   const selectedObjective = objective || 'primeiro-contato';
   const selectedTone = tone || 'informal';
 
-  // Credit check + profile + onboarding + few-shot scripts in parallel
+  // Credit check + profile + onboarding in parallel
   const categorySlug = OBJECTIVE_CATEGORY_MAP[selectedObjective] || 'primeiro-contato';
   const toneField = selectedTone === 'formal' ? 'content_formal' : selectedTone === 'direto' ? 'content_direct' : 'content';
 
-  const [
-    { count: monthCount, error: countError },
-    { data: profile, error: profileError },
-    { data: onboarding },
-    { data: exampleScripts },
-  ] = await Promise.all([
-    supabase
-      .from('personalized_scripts')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
-    supabase
-      .from('profiles')
-      .select('bonus_scripts')
-      .eq('id', user.id)
-      .single(),
-    supabase
-      .from('user_onboarding')
-      .select('*')
-      .eq('user_id', user.id)
-      .single(),
-    // Fetch 2 example scripts from the matching category for few-shot
-    supabase
-      .from('scripts')
-      .select(`title, ${toneField}, context_description, category_id`)
-      .eq('is_active', true)
-      .in('category_id', supabase.from('script_categories').select('id').eq('slug', categorySlug) as never)
-      .limit(2),
-  ]);
+  let monthCount: number | null = null;
+  let profile: { bonus_scripts: number } | null = null;
+  let onboarding: Record<string, unknown> | null = null;
 
-  if (countError || profileError) {
-    const errMsg = countError?.message || profileError?.message || 'Unknown';
-    console.error('[personalizados/generate] Credit check error:', errMsg);
+  try {
+    const [countResult, profileResult, onboardingResult] = await Promise.all([
+      supabase
+        .from('personalized_scripts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
+      supabase
+        .from('profiles')
+        .select('bonus_scripts')
+        .eq('id', user.id)
+        .single(),
+      supabase
+        .from('user_onboarding')
+        .select('*')
+        .eq('user_id', user.id)
+        .single(),
+    ]);
+
+    if (countResult.error || profileResult.error) {
+      const errMsg = countResult.error?.message || profileResult.error?.message || 'Unknown';
+      console.error('[personalizados/generate] Credit check error:', errMsg);
+      return NextResponse.json(
+        { error: `Erro ao verificar creditos: ${errMsg}` },
+        { status: 500 }
+      );
+    }
+
+    monthCount = countResult.count;
+    profile = profileResult.data;
+    onboarding = onboardingResult.data;
+  } catch (err) {
+    console.error('[personalizados/generate] Database query error:', err);
     return NextResponse.json(
-      { error: `Erro ao verificar creditos: ${errMsg}` },
+      { error: 'Erro ao consultar banco de dados. Tente novamente.' },
       { status: 500 }
     );
   }
@@ -120,28 +124,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // If the subquery for scripts didn't work, try a direct approach
+  // Fetch few-shot example scripts using a proper join query
   let fewShotExamples: { title: string; content: string }[] = [];
-  if (exampleScripts && exampleScripts.length > 0) {
-    fewShotExamples = exampleScripts.map((s: Record<string, unknown>) => ({
-      title: s.title as string,
-      content: (s[toneField] as string) || (s.content as string) || '',
-    }));
-  } else {
-    // Fallback: query with join
-    const { data: fallbackScripts } = await supabase
+  try {
+    const { data: exampleScripts } = await supabase
       .from('scripts')
       .select(`title, ${toneField}, content, script_categories!inner(slug)`)
       .eq('is_active', true)
       .eq('script_categories.slug', categorySlug)
       .limit(2);
 
-    if (fallbackScripts && fallbackScripts.length > 0) {
-      fewShotExamples = fallbackScripts.map((s: Record<string, unknown>) => ({
+    if (exampleScripts && exampleScripts.length > 0) {
+      fewShotExamples = exampleScripts.map((s: Record<string, unknown>) => ({
         title: s.title as string,
         content: (s[toneField] as string) || (s.content as string) || '',
       }));
     }
+  } catch (err) {
+    console.error('[personalizados/generate] Few-shot query error:', err);
+    // Non-critical: continue without examples
   }
 
   // Build onboarding context
