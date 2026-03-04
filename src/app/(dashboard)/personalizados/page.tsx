@@ -189,7 +189,7 @@ export default function PersonalizadosPage() {
         return;
       }
 
-      const generatedData = data as GenerateResponse;
+      const generatedData = data as unknown as GenerateResponse;
 
       // Ensure minimum loading time
       const elapsed = Date.now() - startTime;
