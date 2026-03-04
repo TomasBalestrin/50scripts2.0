@@ -19,6 +19,9 @@ import {
   EyeOff,
   RefreshCw,
   FileSpreadsheet,
+  Upload,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -82,6 +85,18 @@ export default function AdminUsersPage() {
 
   const [syncLoading, setSyncLoading] = useState(false);
   const [sheetSyncLoading, setSheetSyncLoading] = useState(false);
+
+  // Bulk import modal
+  const [showBulkImportModal, setShowBulkImportModal] = useState(false);
+  const [bulkImportFile, setBulkImportFile] = useState<File | null>(null);
+  const [bulkImportLoading, setBulkImportLoading] = useState(false);
+  const [bulkImportResult, setBulkImportResult] = useState<{
+    success: boolean;
+    total: number;
+    created: number;
+    duplicates: number;
+    errors: { email: string; error: string }[];
+  } | null>(null);
 
   const [fetchError, setFetchError] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -168,6 +183,36 @@ export default function AdminUsersPage() {
       showToast('error', 'Erro de conexão ao sincronizar planilha');
     } finally {
       setSheetSyncLoading(false);
+    }
+  }
+
+  async function handleBulkImport() {
+    if (!bulkImportFile) return;
+    setBulkImportLoading(true);
+    setBulkImportResult(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', bulkImportFile);
+      formData.append('password', 'performance123');
+      formData.append('plan', 'starter');
+
+      const res = await fetch('/api/admin/users/bulk-import', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setBulkImportResult(data);
+        if (data.created > 0) {
+          await fetchUsers();
+        }
+      } else {
+        showToast('error', data.error || 'Erro na importação');
+      }
+    } catch {
+      showToast('error', 'Erro de conexão na importação');
+    } finally {
+      setBulkImportLoading(false);
     }
   }
 
@@ -401,6 +446,18 @@ export default function AdminUsersPage() {
               <RefreshCw className="mr-2 h-4 w-4" />
             )}
             Sincronizar
+          </Button>
+          <Button
+            onClick={() => {
+              setBulkImportFile(null);
+              setBulkImportResult(null);
+              setShowBulkImportModal(true);
+            }}
+            variant="outline"
+            className="border-[#131B35] text-gray-300 hover:bg-[#131B35] hover:text-white"
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Importar CSV
           </Button>
           <Button
             onClick={() => {
@@ -1063,6 +1120,104 @@ export default function AdminUsersPage() {
           onClose={() => setOnboardingUserId(null)}
         />
       )}
+
+      {/* ===== Bulk Import Modal ===== */}
+      <Dialog open={showBulkImportModal} onOpenChange={setShowBulkImportModal}>
+        <DialogContent className="border-[#131B35] bg-[#0A0F1E] text-white sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <Upload className="h-5 w-5 text-[#1D4ED8]" />
+              Importar Usuários via CSV
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="rounded-lg border border-[#131B35] bg-[#131B35]/50 p-4 text-sm text-gray-300">
+              <p className="font-medium text-white">Formato do CSV:</p>
+              <p className="mt-1">Colunas: <code className="rounded bg-[#0A0F1E] px-1 text-[#3B82F6]">email</code> e <code className="rounded bg-[#0A0F1E] px-1 text-[#3B82F6]">nome</code> (ou <code className="rounded bg-[#0A0F1E] px-1 text-[#3B82F6]">name</code>)</p>
+              <p className="mt-1">Separador: <code className="rounded bg-[#0A0F1E] px-1">virgula</code> ou <code className="rounded bg-[#0A0F1E] px-1">ponto-e-virgula</code></p>
+              <p className="mt-2 text-xs text-gray-500">Senha padrao: performance123 | Plano: Starter</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-gray-300">Arquivo CSV</Label>
+              <input
+                type="file"
+                accept=".csv,.txt"
+                onChange={(e) => {
+                  setBulkImportFile(e.target.files?.[0] || null);
+                  setBulkImportResult(null);
+                }}
+                className="block w-full text-sm text-gray-300 file:mr-4 file:rounded-lg file:border-0 file:bg-[#1D4ED8] file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-[#1D4ED8]/90"
+              />
+            </div>
+
+            {bulkImportFile && !bulkImportResult && (
+              <p className="text-sm text-gray-400">
+                Arquivo selecionado: <span className="text-white">{bulkImportFile.name}</span>
+              </p>
+            )}
+
+            {bulkImportResult && (
+              <div className="space-y-3 rounded-lg border border-[#131B35] bg-[#131B35]/30 p-4">
+                <div className="flex items-center gap-2">
+                  {bulkImportResult.created > 0 ? (
+                    <CheckCircle className="h-5 w-5 text-green-400" />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 text-yellow-400" />
+                  )}
+                  <span className="font-medium text-white">Resultado da Importacao</span>
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-center text-sm">
+                  <div>
+                    <p className="text-2xl font-bold text-green-400">{bulkImportResult.created}</p>
+                    <p className="text-gray-400">Criados</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-yellow-400">{bulkImportResult.duplicates}</p>
+                    <p className="text-gray-400">Duplicados</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-red-400">{bulkImportResult.errors.length}</p>
+                    <p className="text-gray-400">Erros</p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">Total processado: {bulkImportResult.total}</p>
+
+                {bulkImportResult.errors.length > 0 && (
+                  <div className="max-h-32 overflow-y-auto rounded border border-red-800/50 bg-red-900/10 p-2 text-xs">
+                    {bulkImportResult.errors.map((err, i) => (
+                      <p key={i} className="text-red-400">
+                        {err.email}: {err.error}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setShowBulkImportModal(false)}
+              className="text-gray-400 hover:text-white"
+            >
+              {bulkImportResult ? 'Fechar' : 'Cancelar'}
+            </Button>
+            {!bulkImportResult && (
+              <Button
+                onClick={handleBulkImport}
+                disabled={!bulkImportFile || bulkImportLoading}
+                className="bg-[#1D4ED8] text-white hover:bg-[#1D4ED8]/90"
+              >
+                {bulkImportLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {bulkImportLoading ? 'Importando...' : 'Importar Usuarios'}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
