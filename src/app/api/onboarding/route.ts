@@ -47,6 +47,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Ensure profile exists before inserting onboarding data (FK constraint)
+    const { error: ensureProfileError } = await supabase
+      .from('profiles')
+      .upsert(
+        {
+          id: user.id,
+          email: user.email || email || '',
+          full_name: full_name || '',
+        },
+        { onConflict: 'id', ignoreDuplicates: true }
+      );
+
+    if (ensureProfileError) {
+      console.error('Ensure profile error:', ensureProfileError);
+      return NextResponse.json(
+        { error: 'Erro ao garantir perfil do usuário' },
+        { status: 500 }
+      );
+    }
+
     // Upsert user_onboarding data
     const { error: onboardingError } = await supabase
       .from('user_onboarding')
