@@ -250,39 +250,3 @@ export const TIME_KNOWING_CLEITON_OPTIONS = [
   'Acima de 1 ano',
 ] as const;
 
-// ============================================================
-// Script Go - 30 Tips (Gestao Dashboard)
-// ============================================================
-
-export const GESTAO_TIPS = [
-  'Não desista do seu cliente antes de 7 dias de follow up.',
-  '30% da sua base já está pronta para comprar um produto mais caro.',
-  'Um segredo da monetização é aumentar seu número de ofertas.',
-  'Um segredo da monetização é aumentar sua taxa de conversão.',
-  'Um mentor pode aumentar seu resultado anual em 156%.',
-  'Quem não tem processo comercial não tem previsibilidade — tem sorte.',
-  'A maioria dos negócios não cresce por falta de método, não por falta de esforço.',
-  'Cada R$1 investido em mentoria pode retornar até R$10 em faturamento.',
-  'Seu próximo cliente de alto valor já está na sua base — ele só precisa de uma oferta certa.',
-  'Empreendedor fora de grupos de masterminds evolui 3x mais devagar.',
-  '70% das vendas acontecem após o quinto contato com o cliente.',
-  'Processo comercial documentado reduz sua dependência de talento e aumenta escala.',
-  'IA no atendimento pode garantir até 40% mais vendas.',
-  'Quem domina o processo de vendas nunca depende de indicação para faturar.',
-  'O problema não é o mercado estar difícil — é a sua oferta estar invisível.',
-  'Um mastermind certo custa menos que ficar com seu negócio estagnado.',
-  'Previsibilidade de receita começa com um processo comercial, não com mais tráfego.',
-  'Subir o preço da sua oferta pode aumentar a percepção de valor do cliente.',
-  'Mentoria em grupo acelera porque você aprende com o erro dos outros, não só com o seu.',
-  'O maior inimigo do seu faturamento é a falta de consistência no processo comercial.',
-  'Quem tem uma boa oferta e não vende tem um problema de comunicação, não de produto.',
-  'O follow up bem feito transforma silêncio em venda.',
-  'A maioria dos empreendedores não tem problema de vendas — tem problema de posicionamento.',
-  'Seu processo comercial precisa funcionar sem você para o negócio escalar de verdade.',
-  'Cada lead ignorado é receita que foi parar no concorrente.',
-  'A automação certa no atendimento pode trabalhar por você 24 horas por dia.',
-  'Quem não mede resultado não sabe o que melhorar.',
-  'O cliente que sumiu não disse não — ele está esperando o contato certo.',
-  'Quem não tem oferta de alto valor está deixando dinheiro na mesa todo mês.',
-  'O segredo do alto ticket não é o preço — é a transformação que você entrega.',
-] as const;
