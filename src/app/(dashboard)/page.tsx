@@ -9,10 +9,10 @@ import {
   TrendingUp,
   Target,
   Route,
-  X,
-  Info,
+  Check,
+  Crosshair,
+  Loader2,
 } from 'lucide-react';
-import { GESTAO_TIPS } from '@/lib/constants';
 import { CyclicXpBar } from '@/components/gamification/cyclic-xp-bar';
 import { LevelProgress } from '@/components/gamification/level-progress';
 import { StreakReward } from '@/components/gamification/streak-reward';
@@ -20,7 +20,7 @@ import { LevelUpModal } from '@/components/gamification/level-up-modal';
 import { CyclicXpRewardModal } from '@/components/gamification/cyclic-xp-reward-modal';
 import { Card, CardContent } from '@/components/ui/card';
 import { XpToast } from '@/components/gamification/xp-toast';
-import type { NewLevel } from '@/types/database';
+import type { NewLevel, UserDailyMission } from '@/types/database';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -51,6 +51,7 @@ interface DashboardData {
   salesCount: number;
   salesTotal: number;
   trails: TrailData[];
+  missions: UserDailyMission[];
 }
 
 // ---------------------------------------------------------------------------
@@ -62,14 +63,6 @@ function getGreeting(): string {
   if (hour >= 5 && hour < 12) return 'Bom dia';
   if (hour >= 12 && hour < 18) return 'Boa tarde';
   return 'Boa noite';
-}
-
-function getTipIndex(): number {
-  const key = 'gestao_tip_idx';
-  const stored = localStorage.getItem(key);
-  const next = stored ? (parseInt(stored, 10) + 1) % GESTAO_TIPS.length : 0;
-  localStorage.setItem(key, String(next));
-  return next;
 }
 
 function formatCurrency(value: number): string {
@@ -130,9 +123,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // Tip state
-  const [tipIndex, setTipIndex] = useState<number | null>(null);
-  const [showTip, setShowTip] = useState(true);
+  // Missions state
+  const [missions, setMissions] = useState<UserDailyMission[]>([]);
+  const [completingMission, setCompletingMission] = useState<string | null>(null);
 
   // Level up modal
   const [levelUpModalOpen, setLevelUpModalOpen] = useState(false);
@@ -156,6 +149,7 @@ export default function DashboardPage() {
       if (!res.ok) throw new Error('Failed to fetch');
       const json: DashboardData = await res.json();
       setData(json);
+      setMissions(json.missions ?? []);
       setStreakPending(json.streakRewardPending);
       if (json.cyclicXpRewardPending) {
         setCyclicXpRewardOpen(true);
@@ -225,19 +219,37 @@ export default function DashboardPage() {
     }
   }, [fetchData]);
 
+  // ------- Complete mission -------
+  const handleCompleteMission = useCallback(async (missionId: string) => {
+    setCompletingMission(missionId);
+    try {
+      const res = await fetch('/api/gamification/missions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mission_id: missionId }),
+      });
+      if (res.ok) {
+        setMissions((prev) =>
+          prev.map((m) =>
+            m.mission_id === missionId
+              ? { ...m, completed: true, completed_at: new Date().toISOString(), xp_awarded: 20 }
+              : m
+          )
+        );
+        setXpTrigger((t) => t + 1);
+      }
+    } catch {
+      // Silently ignore
+    } finally {
+      setCompletingMission(null);
+    }
+  }, []);
+
   // ------- Init on mount -------
   useEffect(() => {
-    setTipIndex(getTipIndex());
     fetchData();
     registerActiveDay();
   }, [fetchData, registerActiveDay]);
-
-  // ------- Auto-dismiss tip after 8 seconds -------
-  useEffect(() => {
-    if (!showTip) return;
-    const timer = setTimeout(() => setShowTip(false), 8000);
-    return () => clearTimeout(timer);
-  }, [showTip]);
 
   // ------- Loading state -------
   if (loading) {
@@ -288,7 +300,6 @@ export default function DashboardPage() {
 
   const userName = data.userName?.split(' ')[0] || 'Usuário';
   const greeting = getGreeting();
-  const tipText = tipIndex !== null ? GESTAO_TIPS[tipIndex] : null;
 
   return (
     <div className="min-h-screen bg-[#020617] p-4 sm:p-6">
@@ -311,33 +322,69 @@ export default function DashboardPage() {
         </motion.div>
 
         {/* ================================================================ */}
-        {/* Tip Banner */}
+        {/* Daily Missions */}
         {/* ================================================================ */}
-        {showTip && tipText && (
-          <motion.div
-            variants={itemVariants}
-            exit={{ opacity: 0, height: 0 }}
-          >
-            <div className="relative rounded-xl border border-[#1D4ED8]/30 bg-gradient-to-r from-[#1D4ED8]/15 to-[#3B82F6]/10 p-4">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1D4ED8]/20">
-                  <Info className="h-5 w-5 text-[#3B82F6]" />
+        {missions.length > 0 && (
+          <motion.div variants={itemVariants}>
+            <div className="rounded-xl border border-[#F59E0B]/30 bg-gradient-to-r from-[#F59E0B]/10 to-[#F59E0B]/5 p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F59E0B]/20">
+                  <Crosshair className="h-4 w-4 text-[#F59E0B]" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="mb-0.5 text-xs font-semibold uppercase tracking-wider text-[#3B82F6]">
-                    Dica de gestão
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
+                    Missões do dia
                   </p>
-                  <p className="text-sm leading-relaxed text-white/90">
-                    {tipText}
+                  <p className="text-[10px] text-[#94A3B8]">
+                    +20 XP por missão concluída
                   </p>
                 </div>
-                <button
-                  onClick={() => setShowTip(false)}
-                  className="shrink-0 rounded-full p-1 text-[#94A3B8] transition-colors hover:bg-[#131B35] hover:text-white"
-                  aria-label="Fechar dica"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+              </div>
+              <div className="space-y-2">
+                {missions.map((mission) => (
+                  <div
+                    key={mission.id}
+                    className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-all ${
+                      mission.completed
+                        ? 'border-[#10B981]/30 bg-[#10B981]/10'
+                        : 'border-[#131B35] bg-[#0A0F1E]'
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className={`text-sm font-medium ${
+                          mission.completed
+                            ? 'text-[#10B981] line-through'
+                            : 'text-white'
+                        }`}
+                      >
+                        {mission.title}
+                      </p>
+                      {mission.description && !mission.completed && (
+                        <p className="mt-0.5 text-xs text-[#94A3B8]">
+                          {mission.description}
+                        </p>
+                      )}
+                    </div>
+                    {mission.completed ? (
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#10B981]/20">
+                        <Check className="h-4 w-4 text-[#10B981]" />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleCompleteMission(mission.mission_id)}
+                        disabled={completingMission === mission.mission_id}
+                        className="shrink-0 rounded-lg bg-[#F59E0B] px-3 py-1.5 text-xs font-semibold text-black transition-colors hover:bg-[#F59E0B]/80 disabled:opacity-50"
+                      >
+                        {completingMission === mission.mission_id ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          'Concluir'
+                        )}
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </motion.div>
@@ -515,7 +562,7 @@ export default function DashboardPage() {
         onCollect={handleCollectCyclicReward}
         onClose={() => setCyclicXpRewardOpen(false)}
       />
-      <XpToast amount={10} trigger={xpTrigger} />
+      <XpToast amount={20} trigger={xpTrigger} />
     </div>
   );
 }

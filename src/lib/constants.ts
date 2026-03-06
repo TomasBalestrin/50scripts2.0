@@ -190,6 +190,10 @@ export const BASE_MONTHLY_SCRIPTS = 20;
 // Script copy cooldown (milliseconds)
 export const SCRIPT_COPY_COOLDOWN_MS = 2 * 60 * 1000; // 2 minutes
 
+// Daily Missions
+export const DAILY_MISSIONS_COUNT = 2;
+export const MISSION_XP_REWARD = 20;
+
 // ============================================================
 // Script Go - Onboarding Options
 // ============================================================

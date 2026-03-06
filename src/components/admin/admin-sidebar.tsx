@@ -19,6 +19,7 @@ import {
   LogOut,
   Menu,
   X,
+  Crosshair,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +30,7 @@ const navItems = [
   { href: '/admin/categories', label: 'Categorias', icon: FolderOpen },
   { href: '/admin/prompts', label: 'Prompts IA', icon: Bot },
   { href: '/admin/tips', label: 'Dicas', icon: Lightbulb },
+  { href: '/admin/missions', label: 'Missões', icon: Crosshair },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/push', label: 'Push', icon: Bell },
   { href: '/admin/webhooks', label: 'Webhooks', icon: Webhook },
