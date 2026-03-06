@@ -285,3 +285,27 @@ export interface ModuleToggles {
   personalizados: boolean;
   buscar: boolean;
 }
+
+// ============================================================
+// Daily Missions
+// ============================================================
+
+export interface Mission {
+  id: string;
+  title: string;
+  description: string;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserDailyMission {
+  id: string;
+  mission_id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  completed_at: string | null;
+  xp_awarded: number;
+}

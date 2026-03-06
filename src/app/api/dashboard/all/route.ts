@@ -146,6 +146,11 @@ export async function GET() {
     const salesCount = sales.length;
     const salesTotal = sales.reduce((sum, s) => sum + (s.sale_value ?? 0), 0);
 
+    // Fetch daily missions
+    const { data: missionsData } = await supabase.rpc('get_or_assign_daily_missions', {
+      p_user_id: userId,
+    });
+
     const response = NextResponse.json({
       userName: resolvedName,
       // Gamification
@@ -163,6 +168,8 @@ export async function GET() {
       salesTotal,
       // Trail progress
       trails,
+      // Daily missions
+      missions: missionsData ?? [],
     });
 
     response.headers.set(
