@@ -324,22 +324,22 @@ export default function DashboardPage() {
         {/* ================================================================ */}
         {/* Daily Missions */}
         {/* ================================================================ */}
-        {missions.length > 0 && (
-          <motion.div variants={itemVariants}>
-            <div className="rounded-xl border border-[#F59E0B]/30 bg-gradient-to-r from-[#F59E0B]/10 to-[#F59E0B]/5 p-4">
-              <div className="mb-3 flex items-center gap-2">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F59E0B]/20">
-                  <Crosshair className="h-4 w-4 text-[#F59E0B]" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
-                    Missões do dia
-                  </p>
-                  <p className="text-[10px] text-[#94A3B8]">
-                    +20 XP por missão concluída
-                  </p>
-                </div>
+        <motion.div variants={itemVariants}>
+          <div className="rounded-xl border border-[#F59E0B]/30 bg-gradient-to-r from-[#F59E0B]/10 to-[#F59E0B]/5 p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F59E0B]/20">
+                <Crosshair className="h-4 w-4 text-[#F59E0B]" />
               </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
+                  Missões do dia
+                </p>
+                <p className="text-[10px] text-[#94A3B8]">
+                  +20 XP por missão concluída
+                </p>
+              </div>
+            </div>
+            {missions.length > 0 ? (
               <div className="space-y-2">
                 {missions.map((mission) => (
                   <div
@@ -386,9 +386,18 @@ export default function DashboardPage() {
                   </div>
                 ))}
               </div>
-            </div>
-          </motion.div>
-        )}
+            ) : (
+              <div className="rounded-lg border border-[#131B35] bg-[#0A0F1E] px-3 py-4 text-center">
+                <p className="text-sm text-[#94A3B8]">
+                  Nenhuma missão disponível hoje
+                </p>
+                <p className="mt-1 text-xs text-[#64748B]">
+                  Novas missões serão atribuídas em breve
+                </p>
+              </div>
+            )}
+          </div>
+        </motion.div>
 
         {/* ================================================================ */}
         {/* 3 Indicator Cards */}
