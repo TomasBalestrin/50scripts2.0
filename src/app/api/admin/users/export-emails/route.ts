@@ -11,22 +11,28 @@ export async function GET(request: NextRequest) {
     const format = searchParams.get('format') || 'csv';
     const plan = searchParams.get('plan') || null;
 
-    // Fetch all users (no pagination - export all)
-    async function fetchAllUsers() {
-      // Strategy 1: Try RPC
-      try {
-        const { data: rpcResult, error: rpcError } = await supabase.rpc('admin_list_profiles', {
-          p_plan: plan,
-          p_search: null,
-          p_limit: 10000,
-          p_offset: 0,
-        });
-        if (!rpcError && rpcResult?.users) return rpcResult.users;
-      } catch {
-        // RPC not available
-      }
+    const client = supabase; // local binding for TS narrowing
 
-      // Strategy 2: Service role client
+    // Fetch all users (no pagination - export all)
+    let users: Record<string, unknown>[] = [];
+
+    // Strategy 1: Try RPC
+    try {
+      const { data: rpcResult, error: rpcError } = await client.rpc('admin_list_profiles', {
+        p_plan: plan,
+        p_search: null,
+        p_limit: 10000,
+        p_offset: 0,
+      });
+      if (!rpcError && rpcResult?.users) {
+        users = rpcResult.users;
+      }
+    } catch {
+      // RPC not available
+    }
+
+    // Strategy 2: Service role client
+    if (users.length === 0) {
       try {
         const adminClient = await createAdminClient();
         let query = adminClient
@@ -37,13 +43,17 @@ export async function GET(request: NextRequest) {
         if (plan) query = query.eq('plan', plan);
 
         const { data, error: queryError } = await query;
-        if (!queryError && data) return data;
+        if (!queryError && data) {
+          users = data;
+        }
       } catch {
         // Service role not available
       }
+    }
 
-      // Strategy 3: Authenticated client
-      let query = supabase
+    // Strategy 3: Authenticated client
+    if (users.length === 0) {
+      let query = client
         .from('profiles')
         .select('id, email, full_name, plan, is_active, role, created_at, last_login_at')
         .order('created_at', { ascending: false });
@@ -52,13 +62,11 @@ export async function GET(request: NextRequest) {
 
       const { data, error: queryError } = await query;
       if (queryError) throw new Error(queryError.message);
-      return data ?? [];
+      users = data ?? [];
     }
 
-    const users = await fetchAllUsers();
-
     if (format === 'json') {
-      const jsonData = users.map((u: Record<string, unknown>) => ({
+      const jsonData = users.map((u) => ({
         email: u.email || '',
         nome: u.full_name || '',
         plano: u.plan || '',
@@ -78,7 +86,7 @@ export async function GET(request: NextRequest) {
 
     // CSV format (default)
     const header = 'Email,Nome,Plano,Ativo,Role,Criado Em,Último Login';
-    const rows = users.map((u: Record<string, unknown>) => {
+    const rows = users.map((u) => {
       const email = String(u.email || '').replace(/"/g, '""');
       const name = String(u.full_name || '').replace(/"/g, '""');
       const planValue = String(u.plan || '');
