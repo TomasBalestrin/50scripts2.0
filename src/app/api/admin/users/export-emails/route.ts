@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/server';
 export async function GET(request: NextRequest) {
   try {
     const { error, supabase } = await getAdminUser();
-    if (error) return error;
+    if (error || !supabase) return error;
 
     const { searchParams } = request.nextUrl;
     const format = searchParams.get('format') || 'csv';
