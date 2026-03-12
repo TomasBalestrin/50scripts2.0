@@ -22,6 +22,7 @@ import {
   Upload,
   CheckCircle,
   AlertCircle,
+  Download,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -97,6 +98,8 @@ export default function AdminUsersPage() {
     duplicates: number;
     errors: { email: string; error: string }[];
   } | null>(null);
+
+  const [exportLoading, setExportLoading] = useState(false);
 
   const [fetchError, setFetchError] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -183,6 +186,36 @@ export default function AdminUsersPage() {
       showToast('error', 'Erro de conexão ao sincronizar planilha');
     } finally {
       setSheetSyncLoading(false);
+    }
+  }
+
+  async function handleExportEmails(format: 'csv' | 'json' = 'csv') {
+    setExportLoading(true);
+    try {
+      const params = new URLSearchParams({ format });
+      if (planFilter !== 'all') params.set('plan', planFilter);
+
+      const res = await fetch(`/api/admin/users/export-emails?${params}`);
+      if (!res.ok) {
+        const data = await res.json();
+        showToast('error', data.error || 'Erro ao exportar emails');
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `emails-usuarios-${new Date().toISOString().slice(0, 10)}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('success', `Emails exportados com sucesso (${format.toUpperCase()})`);
+    } catch {
+      showToast('error', 'Erro de conexão ao exportar emails');
+    } finally {
+      setExportLoading(false);
     }
   }
 
@@ -421,6 +454,19 @@ export default function AdminUsersPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Usuários</h1>
         <div className="flex items-center gap-2">
+          <Button
+            onClick={() => handleExportEmails('csv')}
+            disabled={exportLoading}
+            variant="outline"
+            className="border-[#131B35] text-gray-300 hover:bg-[#131B35] hover:text-white"
+          >
+            {exportLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            Exportar Emails
+          </Button>
           <Button
             onClick={handleSheetSync}
             disabled={sheetSyncLoading}
