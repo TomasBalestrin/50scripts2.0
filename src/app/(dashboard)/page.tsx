@@ -12,7 +12,6 @@ import {
   Check,
   Crosshair,
   Loader2,
-  TrendingUp,
 } from 'lucide-react';
 import { CyclicXpBar } from '@/components/gamification/cyclic-xp-bar';
 import { LevelProgress } from '@/components/gamification/level-progress';
