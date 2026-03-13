@@ -12,8 +12,9 @@ import {
   DollarSign,
   Pencil,
   Trash2,
+  TrendingUp,
 } from 'lucide-react';
-import { Script, ScriptSale } from '@/types/database';
+import { Script, ScriptSale, TrafficInvestment } from '@/types/database';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { usePWA } from '@/components/providers/pwa-provider';
@@ -110,6 +111,17 @@ export default function ScriptDetailPage() {
   });
   const [submittingSale, setSubmittingSale] = useState(false);
 
+  // Traffic investment state
+  const [investments, setInvestments] = useState<TrafficInvestment[]>([]);
+  const [investmentsLoading, setInvestmentsLoading] = useState(false);
+  const [investmentDialogOpen, setInvestmentDialogOpen] = useState(false);
+  const [editingInvestment, setEditingInvestment] = useState<TrafficInvestment | null>(null);
+  const [investmentForm, setInvestmentForm] = useState({
+    investment_date: new Date().toISOString().split('T')[0],
+    investment_value: '',
+  });
+  const [submittingInvestment, setSubmittingInvestment] = useState(false);
+
   // XP toast trigger
   const [xpTrigger, setXpTrigger] = useState(0);
   const [xpAmount, setXpAmount] = useState(5);
@@ -203,11 +215,29 @@ export default function ScriptDetailPage() {
     }
   }, [scriptId]);
 
+  // Fetch traffic investments
+  const fetchInvestments = useCallback(async () => {
+    if (!scriptId) return;
+    setInvestmentsLoading(true);
+    try {
+      const res = await fetch(`/api/scripts/${scriptId}/traffic-investment`);
+      if (res.ok) {
+        const data = await res.json();
+        setInvestments(data.investments ?? []);
+      }
+    } catch (err) {
+      console.error('Error fetching investments:', err);
+    } finally {
+      setInvestmentsLoading(false);
+    }
+  }, [scriptId]);
+
   useEffect(() => {
     if (scriptId) {
       fetchSales();
+      fetchInvestments();
     }
-  }, [scriptId, fetchSales]);
+  }, [scriptId, fetchSales, fetchInvestments]);
 
   const activeContent = useMemo(() => {
     if (!script) return '';
@@ -364,6 +394,105 @@ export default function ScriptDetailPage() {
     }
   }, [scriptId, toast, fetchSales]);
 
+  // Investment form handlers
+  const openInvestmentDialog = useCallback((inv?: TrafficInvestment) => {
+    if (inv) {
+      setEditingInvestment(inv);
+      setInvestmentForm({
+        investment_date: inv.investment_date,
+        investment_value: inv.investment_value.toString(),
+      });
+    } else {
+      setEditingInvestment(null);
+      setInvestmentForm({
+        investment_date: new Date().toISOString().split('T')[0],
+        investment_value: '',
+      });
+    }
+    setInvestmentDialogOpen(true);
+  }, []);
+
+  const handleInvestmentSubmit = useCallback(async () => {
+    if (!scriptId || !investmentForm.investment_date || !investmentForm.investment_value) return;
+    setSubmittingInvestment(true);
+
+    const parsedValue = parseFloat(investmentForm.investment_value.replace(',', '.'));
+    const payload = {
+      ...(editingInvestment ? { id: editingInvestment.id } : {}),
+      investment_date: investmentForm.investment_date,
+      investment_value: parsedValue,
+    };
+
+    const isEdit = !!editingInvestment;
+    if (isEdit && editingInvestment) {
+      setInvestments((prev) =>
+        prev.map((inv) =>
+          inv.id === editingInvestment.id
+            ? { ...inv, investment_date: payload.investment_date, investment_value: parsedValue }
+            : inv
+        )
+      );
+    } else {
+      const now = new Date().toISOString();
+      const optimistic: TrafficInvestment = {
+        id: `temp-${Date.now()}`,
+        user_id: '',
+        script_id: scriptId,
+        investment_date: payload.investment_date,
+        investment_value: parsedValue,
+        created_at: now,
+        updated_at: now,
+      };
+      setInvestments((prev) => [optimistic, ...prev]);
+    }
+
+    setInvestmentDialogOpen(false);
+    setEditingInvestment(null);
+    toast(isEdit ? 'Investimento atualizado!' : 'Investimento registrado!', 'success');
+
+    if (!isEdit) {
+      setXpAmount(5);
+      setXpTrigger((t) => t + 1);
+    }
+
+    try {
+      const res = await fetch(`/api/scripts/${scriptId}/traffic-investment`, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        fetchInvestments();
+      } else {
+        toast('Erro ao salvar no servidor. Recarregue a página.', 'error');
+      }
+    } catch {
+      toast('Erro de conexão. Recarregue a página.', 'error');
+    } finally {
+      setSubmittingInvestment(false);
+    }
+  }, [scriptId, investmentForm, editingInvestment, toast, fetchInvestments]);
+
+  const handleDeleteInvestment = useCallback(async (investmentId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este investimento?')) return;
+    try {
+      const res = await fetch(`/api/scripts/${scriptId}/traffic-investment`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: investmentId }),
+      });
+
+      if (res.ok) {
+        toast('Investimento excluído', 'success');
+        fetchInvestments();
+      } else {
+        toast('Erro ao excluir investimento', 'error');
+      }
+    } catch {
+      toast('Erro ao excluir investimento', 'error');
+    }
+  }, [scriptId, toast, fetchInvestments]);
 
   if (loading) {
     return <SkeletonDetail />;
@@ -479,14 +608,23 @@ export default function ScriptDetailPage() {
             )}
           </button>
 
-          {/* Gerou Venda Button */}
-          <button
-            onClick={() => openSaleDialog()}
-            className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#10B981] py-4 text-base font-bold text-white transition-colors hover:bg-[#10B981]/90 active:scale-[0.98]"
-          >
-            <DollarSign className="h-5 w-5" />
-            Gerou Venda
-          </button>
+          {/* Action Buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => openSaleDialog()}
+              className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#10B981] py-4 text-base font-bold text-white transition-colors hover:bg-[#10B981]/90 active:scale-[0.98]"
+            >
+              <DollarSign className="h-5 w-5" />
+              Gerou Venda
+            </button>
+            <button
+              onClick={() => openInvestmentDialog()}
+              className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#8B5CF6] py-4 text-base font-bold text-white transition-colors hover:bg-[#8B5CF6]/90 active:scale-[0.98]"
+            >
+              <TrendingUp className="h-5 w-5" />
+              Investimento
+            </button>
+          </div>
 
           {/* Sales List */}
           {salesLoading ? (
@@ -530,6 +668,57 @@ export default function ScriptDetailPage() {
                       onClick={() => handleDeleteSale(sale.id)}
                       className="rounded-lg p-2 text-[#94A3B8] transition-colors hover:bg-red-500/10 hover:text-red-400"
                       title="Excluir venda"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {/* Investments List */}
+          {investmentsLoading ? (
+            <div className="space-y-3 animate-pulse">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-20 rounded-xl bg-[#0A0F1E]" />
+              ))}
+            </div>
+          ) : investments.length > 0 ? (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-[#94A3B8]">
+                Investimentos em tráfego ({investments.length})
+              </h3>
+              {investments.map((inv) => (
+                <div
+                  key={inv.id}
+                  className="flex items-center justify-between rounded-xl border border-[#131B35] bg-[#0A0F1E] p-4"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-white">
+                      Investimento em Tráfego
+                    </p>
+                    <div className="mt-1 flex items-center gap-3 text-xs text-[#94A3B8]">
+                      <span>
+                        {new Date(inv.investment_date + 'T12:00:00').toLocaleDateString('pt-BR')}
+                      </span>
+                      <span className="font-semibold text-[#8B5CF6]">
+                        R$ {Number(inv.investment_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-3 flex items-center gap-2">
+                    <button
+                      onClick={() => openInvestmentDialog(inv)}
+                      className="rounded-lg p-2 text-[#94A3B8] transition-colors hover:bg-[#131B35] hover:text-white"
+                      title="Editar investimento"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteInvestment(inv.id)}
+                      className="rounded-lg p-2 text-[#94A3B8] transition-colors hover:bg-red-500/10 hover:text-red-400"
+                      title="Excluir investimento"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -643,6 +832,64 @@ export default function ScriptDetailPage() {
                 : editingSale
                 ? 'Atualizar Venda'
                 : 'Registrar Venda'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Investment Dialog */}
+      <Dialog open={investmentDialogOpen} onOpenChange={setInvestmentDialogOpen}>
+        <DialogContent className="border-[#131B35] bg-[#0A0F1E]">
+          <DialogHeader>
+            <DialogTitle className="text-white">
+              {editingInvestment ? 'Editar Investimento' : 'Registrar Investimento em Tráfego'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 space-y-4">
+            <div>
+              <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
+                Data do investimento
+              </label>
+              <input
+                type="date"
+                value={investmentForm.investment_date}
+                onChange={(e) =>
+                  setInvestmentForm((prev) => ({ ...prev, investment_date: e.target.value }))
+                }
+                className="w-full rounded-lg border border-[#131B35] bg-[#020617] px-4 py-2.5 text-sm text-white placeholder-[#94A3B8]/50 outline-none transition-colors focus:border-[#8B5CF6] [color-scheme:dark]"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium text-[#94A3B8]">
+                Valor investido (R$)
+              </label>
+              <input
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0"
+                value={investmentForm.investment_value}
+                onChange={(e) =>
+                  setInvestmentForm((prev) => ({ ...prev, investment_value: e.target.value }))
+                }
+                placeholder="0,00"
+                className="w-full rounded-lg border border-[#131B35] bg-[#020617] px-4 py-2.5 text-sm text-white placeholder-[#94A3B8]/50 outline-none transition-colors focus:border-[#8B5CF6]"
+              />
+            </div>
+            <button
+              onClick={handleInvestmentSubmit}
+              disabled={
+                submittingInvestment ||
+                !investmentForm.investment_date ||
+                !investmentForm.investment_value
+              }
+              className="w-full rounded-lg bg-[#8B5CF6] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#8B5CF6]/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {submittingInvestment
+                ? 'Salvando...'
+                : editingInvestment
+                ? 'Atualizar Investimento'
+                : 'Registrar Investimento'}
             </button>
           </div>
         </DialogContent>

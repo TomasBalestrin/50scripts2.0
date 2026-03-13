@@ -268,6 +268,16 @@ export interface ScriptSale {
   updated_at: string;
 }
 
+export interface TrafficInvestment {
+  id: string;
+  user_id: string;
+  script_id: string;
+  investment_date: string;
+  investment_value: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PersonalizedScript {
   id: string;
   user_id: string;

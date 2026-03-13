@@ -3,11 +3,26 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, TrendingUp } from 'lucide-react';
 import { Script, ScriptCategory } from '@/types/database';
 import { useAuth } from '@/hooks/use-auth';
 import { PLAN_HIERARCHY } from '@/lib/constants';
 import { ScriptCard } from '@/components/scripts/script-card';
+import { Card, CardContent } from '@/components/ui/card';
+
+interface TrailStats {
+  trafficInvestment: number;
+  costPerLead: number;
+  leadsCount: number;
+}
+
+function formatCurrency(value: number): string {
+  return value.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+  });
+}
 
 interface CategoryWithScripts {
   category: ScriptCategory;
@@ -66,6 +81,7 @@ export default function TrailScriptsPage() {
   const [data, setData] = useState<CategoryWithScripts | null>(null);
   const [loading, setLoading] = useState(true);
   const [scriptIdsWithSales, setScriptIdsWithSales] = useState<Set<string>>(new Set());
+  const [trailStats, setTrailStats] = useState<TrailStats | null>(null);
 
   useEffect(() => {
     async function fetchCategoryScripts() {
@@ -75,17 +91,24 @@ export default function TrailScriptsPage() {
           const json = await res.json();
           setData(json);
 
-          // Fetch user's sales for these scripts in parallel
+          // Fetch user's sales and trail stats in parallel
           const scriptIds = (json.scripts || []).map((s: Script) => s.id);
           if (scriptIds.length > 0) {
             try {
-              const salesRes = await fetch(`/api/scripts/sales-check?ids=${scriptIds.join(',')}`);
+              const [salesRes, statsRes] = await Promise.all([
+                fetch(`/api/scripts/sales-check?ids=${scriptIds.join(',')}`),
+                fetch(`/api/categories/${slug}/stats`),
+              ]);
               if (salesRes.ok) {
                 const salesData = await salesRes.json();
                 setScriptIdsWithSales(new Set(salesData.scriptIds || []));
               }
+              if (statsRes.ok) {
+                const statsData = await statsRes.json();
+                setTrailStats(statsData);
+              }
             } catch {
-              // Non-critical - sale badges won't show
+              // Non-critical
             }
           }
         }
@@ -201,6 +224,44 @@ export default function TrailScriptsPage() {
               Scripts serão adicionados em breve.
             </p>
           </div>
+        )}
+
+        {/* Traffic Investment Card */}
+        {trailStats && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.3 }}
+            className="mt-8"
+          >
+            <Card className="border-[#131B35] bg-[#0A0F1E]">
+              <CardContent className="p-5">
+                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
+                  <TrendingUp className="h-5 w-5 text-[#8B5CF6]" />
+                  Investimento em Tráfego
+                </h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-lg border border-[#131B35]/50 bg-[#020617] p-4">
+                    <p className="text-xs font-medium text-[#94A3B8]">Total Investido</p>
+                    <p className="mt-1 text-2xl font-bold text-[#8B5CF6]">
+                      {formatCurrency(trailStats.trafficInvestment)}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-[#131B35]/50 bg-[#020617] p-4">
+                    <p className="text-xs font-medium text-[#94A3B8]">Custo por Lead</p>
+                    <p className="mt-1 text-2xl font-bold text-[#F59E0B]">
+                      {trailStats.costPerLead > 0
+                        ? formatCurrency(trailStats.costPerLead)
+                        : 'R$ 0,00'}
+                    </p>
+                    <p className="mt-1 text-[10px] text-[#64748B]">
+                      investimento / scripts usados
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         )}
       </div>
     </div>

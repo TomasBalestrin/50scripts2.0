@@ -25,6 +25,7 @@ export async function GET() {
       scriptUsageRes,
       personalizedRes,
       salesRes,
+      investmentsRes,
     ] = await Promise.all([
       // 1. Profile (gamification + name)
       supabase
@@ -59,12 +60,19 @@ export async function GET() {
         .from('script_sales')
         .select('id, script_id, sale_value')
         .eq('user_id', userId),
+
+      // 6. Traffic investments with script_id for trail breakdown
+      supabase
+        .from('traffic_investments')
+        .select('id, script_id, investment_value')
+        .eq('user_id', userId),
     ]);
 
     const profile = profileRes.data;
     const categories = categoriesRes.data ?? [];
     const scriptUsages = scriptUsageRes.data ?? [];
     const sales = salesRes.data ?? [];
+    const investments = investmentsRes.data ?? [];
     const personalizedCount = personalizedRes.count ?? 0;
 
     // If profile has no full_name, try user_onboarding as fallback
@@ -83,6 +91,7 @@ export async function GET() {
     const allScriptIds = new Set<string>();
     scriptUsages.forEach((u) => allScriptIds.add(u.script_id));
     sales.forEach((s) => allScriptIds.add(s.script_id));
+    investments.forEach((inv) => allScriptIds.add(inv.script_id));
 
     // Single query to get script->category mapping
     let scriptCategoryMap = new Map<string, string>();
@@ -124,17 +133,32 @@ export async function GET() {
       }
     });
 
+    const investmentsByCategory = new Map<string, number>();
+    investments.forEach((inv) => {
+      const catId = scriptCategoryMap.get(inv.script_id);
+      if (catId) {
+        investmentsByCategory.set(
+          catId,
+          (investmentsByCategory.get(catId) || 0) + (inv.investment_value ?? 0)
+        );
+      }
+    });
+
     const trails = categories.map((cat) => {
       const catSales = salesByCategory.get(cat.id);
+      const catInvestment = investmentsByCategory.get(cat.id) ?? 0;
+      const catLeads = usageByCategory.get(cat.id)?.size ?? 0;
       return {
         id: cat.id,
         name: cat.name,
         slug: cat.slug,
         icon: cat.icon,
         color: cat.color,
-        scriptsUsed: usageByCategory.get(cat.id)?.size ?? 0,
+        scriptsUsed: catLeads,
         salesCount: catSales?.count ?? 0,
         salesTotal: catSales?.total ?? 0,
+        trafficInvestment: catInvestment,
+        costPerLead: catLeads > 0 ? catInvestment / catLeads : 0,
       };
     });
 
@@ -145,6 +169,14 @@ export async function GET() {
     // Sales totals
     const salesCount = sales.length;
     const salesTotal = sales.reduce((sum, s) => sum + (s.sale_value ?? 0), 0);
+
+    // Investment totals
+    const trafficInvestmentTotal = investments.reduce(
+      (sum, inv) => sum + (inv.investment_value ?? 0),
+      0
+    );
+    const costPerLead =
+      uniqueScriptsUsed > 0 ? trafficInvestmentTotal / uniqueScriptsUsed : 0;
 
     // Fetch daily missions
     const { data: missionsData } = await supabase.rpc('get_or_assign_daily_missions', {
@@ -166,6 +198,9 @@ export async function GET() {
       personalizedGenerated: personalizedCount,
       salesCount,
       salesTotal,
+      // Traffic investment
+      trafficInvestmentTotal,
+      costPerLead,
       // Trail progress
       trails,
       // Daily missions

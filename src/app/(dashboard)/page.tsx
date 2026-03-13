@@ -12,6 +12,7 @@ import {
   Check,
   Crosshair,
   Loader2,
+  TrendingUp,
 } from 'lucide-react';
 import { CyclicXpBar } from '@/components/gamification/cyclic-xp-bar';
 import { LevelProgress } from '@/components/gamification/level-progress';
@@ -35,6 +36,8 @@ interface TrailData {
   scriptsUsed: number;
   salesCount: number;
   salesTotal: number;
+  trafficInvestment: number;
+  costPerLead: number;
 }
 
 interface DashboardData {
@@ -50,6 +53,8 @@ interface DashboardData {
   personalizedGenerated: number;
   salesCount: number;
   salesTotal: number;
+  trafficInvestmentTotal: number;
+  costPerLead: number;
   trails: TrailData[];
   missions: UserDailyMission[];
 }
@@ -556,6 +561,37 @@ export default function DashboardPage() {
             </Card>
           </motion.div>
         )}
+
+        {/* ================================================================ */}
+        {/* Traffic Investment */}
+        {/* ================================================================ */}
+        <motion.div variants={itemVariants}>
+          <Card className="border-[#131B35] bg-[#0A0F1E]">
+            <CardContent className="p-5">
+              <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
+                <TrendingUp className="h-5 w-5 text-[#8B5CF6]" />
+                Investimento em Tráfego
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-lg border border-[#131B35]/50 bg-[#020617] p-4">
+                  <p className="text-xs font-medium text-[#94A3B8]">Total Investido</p>
+                  <p className="mt-1 text-2xl font-bold text-[#8B5CF6]">
+                    {formatCurrency(data.trafficInvestmentTotal)}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-[#131B35]/50 bg-[#020617] p-4">
+                  <p className="text-xs font-medium text-[#94A3B8]">Custo por Lead</p>
+                  <p className="mt-1 text-2xl font-bold text-[#F59E0B]">
+                    {data.costPerLead > 0 ? formatCurrency(data.costPerLead) : 'R$ 0,00'}
+                  </p>
+                  <p className="mt-1 text-[10px] text-[#64748B]">
+                    investimento / scripts usados
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </motion.div>
 
       {/* ================================================================ */}
