@@ -239,98 +239,97 @@ export default function AnalyticsPage() {
         />
       </div>
 
-      {/* Charts Row 1: DAU Trend + Peak Hours */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-[#131B35] bg-[#0A0F1E]">
-          <CardHeader>
-            <CardTitle className="text-base text-white">
-              Usuários Ativos por Dia ({period}d)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data.dau_trend}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#131B35" />
-                  <XAxis
-                    dataKey="date"
-                    stroke="#6B7280"
-                    tick={{ fill: '#9CA3AF', fontSize: 11 }}
-                    tickFormatter={(val: string) => val.slice(5)}
-                  />
-                  <YAxis stroke="#6B7280" tick={{ fill: '#9CA3AF', fontSize: 11 }} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#0A0F1E',
-                      border: '1px solid #131B35',
-                      borderRadius: 8,
-                      color: '#fff',
-                    }}
-                    labelFormatter={(label) =>
-                      new Date(String(label)).toLocaleDateString('pt-BR')
-                    }
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="count"
-                    stroke="#1D4ED8"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Usuários ativos"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+      {/* DAU Trend (full-width, mobile-style layout) */}
+      <Card className="border-[#131B35] bg-[#0A0F1E]">
+        <CardHeader>
+          <CardTitle className="text-base text-white">
+            Usuários Ativos por Dia ({period}d)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data.dau_trend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#131B35" />
+                <XAxis
+                  dataKey="date"
+                  stroke="#6B7280"
+                  tick={{ fill: '#9CA3AF', fontSize: 11 }}
+                  tickFormatter={(val: string) => val.slice(5)}
+                />
+                <YAxis stroke="#6B7280" tick={{ fill: '#9CA3AF', fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#0A0F1E',
+                    border: '1px solid #131B35',
+                    borderRadius: 8,
+                    color: '#fff',
+                  }}
+                  labelFormatter={(label) =>
+                    new Date(String(label)).toLocaleDateString('pt-BR')
+                  }
+                />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#1D4ED8"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Usuários ativos"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
 
-        <Card className="border-[#131B35] bg-[#0A0F1E]">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base text-white">Horarios de Pico</CardTitle>
-              <select
-                value={peakDay}
-                onChange={(e) => setPeakDay(e.target.value)}
-                className="rounded-lg border border-[#131B35] bg-[#020617] px-2 py-1 text-xs text-gray-300 focus:border-[#3B82F6] focus:outline-none"
-              >
-                <option value="all">Todo periodo</option>
-                {Object.keys(data.peak_hours_by_day || {})
-                  .sort((a, b) => b.localeCompare(a))
-                  .map((day) => (
-                    <option key={day} value={day}>
-                      {new Date(day + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', weekday: 'short' })}
-                    </option>
-                  ))}
-              </select>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={peakDay === 'all' ? data.peak_hours : (data.peak_hours_by_day?.[peakDay] || data.peak_hours)}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#131B35" />
-                  <XAxis
-                    dataKey="hour"
-                    stroke="#6B7280"
-                    tick={{ fill: '#9CA3AF', fontSize: 10 }}
-                    interval={2}
-                  />
-                  <YAxis stroke="#6B7280" tick={{ fill: '#9CA3AF', fontSize: 11 }} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#0A0F1E',
-                      border: '1px solid #131B35',
-                      borderRadius: 8,
-                      color: '#fff',
-                    }}
-                  />
-                  <Bar dataKey="count" fill="#1D4ED8" radius={[4, 4, 0, 0]} name="Acessos" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Peak Hours */}
+      <Card className="border-[#131B35] bg-[#0A0F1E]">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base text-white">Horarios de Pico</CardTitle>
+            <select
+              value={peakDay}
+              onChange={(e) => setPeakDay(e.target.value)}
+              className="rounded-lg border border-[#131B35] bg-[#020617] px-2 py-1 text-xs text-gray-300 focus:border-[#3B82F6] focus:outline-none"
+            >
+              <option value="all">Todo periodo</option>
+              {Object.keys(data.peak_hours_by_day || {})
+                .sort((a, b) => b.localeCompare(a))
+                .map((day) => (
+                  <option key={day} value={day}>
+                    {new Date(day + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', weekday: 'short' })}
+                  </option>
+                ))}
+            </select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={peakDay === 'all' ? data.peak_hours : (data.peak_hours_by_day?.[peakDay] || data.peak_hours)}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#131B35" />
+                <XAxis
+                  dataKey="hour"
+                  stroke="#6B7280"
+                  tick={{ fill: '#9CA3AF', fontSize: 10 }}
+                  interval={2}
+                />
+                <YAxis stroke="#6B7280" tick={{ fill: '#9CA3AF', fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#0A0F1E',
+                    border: '1px solid #131B35',
+                    borderRadius: 8,
+                    color: '#fff',
+                  }}
+                />
+                <Bar dataKey="count" fill="#1D4ED8" radius={[4, 4, 0, 0]} name="Acessos" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Charts Row 2: Module Usage + Engagement + Level Distribution */}
       <div className="grid gap-6 lg:grid-cols-3">
