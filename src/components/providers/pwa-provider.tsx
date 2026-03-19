@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, createContext, useContext } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Download, Smartphone, Share, WifiOff, X, RefreshCw, Plus } from 'lucide-react';
+import { Bell, Download, Share, WifiOff, X, RefreshCw, Plus } from 'lucide-react';
 import { subscribeToPush, isSubscribed as checkPushSubscribed } from '@/lib/notifications/push';
 
 // ─── Context ────────────────────────────────────────────────────────────────
@@ -36,8 +36,10 @@ function isStandalone(): boolean {
 }
 
 const INSTALL_PROMPT_KEY = 'install_guide_seen';
+const INSTALL_BANNER_DISMISSED_KEY = 'install_banner_dismissed';
 const SCRIPT_USE_COUNT_KEY = 'scripts_used_count';
-const SCRIPTS_BEFORE_PROMPT = 2;
+const SCRIPTS_BEFORE_PROMPT = 1;
+const BANNER_DELAY_MS = 8000; // 8s delay before showing mini-banner
 
 // ─── Provider ───────────────────────────────────────────────────────────────
 export function PWAProvider({ children }: { children: React.ReactNode }) {
@@ -48,6 +50,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPushBanner, setShowPushBanner] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isIOSDevice, setIsIOSDevice] = useState(false);
 
   // ── Service Worker Registration ──────────────────────────────────────────
@@ -121,6 +124,21 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
     setIsIOSDevice(isIOS());
   }, []);
 
+  // ── Non-intrusive Install Banner (first mobile visit) ─────────────────
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (isStandalone()) return;
+    if (window.innerWidth >= 1024) return;
+    if (localStorage.getItem(INSTALL_PROMPT_KEY)) return;
+    if (localStorage.getItem(INSTALL_BANNER_DISMISSED_KEY)) return;
+
+    const timer = setTimeout(() => {
+      setShowInstallBanner(true);
+    }, BANNER_DELAY_MS);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   // ── Offline Detection ──────────────────────────────────────────────────
   useEffect(() => {
     setIsOffline(!navigator.onLine);
@@ -181,7 +199,10 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
 
     if (count === SCRIPTS_BEFORE_PROMPT) {
       // Small delay so the copy toast shows first
-      setTimeout(() => setShowInstallGuide(true), 1500);
+      setTimeout(() => {
+        setShowInstallBanner(false);
+        setShowInstallGuide(true);
+      }, 1500);
     }
   }, []);
 
@@ -205,6 +226,16 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
   const handleInstallGuideClose = useCallback(() => {
     setShowInstallGuide(false);
     localStorage.setItem(INSTALL_PROMPT_KEY, '1');
+  }, []);
+
+  const handleBannerDismiss = useCallback(() => {
+    setShowInstallBanner(false);
+    localStorage.setItem(INSTALL_BANNER_DISMISSED_KEY, '1');
+  }, []);
+
+  const handleBannerInstall = useCallback(() => {
+    setShowInstallBanner(false);
+    setShowInstallGuide(true);
   }, []);
 
   const handleInstallGuideInstall = useCallback(async () => {
@@ -306,7 +337,43 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
         )}
       </AnimatePresence>
 
-      {/* ── Contextual Install Guide (after 3rd script) ──────────────── */}
+      {/* ── Non-intrusive Install Banner ─────────────────────────────── */}
+      <AnimatePresence>
+        {showInstallBanner && !showInstallGuide && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="fixed bottom-24 left-4 right-4 z-[90] mx-auto max-w-md rounded-xl border border-[#1D4ED8]/30 bg-[#0A0F1E] p-3 shadow-2xl lg:bottom-6"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#1D4ED8]/20">
+                <Download className="h-4 w-4 text-[#3B82F6]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white">Use como app no celular</p>
+                <p className="text-xs text-[#94A3B8]">Acesse mais rapido, sem abrir o navegador</p>
+              </div>
+              <button
+                onClick={handleBannerInstall}
+                className="shrink-0 rounded-lg bg-[#1D4ED8] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#1E40AF]"
+              >
+                Instalar
+              </button>
+              <button
+                onClick={handleBannerDismiss}
+                className="shrink-0 rounded-full p-1 text-[#94A3B8] hover:text-white transition-colors"
+                aria-label="Fechar"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Contextual Install Guide (after 1st script copy) ─────────── */}
       <AnimatePresence>
         {showInstallGuide && (
           <>
@@ -338,14 +405,14 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
               {/* Header */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1D4ED8]/20">
-                  <Smartphone className="h-6 w-6 text-[#3B82F6]" />
+                  <Download className="h-6 w-6 text-[#3B82F6]" />
                 </div>
                 <div>
                   <p className="text-base font-bold text-white">
-                    Voce ta usando bastante!
+                    Instale o Script Go
                   </p>
                   <p className="text-xs text-[#94A3B8]">
-                    Acesse em 1 toque pela tela inicial
+                    Acesse mais rapido, sem abrir o navegador
                   </p>
                 </div>
               </div>
