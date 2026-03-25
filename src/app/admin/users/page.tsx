@@ -48,6 +48,7 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [planFilter, setPlanFilter] = useState('all');
+  const [accessFilter, setAccessFilter] = useState('all');
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
@@ -123,6 +124,7 @@ export default function AdminUsersPage() {
         limit: String(PAGE_SIZE),
       });
       if (planFilter !== 'all') params.set('plan', planFilter);
+      if (accessFilter !== 'all') params.set('access', accessFilter);
       if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
 
       const res = await fetch(`/api/admin/users?${params}`);
@@ -142,7 +144,7 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, planFilter, debouncedSearch]);
+  }, [page, planFilter, accessFilter, debouncedSearch]);
 
   useEffect(() => {
     fetchUsers();
@@ -549,6 +551,27 @@ export default function AdminUsersPage() {
                 <SelectItem value="pro">Plus</SelectItem>
                 <SelectItem value="premium">Pro</SelectItem>
                 <SelectItem value="copilot">Premium</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-48">
+            <Select
+              value={accessFilter}
+              onValueChange={(val) => {
+                setAccessFilter(val);
+                setPage(0);
+              }}
+            >
+              <SelectTrigger className="border-[#131B35] bg-[#131B35] text-white">
+                <SelectValue placeholder="Acesso" />
+              </SelectTrigger>
+              <SelectContent className="border-[#131B35] bg-[#0A0F1E] text-white">
+                <SelectItem value="all">Todos (acesso)</SelectItem>
+                <SelectItem value="accessed">Acessou</SelectItem>
+                <SelectItem value="never">Nunca acessou</SelectItem>
+                <SelectItem value="7days">Ativo últimos 7 dias</SelectItem>
+                <SelectItem value="30days">Ativo últimos 30 dias</SelectItem>
+                <SelectItem value="inactive30">Inativo +30 dias</SelectItem>
               </SelectContent>
             </Select>
           </div>
