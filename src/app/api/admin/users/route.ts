@@ -12,7 +12,29 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') ?? '20', 10)));
     const plan = searchParams.get('plan') || null;
     const search = searchParams.get('search') || null;
+    const access = searchParams.get('access') || null;
     const offset = (page - 1) * limit;
+
+    // Helper: apply access filter to a query
+    function applyAccessFilter(q: any) {
+      if (!access || access === 'all') return q;
+      const now = new Date();
+      if (access === 'accessed') return q.not('last_login_at', 'is', null);
+      if (access === 'never') return q.is('last_login_at', null);
+      if (access === '7days') {
+        const d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        return q.gte('last_login_at', d);
+      }
+      if (access === '30days') {
+        const d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        return q.gte('last_login_at', d);
+      }
+      if (access === 'inactive30') {
+        const d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        return q.not('last_login_at', 'is', null).lt('last_login_at', d);
+      }
+      return q;
+    }
 
     // Strategy 1: Try RPC function (SECURITY DEFINER - bypasses RLS)
     try {
@@ -48,6 +70,7 @@ export async function GET(request: NextRequest) {
 
         if (plan) query = query.eq('plan', plan);
         if (search) query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
+        query = applyAccessFilter(query);
         query = query.range(offset, offset + limit - 1);
 
         const { data: users, error: queryError, count } = await query;
@@ -73,6 +96,7 @@ export async function GET(request: NextRequest) {
 
     if (plan) query = query.eq('plan', plan);
     if (search) query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
+    query = applyAccessFilter(query);
     query = query.range(offset, offset + limit - 1);
 
     const { data: users, error: queryError, count } = await query;
