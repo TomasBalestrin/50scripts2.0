@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
         p_search: search,
         p_limit: limit,
         p_offset: offset,
+        p_access: access,
       });
 
       if (!rpcError && rpcResult) {
