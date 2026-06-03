@@ -213,14 +213,14 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-function buildProfileData(userId: string, email: string, full_name?: string, plan?: string) {
+function buildProfileData(userId: string, email: string, full_name?: string, plan?: string, role?: string) {
   const now = new Date().toISOString();
   return {
     id: userId,
     email,
     full_name: full_name || '',
     plan: plan || 'starter',
-    role: 'user',
+    role: role === 'admin' ? 'admin' : 'user',
     is_active: true,
     niche: null,
     preferred_tone: 'casual',
@@ -277,11 +277,12 @@ export async function POST(request: NextRequest) {
     if (error) return error;
 
     const body = await request.json();
-    const { email, password, full_name, plan } = body as {
+    const { email, password, full_name, plan, role } = body as {
       email?: string;
       password?: string;
       full_name?: string;
       plan?: string;
+      role?: string;
     };
 
     if (!email || !password) {
@@ -344,7 +345,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Create/update profile
-      const profileData = buildProfileData(existingUser.id, email, full_name, plan);
+      const profileData = buildProfileData(existingUser.id, email, full_name, plan, role);
       const { error: profileError } = await upsertProfile(supabase, adminClient, profileData);
 
       if (profileError) {
@@ -359,7 +360,7 @@ export async function POST(request: NextRequest) {
 
     // New user created successfully - ensure profile exists
     if (authData.user) {
-      const profileData = buildProfileData(authData.user.id, email, full_name, plan);
+      const profileData = buildProfileData(authData.user.id, email, full_name, plan, role);
       const { error: profileError } = await upsertProfile(supabase, adminClient, profileData);
 
       if (profileError) {
