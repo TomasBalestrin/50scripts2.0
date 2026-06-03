@@ -56,7 +56,7 @@ export default function AdminUsersPage() {
 
   // Add user modal
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState({ email: '', password: '', full_name: '', plan: 'starter' });
+  const [addForm, setAddForm] = useState({ email: '', password: '', full_name: '', plan: 'starter', role: 'user' });
   const [addError, setAddError] = useState('');
   const [showAddPassword, setShowAddPassword] = useState(false);
 
@@ -300,6 +300,30 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function handleToggleRole(userId: string, currentRole: string) {
+    const newRole: 'admin' | 'user' = currentRole === 'admin' ? 'user' : 'admin';
+    setActionLoading(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: userId, role: newRole }),
+      });
+
+      if (res.ok) {
+        setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, role: newRole } : u));
+        if (selectedUser?.id === userId) {
+          setSelectedUser((prev) => prev ? { ...prev, role: newRole } : null);
+        }
+        showToast('success', newRole === 'admin' ? 'Usuário promovido a admin' : 'Admin rebaixado a usuário');
+      } else {
+        showToast('error', 'Erro ao alterar papel');
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
   async function handleResetPassword(userId: string) {
     setActionLoading(true);
     try {
@@ -344,7 +368,7 @@ export default function AdminUsersPage() {
       }
 
       setShowAddModal(false);
-      setAddForm({ email: '', password: '', full_name: '', plan: 'starter' });
+      setAddForm({ email: '', password: '', full_name: '', plan: 'starter', role: 'user' });
       await fetchUsers();
     } finally {
       setActionLoading(false);
@@ -509,7 +533,7 @@ export default function AdminUsersPage() {
           </Button>
           <Button
             onClick={() => {
-              setAddForm({ email: '', password: '', full_name: '', plan: 'starter' });
+              setAddForm({ email: '', password: '', full_name: '', plan: 'starter', role: 'user' });
               setAddError('');
               setShowAddPassword(false);
               setShowAddModal(true);
@@ -791,6 +815,18 @@ export default function AdminUsersPage() {
                     </p>
                   </div>
                   <div>
+                    <p className="text-gray-400">Papel</p>
+                    <p
+                      className={
+                        selectedUser.role === 'admin'
+                          ? 'font-medium text-amber-400'
+                          : 'font-medium'
+                      }
+                    >
+                      {selectedUser.role === 'admin' ? 'Administrador' : 'Usuário'}
+                    </p>
+                  </div>
+                  <div>
                     <p className="text-gray-400">XP</p>
                     <p className="font-medium">{selectedUser.xp_points}</p>
                   </div>
@@ -925,6 +961,20 @@ export default function AdminUsersPage() {
                       size="sm"
                       variant="outline"
                       className={
+                        selectedUser.role === 'admin'
+                          ? 'border-amber-800 text-amber-400 hover:bg-amber-900/30'
+                          : 'border-[#131B35] text-gray-300 hover:bg-[#131B35]'
+                      }
+                      disabled={actionLoading}
+                      onClick={() => handleToggleRole(selectedUser.id, selectedUser.role)}
+                    >
+                      <Shield className="mr-1 h-3 w-3" />
+                      {selectedUser.role === 'admin' ? 'Remover Admin' : 'Tornar Admin'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className={
                         selectedUser.is_active
                           ? 'border-red-800 text-red-400 hover:bg-red-900/30'
                           : 'border-green-800 text-green-400 hover:bg-green-900/30'
@@ -1027,6 +1077,26 @@ export default function AdminUsersPage() {
                   <SelectItem value="copilot">Premium</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-gray-300">Papel</Label>
+              <Select
+                value={addForm.role}
+                onValueChange={(val) => setAddForm({ ...addForm, role: val })}
+              >
+                <SelectTrigger className="border-[#131B35] bg-[#131B35] text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-[#131B35] bg-[#0A0F1E] text-white">
+                  <SelectItem value="user">Usuário</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
+              {addForm.role === 'admin' && (
+                <p className="text-xs text-amber-400">
+                  Administradores têm acesso total ao painel.
+                </p>
+              )}
             </div>
 
             {addError && (
