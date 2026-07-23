@@ -21,12 +21,24 @@ export async function GET(req: NextRequest) {
       admin.from('app_presence').select('*', { count: 'exact', head: true }).gte('last_seen', desde),
     ]);
 
+    // Resumo de advisors (RLS/índice/seq_scan) — opcional. Se a migration
+    // 021 ainda não rodou nesse ambiente, a função não existe e cai em
+    // null sem derrubar o resto da resposta.
+    let advisors: unknown = null;
+    try {
+      const { data } = await admin.rpc('get_advisor_summary');
+      advisors = data ?? null;
+    } catch {
+      advisors = null;
+    }
+
     return NextResponse.json({
       up: true,
       db_ok: !total.error && !online.error,
       versao: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? 'dev',
       usuarios_total: total.count ?? 0,
       usuarios_online: online.count ?? 0,
+      advisors,
     });
   } catch {
     return NextResponse.json({ up: true, db_ok: false });
