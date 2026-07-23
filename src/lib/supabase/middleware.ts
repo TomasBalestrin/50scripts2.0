@@ -32,7 +32,7 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't need auth
-  const publicRoutes = ['/login', '/termos', '/privacidade', '/api/webhooks', '/api/setup', '/api/cron', '/api/health'];
+  const publicRoutes = ['/login', '/termos', '/privacidade', '/api/webhooks', '/api/setup', '/api/cron', '/api/health', '/api/status-check'];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   if (!user && !isPublicRoute) {
@@ -46,6 +46,19 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/';
     return NextResponse.redirect(url);
+  }
+
+  // Status SDK (Hub Bethel Sistemas, nível 2): heartbeat de presença.
+  // Throttle por cookie (~60s) pra não gerar 1 round-trip de RPC extra em
+  // toda requisição autenticada — só quando o cookie expira. Engolido em
+  // try/catch: heartbeat nunca pode derrubar a navegação.
+  if (user && !request.cookies.get('bp_ping')) {
+    try {
+      await supabase.rpc('bump_presence');
+    } catch {
+      // heartbeat não pode quebrar a navegação
+    }
+    supabaseResponse.cookies.set('bp_ping', '1', { maxAge: 60, path: '/' });
   }
 
   // Only check profile for page routes, not API calls
