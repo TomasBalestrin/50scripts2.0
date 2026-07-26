@@ -13,8 +13,8 @@
 -- Add stripe_customer_id to profiles
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
 
--- Add embedding column to scripts (1536 dimensions for OpenAI embeddings)
--- ALTER TABLE scripts ADD COLUMN IF NOT EXISTS objection_embedding vector(1536);
+-- Add embedding column to scripts (1024 dimensions for DeepInfra BAAI/bge-m3 embeddings)
+-- ALTER TABLE scripts ADD COLUMN IF NOT EXISTS objection_embedding vector(1024);
 -- CREATE INDEX IF NOT EXISTS idx_scripts_objection_embedding ON scripts USING ivfflat (objection_embedding vector_cosine_ops) WITH (lists = 100);
 
 -- Add notification preferences table

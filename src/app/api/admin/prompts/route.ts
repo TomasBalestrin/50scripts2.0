@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/admin/auth';
 import { cachedJson } from '@/lib/api-cache';
+import { TEXT_MODEL } from '@/lib/ai/client';
 
 export async function GET() {
   try {
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
       type,
       system_prompt,
       user_prompt_template,
-      model: model ?? 'gpt-4o-mini',
+      model: model ?? TEXT_MODEL,
       temperature: temperature ?? 0.7,
       max_tokens: max_tokens ?? 1024,
       is_active: is_active !== undefined ? is_active : true,

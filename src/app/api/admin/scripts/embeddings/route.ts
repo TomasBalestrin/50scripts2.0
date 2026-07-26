@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/admin/auth';
+import { AI_BASE_URL, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS } from '@/lib/ai/client';
 
 /**
  * POST /api/admin/scripts/embeddings
@@ -13,8 +14,8 @@ import { getAdminUser } from '@/lib/admin/auth';
  *
  * Returns: { generated: number, errors: number, details?: string[] }
  *
- * Note: Currently uses a mock embedding generator (deterministic hash-based vector).
- * When OpenAI is available, replace generateMockEmbedding with real API calls.
+ * Note: uses the DeepInfra Embeddings API when DEEPINFRA_API_KEY is set,
+ * otherwise falls back to a deterministic mock embedding (hash-based vector).
  */
 export async function POST(request: NextRequest) {
   try {
@@ -136,12 +137,13 @@ export async function POST(request: NextRequest) {
 
         generated++;
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Unknown error';
+        // Log the raw error server-side; return only a sanitized note (the
+        // provider's error body shape is unconfirmed — don't echo it back).
         console.error(
           `[admin/scripts/embeddings] Error processing script ${script.id}:`,
           err
         );
-        errorDetails.push(`Script ${script.id}: ${message}`);
+        errorDetails.push(`Script ${script.id}: embedding generation failed`);
         errors++;
       }
     }
@@ -164,25 +166,25 @@ export async function POST(request: NextRequest) {
 /**
  * Generate an embedding vector for the given text.
  *
- * If OPENAI_API_KEY is set, calls the OpenAI Embeddings API.
+ * If DEEPINFRA_API_KEY is set, calls the DeepInfra Embeddings API.
  * Otherwise, falls back to a deterministic mock embedding generator
- * that produces a 1536-dimension vector from the text hash.
+ * that produces a same-dimension vector from the text hash.
  */
 async function generateEmbedding(text: string): Promise<number[]> {
-  const openaiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.DEEPINFRA_API_KEY;
 
-  if (openaiKey) {
-    return generateOpenAIEmbedding(text, openaiKey);
+  if (apiKey) {
+    return generateProviderEmbedding(text, apiKey);
   }
 
   return generateMockEmbedding(text);
 }
 
 /**
- * Call OpenAI Embeddings API to generate a real embedding.
+ * Call the DeepInfra Embeddings API (OpenAI-compatible) to generate a real embedding.
  */
-async function generateOpenAIEmbedding(text: string, apiKey: string): Promise<number[]> {
-  const response = await fetch('https://api.openai.com/v1/embeddings', {
+async function generateProviderEmbedding(text: string, apiKey: string): Promise<number[]> {
+  const response = await fetch(`${AI_BASE_URL}/embeddings`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -190,19 +192,20 @@ async function generateOpenAIEmbedding(text: string, apiKey: string): Promise<nu
     },
     body: JSON.stringify({
       input: text,
-      model: 'text-embedding-3-small',
+      model: EMBEDDING_MODEL,
+      encoding_format: 'float',
     }),
   });
 
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(`OpenAI API error (${response.status}): ${errorBody}`);
+    throw new Error(`DeepInfra API error (${response.status}): ${errorBody}`);
   }
 
   const data = await response.json();
 
   if (!data.data || !data.data[0] || !data.data[0].embedding) {
-    throw new Error('Invalid response from OpenAI Embeddings API');
+    throw new Error('Invalid response from DeepInfra Embeddings API');
   }
 
   return data.data[0].embedding;
@@ -210,7 +213,7 @@ async function generateOpenAIEmbedding(text: string, apiKey: string): Promise<nu
 
 /**
  * Generate a deterministic mock embedding from text using a hash-based approach.
- * Produces a 1536-dimension vector (matching OpenAI text-embedding-3-small output).
+ * Produces a vector matching the provider's embedding dimension (bge-m3 = 1024).
  *
  * This is NOT suitable for real semantic search - it's a placeholder that ensures:
  * 1. Same text always produces the same vector
@@ -218,7 +221,7 @@ async function generateOpenAIEmbedding(text: string, apiKey: string): Promise<nu
  * 3. The vector is normalized (unit length)
  */
 function generateMockEmbedding(text: string): number[] {
-  const DIMENSIONS = 1536;
+  const DIMENSIONS = EMBEDDING_DIMENSIONS;
   const embedding: number[] = new Array(DIMENSIONS);
 
   // Create a deterministic seed from the text

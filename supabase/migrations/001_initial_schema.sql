@@ -82,7 +82,7 @@ CREATE TABLE scripts (
   content_direct TEXT,
   context_description TEXT NOT NULL,
   objection_keywords TEXT[] NOT NULL DEFAULT '{}',
-  -- objection_embedding vector(1536), -- Enable when pg_vector is ready
+  -- objection_embedding vector(1024), -- Enable when pg_vector is ready (DeepInfra bge-m3 = 1024-dim)
   audio_url TEXT,
   tags TEXT[] NOT NULL DEFAULT '{}',
   min_plan plan_type NOT NULL DEFAULT 'starter',

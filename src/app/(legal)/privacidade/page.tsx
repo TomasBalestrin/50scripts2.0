@@ -73,7 +73,7 @@ export default function PrivacidadePage() {
       <ul>
         <li><strong>Hotmart:</strong> processamento de pagamentos</li>
         <li><strong>Supabase:</strong> armazenamento de dados (servidores nos EUA com cláusulas contratuais padrão)</li>
-        <li><strong>OpenAI:</strong> processamento de IA para geração de scripts (dados anonimizados)</li>
+        <li><strong>DeepInfra:</strong> processamento de IA para geração de scripts (dados anonimizados)</li>
         <li><strong>Vercel:</strong> hospedagem da aplicação</li>
       </ul>
       <p>

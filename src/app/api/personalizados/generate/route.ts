@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { chatCompletion } from '@/lib/ai/openai';
+import { chatCompletion, TEXT_MODEL } from '@/lib/ai/client';
 import { BASE_MONTHLY_SCRIPTS } from '@/lib/constants';
 
 // Objective → category slug mapping for few-shot examples
@@ -194,11 +194,11 @@ ${fewShotSection}`;
     ? `Situacao: ${situation.trim()}\n\nDetalhes adicionais: ${details.trim()}`
     : `Situacao: ${situation.trim()}`;
 
-  // Call AI with gpt-4o
+  // Call AI (DeepInfra text model)
   let aiResult: { content: string };
   try {
     aiResult = await chatCompletion(systemPrompt, userPrompt, {
-      model: 'gpt-4o',
+      model: TEXT_MODEL,
       maxTokens: 600,
     });
   } catch (err) {

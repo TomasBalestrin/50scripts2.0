@@ -1806,7 +1806,7 @@ FORMATO DE SAÍDA (JSON):
 
 Gere o script completo com as 3 variações de tom.',
 
-'claude-sonnet-4-5-20250929', 0.7, 2000, true, 1),
+'meta-llama/Llama-3.3-70B-Instruct-Turbo', 0.7, 2000, true, 1),
 
 
 -- 2. CONVERSATION - Analisar conversas
@@ -1865,7 +1865,7 @@ FORMATO DE SAÍDA (JSON):
 
 Analise e sugira a melhor próxima mensagem.',
 
-'claude-sonnet-4-5-20250929', 0.5, 1500, true, 1),
+'meta-llama/Llama-3.3-70B-Instruct-Turbo', 0.5, 1500, true, 1),
 
 
 -- 3. ANALYSIS - Análise mensal de padrões
@@ -1925,7 +1925,7 @@ FORMATO DE SAÍDA (JSON):
 
 Gere uma análise completa com insights e recomendações acionáveis.',
 
-'claude-sonnet-4-5-20250929', 0.3, 2000, true, 1),
+'meta-llama/Llama-3.3-70B-Instruct-Turbo', 0.3, 2000, true, 1),
 
 
 -- 4. OBJECTION - Contornar objeções específicas
@@ -1988,7 +1988,7 @@ FORMATO DE SAÍDA (JSON):
 
 Gere a melhor resposta para contornar essa objeção.',
 
-'claude-sonnet-4-5-20250929', 0.6, 1500, true, 1);
+'meta-llama/Llama-3.3-70B-Instruct-Turbo', 0.6, 1500, true, 1);
 
 
 -- ============================================

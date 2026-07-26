@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { hasAccess } from '@/lib/plans/gate';
-import { chatCompletion } from '@/lib/ai/openai';
+import { chatCompletion, resolveTextModel } from '@/lib/ai/client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,7 +51,7 @@ Nicho do usuário: ${profile.niche || 'geral'}
 Tom preferido: ${profile.preferred_tone || 'casual'}`;
 
     const result = await chatCompletion(systemPrompt, conversation, {
-      model: prompt?.model || 'gpt-4o-mini',
+      model: resolveTextModel(prompt?.model),
       maxTokens: prompt?.max_tokens || 1500,
     });
 
