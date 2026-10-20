@@ -90,9 +90,6 @@ export function OnboardingDetailModal({ userId, isOpen, onClose }: OnboardingDet
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <InfoField label="Empresa" value={data.company_name} />
                 <InfoField label="Tipo de Negócio" value={data.business_type} />
-                {data.business_type_custom && (
-                  <InfoField label="Tipo (Personalizado)" value={data.business_type_custom} />
-                )}
                 <InfoField label="Cargo" value={data.role_in_business} />
                 <InfoField label="Faturamento Mensal" value={data.faturamento_mensal} />
                 <InfoField label="Ticket Médio" value={data.average_ticket} />
@@ -122,9 +119,6 @@ export function OnboardingDetailModal({ userId, isOpen, onClose }: OnboardingDet
                     <p className="font-medium text-white">-</p>
                   )}
                 </div>
-                {data.main_challenges_custom && (
-                  <InfoField label="Desafios (Personalizado)" value={data.main_challenges_custom} fullWidth />
-                )}
                 <div className="grid grid-cols-2 gap-3">
                   <InfoField label="Possui Sócio" value={data.has_partner ? 'Sim' : 'Não'} />
                   <InfoField label="Tempo conhecendo Cleiton" value={data.time_knowing_cleiton} />

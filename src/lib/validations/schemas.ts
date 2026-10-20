@@ -1,4 +1,11 @@
 import { z } from 'zod';
+import {
+  BUSINESS_ROLES,
+  BUSINESS_TYPES,
+  FATURAMENTO_OPTIONS,
+  MAIN_CHALLENGES,
+  TIME_KNOWING_CLEITON_OPTIONS,
+} from '@/lib/onboarding/options';
 
 export const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -69,22 +76,25 @@ export type AIConversationInput = z.infer<typeof aiConversationSchema>;
 // Script Go - New Schemas
 // ============================================================
 
+const requiredText = (message: string) => z.string().trim().min(1, message);
+
 export const onboardingSchema = z.object({
-  full_name: z.string().min(2, 'Nome obrigatorio'),
-  phone: z.string().min(10, 'Telefone obrigatorio'),
-  email: z.string().email('Email invalido'),
-  instagram: z.string().optional(),
-  company_name: z.string().optional(),
-  business_type: z.string().min(1, 'Selecione seu tipo de negocio'),
-  business_type_custom: z.string().optional(),
-  role_in_business: z.string().optional(),
+  full_name: z.string().trim().min(2, 'Informe seu nome completo'),
+  phone: z
+    .string()
+    .refine((v) => v.replace(/\D/g, '').length >= 10, 'Informe um telefone válido com DDD. Ex: (49) 99912-3456'),
+  email: z.string().trim().email('Informe um email válido. Ex: nome@email.com'),
+  instagram: requiredText('Informe seu Instagram'),
+  company_name: requiredText('Informe o nome da empresa'),
+  business_type: z.enum(BUSINESS_TYPES, { error: 'Selecione seu tipo de negócio' }),
+  role_in_business: z.enum(BUSINESS_ROLES, { error: 'Selecione sua função' }),
+  faturamento_mensal: z.enum(FATURAMENTO_OPTIONS, { error: 'Selecione o faturamento' }),
   average_ticket: z.string().optional(),
-  target_audience: z.string().optional(),
-  main_objections: z.string().optional(),
-  main_challenges: z.array(z.string()).min(1, 'Selecione pelo menos um desafio'),
-  main_challenges_custom: z.string().optional(),
+  target_audience: requiredText('Informe seu público-alvo'),
+  main_objections: requiredText('Informe as principais objeções'),
+  main_challenges: z.array(z.enum(MAIN_CHALLENGES)).min(1, 'Selecione pelo menos um desafio'),
   has_partner: z.boolean().default(false),
-  time_knowing_cleiton: z.string().optional(),
+  time_knowing_cleiton: z.enum(TIME_KNOWING_CLEITON_OPTIONS, { error: 'Selecione uma opção' }),
 });
 
 export const scriptSaleSchema = z.object({

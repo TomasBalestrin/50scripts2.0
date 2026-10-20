@@ -243,12 +243,14 @@ export interface UserOnboarding {
   instagram: string | null;
   company_name: string | null;
   business_type: string;
+  /** @deprecated Texto livre do antigo "Outros"; preservado só como histórico (migration 027). */
   business_type_custom: string | null;
   role_in_business: string | null;
   average_ticket: string | null;
   target_audience: string | null;
   main_objections: string | null;
   main_challenges: string[];
+  /** @deprecated Texto livre do antigo "Outro"; preservado só como histórico (migration 027). */
   main_challenges_custom: string | null;
   has_partner: boolean;
   time_knowing_cleiton: string | null;
