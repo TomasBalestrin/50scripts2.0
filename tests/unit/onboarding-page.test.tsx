@@ -60,8 +60,7 @@ describe('OnboardingPage — fluxo completo', () => {
     expect(screen.getByText('Passo 3 de 3')).toBeTruthy();
     const finalizar = () => screen.getByRole('button', { name: 'Finalizar' }) as HTMLButtonElement;
     expect(finalizar().disabled).toBe(true);
-    fireEvent.click(screen.getByText(MAIN_CHALLENGES[1]));
-    fireEvent.click(screen.getByText(MAIN_CHALLENGES[3]));
+    choose('Selecione seu principal desafio', MAIN_CHALLENGES[1]);
     choose('Selecione uma opção', TIME_KNOWING_CLEITON_OPTIONS[4]);
     expect(finalizar().disabled).toBe(false);
     fireEvent.click(finalizar());
@@ -72,7 +71,7 @@ describe('OnboardingPage — fluxo completo', () => {
       business_type: BUSINESS_TYPES[2],
       role_in_business: BUSINESS_ROLES[1],
       faturamento_mensal: FATURAMENTO_OPTIONS[2],
-      main_challenges: [MAIN_CHALLENGES[1], MAIN_CHALLENGES[3]],
+      main_challenges: [MAIN_CHALLENGES[1]],
       time_knowing_cleiton: TIME_KNOWING_CLEITON_OPTIONS[4],
     });
   });
@@ -102,7 +101,7 @@ describe('OnboardingPage — fluxo completo', () => {
     type(/Público-alvo/, 'A');
     type(/Principais objeções/, 'B');
     next();
-    fireEvent.click(screen.getByText(MAIN_CHALLENGES[0]));
+    choose('Selecione seu principal desafio', MAIN_CHALLENGES[0]);
     choose('Selecione uma opção', TIME_KNOWING_CLEITON_OPTIONS[0]);
     fireEvent.click(screen.getByRole('button', { name: 'Finalizar' }));
     await waitFor(() => expect(screen.getByText('Sessão expirada. Faça login novamente.')).toBeTruthy());

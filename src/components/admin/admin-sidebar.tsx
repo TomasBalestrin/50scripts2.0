@@ -20,6 +20,7 @@ import {
   Menu,
   X,
   Crosshair,
+  Send,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -34,6 +35,7 @@ const navItems = [
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/push', label: 'Push', icon: Bell },
   { href: '/admin/webhooks', label: 'Webhooks', icon: Webhook },
+  { href: '/admin/bethel-forms', label: 'Bethel Forms', icon: Send },
   { href: '/admin/experiments', label: 'Experimentos', icon: FlaskConical },
   { href: '/admin/config', label: 'Configurações', icon: Settings },
 ];

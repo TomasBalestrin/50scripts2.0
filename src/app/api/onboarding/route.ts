@@ -3,7 +3,11 @@ import { after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { appendToSheet } from '@/lib/google-sheets';
 import { toOnboardingSheetCells } from '@/lib/onboarding/sheet';
+import { enfileirarEEnviarAoVivo } from '@/lib/bethel-forms/fila';
 import { onboardingSchema } from '@/lib/validations/schemas';
+
+// O envio ao Bethel Forms roda no after() (até ~25 s de timeout no pior caso): dá folga ao after().
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
@@ -93,12 +97,15 @@ export async function POST(request: NextRequest) {
 
     // Send to Google Sheets AFTER the response (non-blocking)
     // after() runs code after the response is sent but Vercel keeps the function alive
+    // Planilha e Bethel Forms rodam em paralelo (cada um pode levar vários segundos e um não depende do outro).
+    // O Bethel Forms entra na fila de envios e já tenta mandar, se a integração estiver ligada — nunca lança.
     after(async () => {
-      try {
-        await appendToSheet([timestamp, ...toOnboardingSheetCells(data)]);
-      } catch (sheetErr) {
-        console.error('Google Sheets after() sync failed:', sheetErr);
-      }
+      await Promise.all([
+        appendToSheet([timestamp, ...toOnboardingSheetCells(data)]).catch((sheetErr) => {
+          console.error('Google Sheets after() sync failed:', sheetErr);
+        }),
+        enfileirarEEnviarAoVivo(user.id),
+      ]);
     });
 
     return NextResponse.json({ success: true });

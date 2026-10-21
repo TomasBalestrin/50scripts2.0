@@ -4,7 +4,6 @@ import type { ComponentProps } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectTrigger,
@@ -105,35 +104,6 @@ export function SelectField({ label, value, options, placeholder, onChange }: Se
           ))}
         </SelectContent>
       </Select>
-    </FieldShell>
-  );
-}
-
-interface CheckboxGroupFieldProps {
-  label: string;
-  hint?: string;
-  options: readonly string[];
-  value: readonly string[];
-  onToggle: (option: string) => void;
-}
-
-export function CheckboxGroupField({ label, hint, options, value, onToggle }: CheckboxGroupFieldProps) {
-  return (
-    <FieldShell label={label} hint={hint}>
-      <div className="space-y-2.5">
-        {options.map((option) => (
-          <label key={option} className="flex items-center gap-3 cursor-pointer group">
-            <Checkbox
-              checked={value.includes(option)}
-              onCheckedChange={() => onToggle(option)}
-              className="border-[#94A3B8]/30 data-[state=checked]:bg-[#1D4ED8] data-[state=checked]:border-[#1D4ED8]"
-            />
-            <span className="text-sm text-white group-hover:text-[#3B82F6] transition-colors">
-              {option}
-            </span>
-          </label>
-        ))}
-      </div>
     </FieldShell>
   );
 }

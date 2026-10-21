@@ -92,7 +92,8 @@ export const onboardingSchema = z.object({
   average_ticket: z.string().optional(),
   target_audience: requiredText('Informe seu público-alvo'),
   main_objections: requiredText('Informe as principais objeções'),
-  main_challenges: z.array(z.enum(MAIN_CHALLENGES)).min(1, 'Selecione pelo menos um desafio'),
+  // Um desafio só: no Forms o perfil do lead guarda uma Dor por lead (é dela que saem o estado e a tabela "Dor" do dash).
+  main_challenges: z.array(z.enum(MAIN_CHALLENGES)).length(1, 'Selecione seu principal desafio'),
   has_partner: z.boolean().default(false),
   time_knowing_cleiton: z.enum(TIME_KNOWING_CLEITON_OPTIONS, { error: 'Selecione uma opção' }),
 });

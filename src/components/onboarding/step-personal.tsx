@@ -1,6 +1,6 @@
 'use client';
 
-import { formatPhone } from '@/lib/onboarding/form';
+import { ONBOARDING_LABELS, formatPhone } from '@/lib/onboarding/form';
 import { TextField } from './fields';
 import type { StepProps } from './step-props';
 
@@ -9,14 +9,14 @@ export function StepPersonal({ data, errors, onChange, onBlur }: StepProps) {
     <div className="space-y-4">
       <TextField
         id="full_name"
-        label="Nome completo"
+        label={ONBOARDING_LABELS.full_name}
         placeholder="Seu nome completo"
         value={data.full_name}
         onChange={(full_name) => onChange({ full_name })}
       />
       <TextField
         id="phone"
-        label="Telefone (WhatsApp)"
+        label={ONBOARDING_LABELS.phone}
         type="tel"
         inputMode="numeric"
         placeholder="(00) 00000-0000"
@@ -27,7 +27,7 @@ export function StepPersonal({ data, errors, onChange, onBlur }: StepProps) {
       />
       <TextField
         id="email"
-        label="Email"
+        label={ONBOARDING_LABELS.email}
         type="email"
         placeholder="seu@email.com"
         value={data.email}
@@ -37,7 +37,7 @@ export function StepPersonal({ data, errors, onChange, onBlur }: StepProps) {
       />
       <TextField
         id="instagram"
-        label="Instagram"
+        label={ONBOARDING_LABELS.instagram}
         placeholder="@seuinsta"
         value={data.instagram}
         onChange={(instagram) => onChange({ instagram })}

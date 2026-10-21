@@ -20,6 +20,23 @@ export interface OnboardingFormData {
   time_knowing_cleiton: string;
 }
 
+/** Rótulo de cada pergunta como o lead a vê — fonte única das telas e da tela de mapeamento do Bethel Forms. */
+export const ONBOARDING_LABELS: Record<keyof OnboardingFormData, string> = {
+  full_name: 'Nome completo',
+  phone: 'Telefone (WhatsApp)',
+  email: 'Email',
+  instagram: 'Instagram',
+  company_name: 'Nome da empresa',
+  business_type: 'Qual é o seu negócio?',
+  role_in_business: 'Função no negócio',
+  faturamento_mensal: 'Faturamento mensal',
+  target_audience: 'Público-alvo',
+  main_objections: 'Principais objeções dos clientes',
+  main_challenges: 'Qual é o seu principal desafio?',
+  has_partner: 'Você tem sócio(a)?',
+  time_knowing_cleiton: 'Há quanto tempo conhece o Cleiton?',
+};
+
 export type OnboardingField = keyof OnboardingFormData;
 export type OnboardingFieldErrors = Partial<Record<OnboardingField, string>>;
 
@@ -100,8 +117,4 @@ export function formatPhone(value: string): string {
   if (digits.length <= 2) return `(${digits}`;
   if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-}
-
-export function toggleItem<T>(list: readonly T[], item: T): T[] {
-  return list.includes(item) ? list.filter((i) => i !== item) : [...list, item];
 }
