@@ -4,7 +4,6 @@ import {
   ONBOARDING_STEPS,
   formatPhone,
   isStepValid,
-  toggleItem,
   type OnboardingFormData,
 } from '@/lib/onboarding/form';
 import {
@@ -58,8 +57,9 @@ describe('onboarding — validação por passo', () => {
     expect(isStepValid(1, { ...VALID, email: 'maria@' })).toBe(false);
   });
 
-  it('exige ao menos um desafio', () => {
+  it('exige um desafio, e só um', () => {
     expect(isStepValid(3, { ...VALID, main_challenges: [] })).toBe(false);
+    expect(isStepValid(3, { ...VALID, main_challenges: [MAIN_CHALLENGES[0], MAIN_CHALLENGES[1]] })).toBe(false);
   });
 });
 
@@ -77,6 +77,10 @@ describe('onboarding — schema (API)', () => {
     expect(onboardingSchema.safeParse({ ...VALID, [campo]: valor }).success).toBe(false);
   });
 
+  it('rejeita mais de um desafio', () => {
+    expect(onboardingSchema.safeParse({ ...VALID, main_challenges: [MAIN_CHALLENGES[0], MAIN_CHALLENGES[1]] }).success).toBe(false);
+  });
+
   it('rejeita desafio do modelo antigo', () => {
     expect(onboardingSchema.safeParse({ ...VALID, main_challenges: ['Vendas'] }).success).toBe(false);
   });
@@ -87,13 +91,6 @@ describe('onboarding — helpers', () => {
     expect(formatPhone('49999123456')).toBe('(49) 99912-3456');
     expect(formatPhone('499991234567890')).toBe('(49) 99912-3456');
     expect(formatPhone('')).toBe('');
-  });
-
-  it('toggleItem adiciona e remove sem mutar', () => {
-    const base = ['a'];
-    expect(toggleItem(base, 'b')).toEqual(['a', 'b']);
-    expect(toggleItem(base, 'a')).toEqual([]);
-    expect(base).toEqual(['a']);
   });
 });
 

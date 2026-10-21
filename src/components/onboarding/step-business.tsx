@@ -1,5 +1,6 @@
 'use client';
 
+import { ONBOARDING_LABELS } from '@/lib/onboarding/form';
 import {
   BUSINESS_ROLES,
   BUSINESS_TYPES,
@@ -13,27 +14,27 @@ export function StepBusiness({ data, onChange }: StepProps) {
     <div className="space-y-4">
       <TextField
         id="company_name"
-        label="Nome da empresa"
+        label={ONBOARDING_LABELS.company_name}
         placeholder="Nome da sua empresa"
         value={data.company_name}
         onChange={(company_name) => onChange({ company_name })}
       />
       <SelectField
-        label="Qual é o seu negócio?"
+        label={ONBOARDING_LABELS.business_type}
         placeholder="Selecione seu tipo de negócio"
         options={BUSINESS_TYPES}
         value={data.business_type}
         onChange={(business_type) => onChange({ business_type })}
       />
       <SelectField
-        label="Função no negócio"
+        label={ONBOARDING_LABELS.role_in_business}
         placeholder="Selecione sua função"
         options={BUSINESS_ROLES}
         value={data.role_in_business}
         onChange={(role_in_business) => onChange({ role_in_business })}
       />
       <SelectField
-        label="Faturamento mensal"
+        label={ONBOARDING_LABELS.faturamento_mensal}
         placeholder="Selecione sua faixa de faturamento"
         options={FATURAMENTO_OPTIONS}
         value={data.faturamento_mensal}
@@ -41,14 +42,14 @@ export function StepBusiness({ data, onChange }: StepProps) {
       />
       <TextField
         id="target_audience"
-        label="Público-alvo"
+        label={ONBOARDING_LABELS.target_audience}
         placeholder="Quem é seu cliente ideal?"
         value={data.target_audience}
         onChange={(target_audience) => onChange({ target_audience })}
       />
       <TextAreaField
         id="main_objections"
-        label="Principais objeções dos clientes"
+        label={ONBOARDING_LABELS.main_objections}
         placeholder="Quais as objeções mais comuns que você ouve?"
         value={data.main_objections}
         onChange={(main_objections) => onChange({ main_objections })}
